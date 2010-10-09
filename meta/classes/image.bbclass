@@ -11,8 +11,45 @@ INHIBIT_DEFAULT_DEPS = "1"
 
 # "export IMAGE_BASENAME" not supported at this time
 IMAGE_BASENAME[export] = "1"
-export PACKAGE_INSTALL ?= "${IMAGE_INSTALL}"
-PACKAGE_INSTALL_ATTEMPTONLY ?= ""
+
+PACKAGE_INSTALL = "${@' '.join(oe.packagegroup.required_packages('${IMAGE_FEATURES}'.split(), d))}"
+PACKAGE_INSTALL_ATTEMPTONLY = "${@' '.join(oe.packagegroup.optional_packages('${IMAGE_FEATURES}'.split(), d))}"
+RDEPENDS += "${@' '.join(oe.packagegroup.active_packages('${IMAGE_FEATURES}'.split(), d))}"
+
+
+IMAGE_FEATURES ?= ""
+IMAGE_FEATURES[type] = "list"
+IMAGE_FEATURES_prepend = "image_base "
+
+# Define our always included package group
+PACKAGE_GROUP_image_base = "${IMAGE_INSTALL}"
+
+# The following package groups allow one to add debugging, development, and
+# documentation files for all packages installed in the image.
+
+def string_set(iterable):
+    return ' '.join(set(iterable))
+
+def image_features_noextras(d):
+    for f in d.getVar("IMAGE_FEATURES", True).split():
+        if not f in ('dbg', 'dev', 'doc'):
+            yield f
+
+def dbg_packages(d):
+    from itertools import chain
+
+    features = image_features_noextras(d)
+    return string_set("%s-dbg" % pkg
+                      for pkg in chain(oe.packagegroup.active_packages(features, d),
+                                       oe.packagegroup.active_recipes(features, d)))
+
+PACKAGE_GROUP_dbg = "${@dbg_packages(d)}"
+PACKAGE_GROUP_dbg[optional] = "1"
+PACKAGE_GROUP_dev = "${@string_set('%s-dev' % pn for pn in oe.packagegroup.active_recipes(image_features_noextras(d), d))}"
+PACKAGE_GROUP_dev[optional] = "1"
+PACKAGE_GROUP_doc = "${@string_set('%s-doc' % pn for pn in oe.packagegroup.active_recipes(image_features_noextras(d), d))}"
+PACKAGE_GROUP_doc[optional] = "1"
+
 
 # Images are generally built explicitly, do not need to be part of world.
 EXCLUDE_FROM_WORLD = "1"
