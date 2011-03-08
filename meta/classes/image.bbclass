@@ -12,9 +12,9 @@ INHIBIT_DEFAULT_DEPS = "1"
 # "export IMAGE_BASENAME" not supported at this time
 IMAGE_BASENAME[export] = "1"
 
-PACKAGE_INSTALL = "${@' '.join(oe.packagegroup.required_packages('${IMAGE_FEATURES}'.split(), d))}"
-PACKAGE_INSTALL_ATTEMPTONLY = "${@' '.join(oe.packagegroup.optional_packages('${IMAGE_FEATURES}'.split(), d))}"
-RDEPENDS += "${@' '.join(oe.packagegroup.active_packages('${IMAGE_FEATURES}'.split(), d))}"
+PACKAGE_INSTALL = "${@' '.join(oe.packagegroup.required_packages(oe.data.typed_value('IMAGE_FEATURES', d), d))}"
+PACKAGE_INSTALL_ATTEMPTONLY = "${@' '.join(oe.packagegroup.optional_packages(oe.data.typed_value('IMAGE_FEATURES', d), d))}"
+RDEPENDS += "${@' '.join(oe.packagegroup.active_packages(oe.data.typed_value('IMAGE_FEATURES', d), d))}"
 
 
 IMAGE_FEATURES ?= ""
@@ -31,9 +31,9 @@ def string_set(iterable):
     return ' '.join(set(iterable))
 
 def image_features_noextras(d):
-    for f in d.getVar("IMAGE_FEATURES", True).split():
-        if not f in ('dbg', 'dev', 'doc'):
-            yield f
+    for feature in oe.data.typed_value('IMAGE_FEATURES', d):
+        if not feature in ('dbg', 'dev', 'doc'):
+            yield feature
 
 def dbg_packages(d):
     from itertools import chain
