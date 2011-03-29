@@ -1,3 +1,5 @@
+__author__ = 'kergoth'
+
 class ClassRegistry(type):
     """Maintain a registry of classes, indexed by name.
 
