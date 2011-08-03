@@ -23,3 +23,5 @@ FILES_${PN} = "${libdir}/lib*.so.*"
 FILES_${PN}-dev += "${bindir}/*"
 
 inherit autotools binconfig pkgconfig gettext
+
+export CC_FOR_BUILD="${BUILD_CC}"

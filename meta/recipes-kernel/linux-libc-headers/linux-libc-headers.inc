@@ -8,3 +8,5 @@ SRC_URI = "${KERNELORG_MIRROR}/linux/kernel/v2.6/linux-${PV}.tar.bz2"
 #DEPENDS = "cross-linkage"
 RDEPENDS_${PN}-dev = ""
 RRECOMMENDS_${PN}-dbg = "${PN}-dev (= ${EXTENDPKGV})"
+
+EXTRA_OEMAKE += '"HOSTCC=${BUILD_CC}"'

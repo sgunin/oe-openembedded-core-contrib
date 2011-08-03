@@ -16,6 +16,10 @@ EXTRA_OECONF += "--target-list=${@get_qemu_target_list(d)} --disable-werror --di
 
 #EXTRA_OECONF += "--disable-sdl"
 
+# We cannot use CCLD without further rewrites of qemu's Makefiles and
+# we must ensure ld is linking for 64bit on 64bit.
+EXTRA_OEMAKE_virtclass-native = '${@base_contains("OVERRIDES", "x86_64", "LD='ld -melf_x86_64'", "", d)}'
+EXTRA_OEMAKE_virtclass-nativesdk = '${@base_contains("OVERRIDES", "x86_64", "LD='ld -melf_x86_64'", "", d)}'
 
 inherit autotools
 

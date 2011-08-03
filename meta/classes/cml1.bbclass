@@ -1,3 +1,5 @@
+EXTRA_OEMAKE += '"HOSTCC=${BUILD_CC}"'
+
 cml1_do_configure() {
 	set -e
 	unset CFLAGS CPPFLAGS CXXFLAGS LDFLAGS

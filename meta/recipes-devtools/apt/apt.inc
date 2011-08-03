@@ -24,3 +24,5 @@ EXTRA_OECONF_append_angstrom = " ac_cv_glibc_ver=libc6.4"
 EXTRA_OECONF_append = " ac_cv_glibc_ver=libc6.3"
 
 FILES_${PN}-dbg += "${libdir}/apt/methods/.debug/"
+
+PARALLEL_MAKE = ""
