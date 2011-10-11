@@ -522,6 +522,8 @@ python do_package_qa () {
     g = globals()
     walk_sane = True
     rdepends_sane = True
+    exists = True
+
     for package in packages.split():
         skip = (d.getVar('INSANE_SKIP_' + package, True) or "").split()
         if skip:
@@ -541,13 +543,20 @@ python do_package_qa () {
 
         bb.note("Checking Package: %s" % package)
         path = "%s/%s" % (pkgdest, package)
+        allow_empty = bb.data.getVar('ALLOW_EMPTY_%s' % package, d, True)
+        bb.note("ALLOW_EMPTY_%s is %s" % (package, allow_empty))
+        if not allow_empty and not package.endswith("-dev") and not package.endswith("-dbg") and not package.endswith("-doc") and not package.endswith("-staticdev") and not package.endswith("-locale"):
+            contents_len = os.listdir(path)
+            if not contents_len:
+                bb.error("QA Issue: PACKAGE %s defined but not created" % package)
+                exists = False
         if not package_qa_walk(path, warnchecks, errorchecks, skip, package, d):
             walk_sane  = False
         if not package_qa_check_rdepends(package, pkgdest, skip, d):
             rdepends_sane = False
 
 
-    if not walk_sane or not rdepends_sane:
+    if not walk_sane or not rdepends_sane or not exists:
         bb.fatal("QA run found fatal errors. Please consider fixing them.")
     bb.note("DONE with PACKAGE QA")
 }
