@@ -1,6 +1,6 @@
 require gcc-common.inc
 
-PR = "r18"
+PR = "r19"
 
 # Third digit in PV should be incremented after a minor release
 # happens from this branch on gcc e.g. currently its 4.6.0
@@ -22,8 +22,8 @@ SRCREV = 181430
 BRANCH = "gcc-4_6-branch"
 FILESPATH = "${@base_set_filespath([ '${FILE_DIRNAME}/gcc-4.6' ], d)}"
 
-DEPENDS =+ "mpfr gmp libmpc"
-NATIVEDEPS = "mpfr-native gmp-native libmpc-native"
+DEPENDS =+ "mpfr gmp libmpc ppl cloog-ppl"
+NATIVEDEPS = "mpfr-native gmp-native libmpc-native ppl-native cloog-ppl-native"
 
 LICENSE="GPL-3.0-with-GCC-exception & GPLv3"
 
@@ -89,13 +89,16 @@ JAVA = ""
 #			--disable-bootstrap \
 #			--disable-libgomp \
 #			--disable-libmudflap"
-EXTRA_OECONF_BASE = " --enable-lto \
+EXTRA_OECONF_BASE = "   --enable-lto \
 			--enable-libssp \
 			--disable-bootstrap \
 			--disable-libgomp \
 			--disable-libmudflap \
 			--with-linker-hash-style=${LINKER_HASH_STYLE} \
-			--enable-cheaders=c_global "
+			--enable-cheaders=c_global \
+			--with-ppl \
+			--with-cloog \
+			"
 
 EXTRA_OECONF_INITIAL = "--disable-libmudflap \
 			--disable-libgomp \

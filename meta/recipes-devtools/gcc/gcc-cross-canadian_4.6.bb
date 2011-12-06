@@ -5,8 +5,8 @@ require gcc-cross-canadian.inc
 require gcc-configure-sdk.inc
 require gcc-package-sdk.inc
 
-DEPENDS += "gmp-nativesdk mpfr-nativesdk libmpc-nativesdk elfutils-nativesdk"
-RDEPENDS_${PN} += "mpfr-nativesdk libmpc-nativesdk elfutils-nativesdk"
+DEPENDS += "gmp-nativesdk mpfr-nativesdk libmpc-nativesdk elfutils-nativesdk ppl-nativesdk cloog-ppl-nativesdk"
+RDEPENDS_${PN} += "mpfr-nativesdk libmpc-nativesdk elfutils-nativesdk ppl-nativesdk cloog-ppl-nativesdk"
 
 SYSTEMHEADERS = "/usr/include"
 SYSTEMLIBS = "/lib/"
