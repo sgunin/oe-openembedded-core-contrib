@@ -6,7 +6,7 @@ def gnome_verdir(v):
 SECTION ?= "x11/gnome"
 SRC_URI = "${GNOME_MIRROR}/${BPN}/${@gnome_verdir("${PV}")}/${BPN}-${PV}.tar.bz2;name=archive"
 
-DEPENDS += "gnome-common"
+DEPENDS += "${@base_contains('DISTRO_FEATURES', 'x11', 'gnome-common', '', d)}"
 
 FILES_${PN} += "${datadir}/application-registry  \
 	${datadir}/mime-info \
@@ -28,3 +28,8 @@ do_install_append() {
 	rm -f ${D}${datadir}/applications/*.cache
 }
 
+python () {
+        whitelist = [ "libcroco", "librsvg", "mm-common", "pango" ]
+        if not d.getVar('BPN', True) in whitelist and not oe.utils.contains ('DISTRO_FEATURES', 'x11', True, False, d):
+                raise bb.parse.SkipPackage("'x11' not in DISTRO_FEATURES")
+}
