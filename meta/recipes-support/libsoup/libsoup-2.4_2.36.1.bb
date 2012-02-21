@@ -6,9 +6,9 @@ LICENSE = "LGPLv2"
 LIC_FILES_CHKSUM = "file://COPYING;md5=5f30f0716dfdd0d91eb439ebec522ec2"
 
 SECTION = "x11/gnome/libs"
-PR = "r1"
+PR = "r2"
 
-DEPENDS = "glib-2.0 gnutls libxml2 libproxy sqlite3 libgnome-keyring"
+DEPENDS = "glib-2.0 gnutls libxml2 libproxy ${@base_contains('DISTRO_FEATURES', 'x11', 'libgnome-keyring sqlite3', '', d)}"
 
 SRC_URI = "${GNOME_MIRROR}/libsoup/2.36/libsoup-${PV}.tar.bz2"
 
@@ -19,3 +19,4 @@ S = "${WORKDIR}/libsoup-${PV}"
 
 inherit autotools pkgconfig
 
+EXTRA_OECONF = "${@base_contains('DISTRO_FEATURES', 'x11', '--with-gnome', '--without-gnome', d)}"
