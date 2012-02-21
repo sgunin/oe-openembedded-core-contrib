@@ -1,12 +1,15 @@
 FILES_${PN} += "${datadir}/icons/hicolor"
 
-DEPENDS += "${@['hicolor-icon-theme', '']['${BPN}' == 'hicolor-icon-theme']}"
+DEPENDS += "${@base_contains('DISTRO_FEATURES', 'x11', ['hicolor-icon-theme', '']['${BPN}' == 'hicolor-icon-theme'], '', d)}"
 
 # This could run on the host as icon cache files are architecture independent,
 # but there is no gtk-update-icon-cache built natively.
 gtk_icon_cache_postinst() {
 if [ "x$D" != "x" ]; then
         exit 1
+fi
+if ! which gtk-update-icon-cache >/dev/null; then
+	exit 0
 fi
 
 # Update the pixbuf loaders in case they haven't been registered yet
@@ -20,6 +23,9 @@ done
 }
 
 gtk_icon_cache_postrm() {
+if ! which gtk-update-icon-cache >/dev/null; then
+	exit 0
+fi
 for icondir in /usr/share/icons/* ; do
     if [ -d $icondir ] ; then
         gtk-update-icon-cache -qt  $icondir
@@ -36,10 +42,11 @@ python populate_packages_append () {
 		if not os.path.exists(icon_dir):
 			continue
 
-		bb.note("adding hicolor-icon-theme dependency to %s" % pkg)	
-		rdepends = d.getVar('RDEPENDS_%s' % pkg, True)
-		rdepends = rdepends + ' ' + d.getVar('MLPREFIX') + "hicolor-icon-theme"
-		d.setVar('RDEPENDS_%s' % pkg, rdepends)
+		if oe.utils.contains('DISTRO_FEATURES', 'x11', True, False, d):
+			bb.note("adding hicolor-icon-theme dependency to %s" % pkg)	
+			rdepends = d.getVar('RDEPENDS_%s' % pkg, True)
+			rdepends = rdepends + ' ' + d.getVar('MLPREFIX') + "hicolor-icon-theme"
+			d.setVar('RDEPENDS_%s' % pkg, rdepends)
 	
 		bb.note("adding gtk-icon-cache postinst and postrm scripts to %s" % pkg)
 		
