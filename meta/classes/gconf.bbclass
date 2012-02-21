@@ -1,4 +1,4 @@
-DEPENDS += "gconf gconf-native"
+DEPENDS += "${@base_contains('DISTRO_FEATURES', 'x11', 'gconf gconf-native', '', d)}"
 
 # This is referenced by the gconf m4 macros and would default to the value hardcoded
 # into gconf at compile time otherwise
@@ -8,6 +8,9 @@ export GCONF_BACKEND_DIR = "${STAGING_LIBDIR_NATIVE}/GConf/2"
 gconf_postinst() {
 if [ "x$D" != "x" ]; then
 	exit 1
+fi
+if ! which gconftool-2 >/dev/null; then
+	exit 0
 fi
 SCHEMA_LOCATION=/etc/gconf/schemas
 for SCHEMA in ${SCHEMA_FILES}; do
@@ -20,6 +23,9 @@ done
 }
 
 gconf_prerm() {
+if ! which gconftool-2 >/dev/null; then
+	exit 0
+fi
 SCHEMA_LOCATION=/etc/gconf/schemas
 for SCHEMA in ${SCHEMA_FILES}; do
 	if [ -e $SCHEMA_LOCATION/$SCHEMA ]; then
