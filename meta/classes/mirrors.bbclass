@@ -1,5 +1,4 @@
 MIRRORS += "\
-${DEBIAN_MIRROR}/main	http://snapshot.debian.net/archive/pool \n \
 ${DEBIAN_MIRROR}	ftp://ftp.de.debian.org/debian/pool \n \
 ${DEBIAN_MIRROR}	ftp://ftp.au.debian.org/debian/pool \n \
 ${DEBIAN_MIRROR}	ftp://ftp.cl.debian.org/debian/pool \n \
