@@ -14,7 +14,7 @@ SECTION = "network"
 # python scripts are under GPLv2+
 LICENSE = "GPLv2+ & LGPLv2.1+"
 
-INC_PR = "r2"
+INC_PR = "r3"
 
 DEPENDS = "expat libcap libdaemon dbus glib-2.0"
 
@@ -163,12 +163,7 @@ pkg_postinst_avahi-systemd() {
 	systemctl enable avahi-daemon.service
 }
 
-pkg_postrm_avahi-systemd() {
-	# can't do this offline
-	if [ "x$D" != "x" ]; then
-		exit 1
-	fi
-
-	systemctl disable avahi-daemon.service
+pkg_prerm_avahi-systemd() {
+systemctl disable avahi-daemon.service
 }
 
