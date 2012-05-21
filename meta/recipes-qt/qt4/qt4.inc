@@ -10,17 +10,28 @@ QT_ENDIAN = "${@qt_endian(d)}"
 QT_DISTRO_FLAGS ?= "-no-accessibility -no-sm"
 QT_DISTRO_FLAGS_linuxstdbase = "-sm"
 
+QT_GLIB_FLAGS ?= "-glib"
+QT_IMAGEFORMAT_FLAGS ?= "-system-libjpeg -system-libpng -system-libtiff -system-zlib"
+QT_PHONON_FLAGS ?= "-phonon"
+QT_QDBUS_FLAGS ?= "-qdbus"
+QT_QT3SUPPORT_FLAGS ?= "-qt3support"
 QT_SQL_DRIVER_FLAGS ?= "-no-sql-ibase -no-sql-mysql -no-sql-psql -no-sql-odbc -plugin-sql-sqlite"
+QT_WEBKIT_FLAGS ?= "-webkit"
 
 QT_GLFLAGS ?= ""
 
 QT_CONFIG_FLAGS += "-release -no-cups -reduce-relocations \
                     -shared -no-nas-sound -no-nis \
-                    -system-libjpeg -system-libpng -system-libtiff -system-zlib \
-                    -no-pch -qdbus -stl -glib -phonon -webkit \
-                    -xmlpatterns -no-rpath -qt3support -silent \
+                    -no-pch -stl \
+                    -xmlpatterns -no-rpath -silent \
                     ${@base_contains('DISTRO_FEATURES', 'pulseaudio', '--enable-pulseaudio', '--disable-pulseaudio', d)} \
+                    ${QT_GLIB_FLAGS} \
+                    ${QT_IMAGEFORMAT_FLAGS} \
+                    ${QT_PHONON_FLAGS} \
+                    ${QT_QDBUS_FLAGS} \
+                    ${QT_QT3SUPPORT_FLAGS} \
                     ${QT_SQL_DRIVER_FLAGS} \
+                    ${QT_WEBKIT_FLAGS} \
                     ${QT_DISTRO_FLAGS} \
                     ${QT_GLFLAGS}"
 
