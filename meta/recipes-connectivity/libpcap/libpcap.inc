@@ -1,5 +1,5 @@
 SUMMARY = "Interface for user-level network packet capture"
-DESCRIPT = "Libpcap provides a portable framework for low-level network \
+DESCRIPTION = "Libpcap provides a portable framework for low-level network \
 monitoring.  Libpcap can provide network statistics collection, \
 security monitoring and network debugging."
 HOMEPAGE = "http://www.tcpdump.org/"
@@ -10,13 +10,13 @@ LIC_FILES_CHKSUM = "file://LICENSE;md5=1d4b0366557951c84a94fabe3529f867 \
                     file://pcap.h;beginline=1;endline=34;md5=8d6cf7e17d5745010d633e30bc529ea9"
 DEPENDS = "flex-native bison-native"
 
-INC_PR = "r0"
+INC_PR = "r1"
 
 SRC_URI = "http://www.tcpdump.org/release/libpcap-${PV}.tar.gz"
 
 inherit autotools binconfig
 
-EXTRA_OECONF = "--with-pcap=linux"
+EXTRA_OECONF = "--with-pcap=linux --without-libnl"
 
 CPPFLAGS_prepend = "-I${S} "
 CFLAGS_prepend = "-I${S} "
@@ -27,3 +27,8 @@ do_configure_prepend () {
         cat aclocal.m4 > acinclude.m4
     fi
 }
+
+# hack to move ${PN}-dev before ${PN}
+PACKAGES = "${PN}-dbg ${PN}-staticdev ${PN}-dev ${PN} ${PN}-doc ${PN}-locale"
+
+FILES_${PN}-dev += "${bindir}/pcap-config"
