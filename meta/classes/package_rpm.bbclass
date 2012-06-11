@@ -140,12 +140,12 @@ resolve_package_rpm () {
 	shift
 	local pkg_name=""
 	for solve in `cat ${conffile}`; do
-		pkg_name=$(${RPM} -D "_dbpath $solve" -D "__dbi_txn create nofsync" -q --yaml $@ | grep -i 'Packageorigin' | cut -d : -f 2)
-		if [ -n "$pkg_name" ]; then
+		pkg_name=$(${RPM} -D "_dbpath $solve" -D "__dbi_txn create nofsync" -q --qf "%{packageorigin}\n" "$@" | grep -v "is not installed" || true)
+		if [ -n "$pkg_name" -a "$pkg_name" != "(none)" ]; then
+			echo $pkg_name
 			break;
 		fi
 	done
-	echo $pkg_name
 }
 
 # rpm common command and options
@@ -415,9 +415,9 @@ package_install_internal_rpm () {
 
 	# Now that we have a solution, pull out a list of what to install...
 	echo "Manifest: ${target_rootfs}/install/install.manifest"
-	${RPM} -D "_dbpath ${target_rootfs}/install" -qa --yaml \
+	${RPM} -D "_dbpath ${target_rootfs}/install" -qa --qf "%{packageorigin}\n" \
 		-D "__dbi_txn create nofsync private" \
-		| grep -i 'Packageorigin' | cut -d : -f 2 > ${target_rootfs}/install/install_solution.manifest
+		> ${target_rootfs}/install/install_solution.manifest
 
 	touch ${target_rootfs}/install/install_multilib_solution.manifest
 
@@ -435,9 +435,9 @@ package_install_internal_rpm () {
 
 		# Now that we have a solution, pull out a list of what to install...
 		echo "Manifest: ${target_rootfs}/install/install_multilib.manifest"
-		${RPM} -D "_dbpath ${target_rootfs}/install" -qa --yaml \
+		${RPM} -D "_dbpath ${target_rootfs}/install" -qa --qf "%{packageorigin}\n" \
 			-D "__dbi_txn create nofsync private" \
-			| grep -i 'Packageorigin' | cut -d : -f 2 > ${target_rootfs}/install/install_multilib_solution.manifest
+			> ${target_rootfs}/install/install_multilib_solution.manifest
 
 	fi
 
@@ -492,9 +492,9 @@ EOF
 			-U --justdb --noscripts --notriggers --noparentdirs --nolinktos --ignoresize \
 			${target_rootfs}/install/initial_install.manifest
 
-		${RPM} -D "_dbpath ${target_rootfs}/initial" -qa --yaml \
+		${RPM} -D "_dbpath ${target_rootfs}/initial" -qa --qf "%{packageorigin}\n" \
 			-D "__dbi_txn create nofsync private" \
-			| grep -i 'Packageorigin' | cut -d : -f 2 > ${target_rootfs}/install/initial_solution.manifest
+			> ${target_rootfs}/install/initial_solution.manifest
 
 		rpm_update_pkg ${target_rootfs}/install/initial_solution.manifest
 		
