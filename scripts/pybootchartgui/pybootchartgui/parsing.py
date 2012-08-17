@@ -513,8 +513,6 @@ def _parse_proc_meminfo_log(file):
     Parse file for global memory statistics.
     The format of relevant lines should be: ^key: value( unit)?
     """
-    used_values = ('MemTotal', 'MemFree', 'Buffers', 'Cached', 'SwapTotal', 'SwapFree',)
-
     mem_stats = []
     meminfo_re = re.compile(r'([^ \t:]+):\s*(\d+).*')
 
