@@ -1,4 +1,4 @@
-inherit chrpath
+inherit patchelf
 
 SYSROOT_PREPROCESS_FUNCS += "relocatable_binaries_preprocess"
 

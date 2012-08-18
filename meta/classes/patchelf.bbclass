@@ -1,11 +1,11 @@
-CHRPATH_BIN ?= "patchelf"
+PATCHELF_BIN ?= "patchelf"
 PREPROCESS_RELOCATE_DIRS ?= ""
 
 def process_dir (directory, d):
     import subprocess as sub
     import stat
 
-    cmd = d.expand('${CHRPATH_BIN}')
+    cmd = d.expand('${PATCHELF_BIN}')
     tmpdir = d.getVar('TMPDIR')
     basedir = d.expand('${base_prefix}')
 

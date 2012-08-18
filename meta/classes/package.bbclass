@@ -40,7 +40,7 @@
 
 inherit packagedata
 inherit prserv
-inherit chrpath
+inherit patchelf
 
 PKGD    = "${WORKDIR}/package"
 PKGDEST = "${WORKDIR}/packages-split"
