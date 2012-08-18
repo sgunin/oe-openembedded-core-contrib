@@ -2,7 +2,7 @@
 # Sanity check the users setup for common misconfigurations
 #
 
-SANITY_REQUIRED_UTILITIES ?= "patch diffstat makeinfo git bzip2 tar gzip gawk chrpath wget cpio"
+SANITY_REQUIRED_UTILITIES ?= "patch diffstat makeinfo git bzip2 tar gzip gawk patchelf wget cpio"
 
 python check_bblayers_conf() {
     bblayers_fn = os.path.join(d.getVar('TOPDIR', True), 'conf/bblayers.conf')
@@ -483,6 +483,8 @@ def check_sanity(sanity_data):
     if missing != "":
         missing = missing.rstrip(',')
         messages = messages + "Please install the following missing utilities: %s\n" % missing
+        if 'patchelf' in missing:
+            messages = messages + "\n If patchelf for your build host is not available from default feeds\n Get it from http://hydra.nixos.org/release/patchelf/patchelf-0.6\n the package works on later versions of respective OSes\n along with published one e.g. ubuntu 8.04 package works on\n ubuntu 12.04 as well\n"
 
     pseudo_msg = check_pseudo_wrapper()
     if pseudo_msg != "":

@@ -1,4 +1,4 @@
-CHRPATH_BIN ?= "chrpath"
+CHRPATH_BIN ?= "patchelf"
 PREPROCESS_RELOCATE_DIRS ?= ""
 
 def process_dir (directory, d):
@@ -26,26 +26,24 @@ def process_dir (directory, d):
         else:
             #bb.note("Testing %s for relocatability" % fpath)
 
-            # We need read and write permissions for chrpath, if we don't have
+            # We need read and write permissions for patchelf, if we don't have
             # them then set them temporarily. Take a copy of the files
             # permissions so that we can restore them afterwards.
             perms = os.stat(fpath)[stat.ST_MODE]
             if os.access(fpath, os.W_OK|os.R_OK):
                 perms = None
             else:
-                # Temporarily make the file writeable so we can chrpath it
+                # Temporarily make the file writeable so we can patchelf it
                 os.chmod(fpath, perms|stat.S_IRWXU)
 
-            p = sub.Popen([cmd, '-l', fpath],stdout=sub.PIPE,stderr=sub.PIPE)
+            p = sub.Popen([cmd, '--print-rpath', fpath],stdout=sub.PIPE,stderr=sub.PIPE)
             err, out = p.communicate()
             # If returned succesfully, process stderr for results
             if p.returncode != 0:
                 continue
 
-            # Throw away everything other than the rpath list
-            curr_rpath = err.partition("RPATH=")[2]
-            #bb.note("Current rpath for %s is %s" % (fpath, curr_rpath.strip()))
-            rpaths = curr_rpath.split(":")
+            #bb.note("Current rpath for %s is %s" % (fpath, err.strip()))
+            rpaths = err.split(":")
             new_rpaths = []
             for rpath in rpaths:
                 # If rpath is already dynamic copy it to new_rpath and continue
@@ -59,7 +57,7 @@ def process_dir (directory, d):
                     libpath = rpath.partition(basedir)[2].strip()
                 # otherwise (i.e. cross packages) determine a shared root based on the TMPDIR
                 # NOTE: This will not work reliably for cross packages, particularly in the case
-                # where your TMPDIR is a short path (i.e. /usr/poky) as chrpath cannot insert an
+                # where your TMPDIR is a short path (i.e. /usr/poky) as patchelf cannot insert an
                 # rpath longer than that which is already set.
                 elif rpath.find(tmpdir) != -1:
                     depth = fpath.rpartition(tmpdir)[2].count('/')
@@ -73,14 +71,14 @@ def process_dir (directory, d):
                     depth-=1
                 new_rpaths.append("%s%s" % (base, libpath))
 
-            # if we have modified some rpaths call chrpath to update the binary
+            # if we have modified some rpaths call patchelf to update the binary
             if len(new_rpaths):
                 args = ":".join(new_rpaths)
                 #bb.note("Setting rpath for %s to %s" %(fpath, args))
-                p = sub.Popen([cmd, '-r', args, fpath],stdout=sub.PIPE,stderr=sub.PIPE)
+                p = sub.Popen([cmd, '--set-rpath', args, fpath],stdout=sub.PIPE,stderr=sub.PIPE)
                 out, err = p.communicate()
                 if p.returncode != 0:
-                    bb.error("%s: chrpath command failed with exit code %d:\n%s%s" % (d.getVar('PN', True), p.returncode, out, err))
+                    bb.error("%s: patchelf command failed with exit code %d:\n%s%s" % (d.getVar('PN', True), p.returncode, out, err))
                     raise bb.build.FuncFailed
 
             if perms:
