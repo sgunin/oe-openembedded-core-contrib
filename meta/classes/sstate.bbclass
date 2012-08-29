@@ -219,13 +219,45 @@ def sstate_clean_cachefiles(d):
         sstate_clean_cachefile(ss, d)
 
 def sstate_clean_manifest(manifest, d):
+    from glob import glob
     import oe.path
+
+    check_package_arch = manifest.endswith('.package')
+    if check_package_arch:
+        package_arch = d.getVar('PACKAGE_ARCH', True)
+        machine = d.getVar('MACHINE', True)
+        package_arch_old = ''
+        dir_scanned = False
+        pkg_set = set()
+        pn = d.getVar('PN', True)
+        sstate_manifests = d.getVar('SSTATE_MANIFESTS', True)
+        pkgdata_dir = d.getVar('PKGDATA_DIR', True)
+        pkgdata_root = '/'.join(pkgdata_dir.split('/')[:-1]) + '/'
 
     mfile = open(manifest)
     entries = mfile.readlines()
     mfile.close()
 
     for entry in entries:
+        if check_package_arch:
+            if not package_arch_old and entry.startswith(pkgdata_root):
+                package_arch_old = entry[len(pkgdata_root):].split('-')[0]
+            if package_arch_old:
+                if package_arch_old != package_arch:
+                    if not dir_scanned:
+                        for f in glob('%s/manifest-*-%s.package' % (sstate_manifests, pn)):
+                            if f == manifest:
+                                continue
+                            tfile = open(f)
+                            pkg_set = pkg_set | set(tfile.readlines())
+                            tfile.close()
+                        dir_scanned = True
+                    if entry in pkg_set:
+                        bb.debug(2, "Keeping manifest: %s (used by another machine)" % entry.strip())
+                        continue
+                else:
+                    check_package_arch = False
+
         entry = entry.strip()
         bb.debug(2, "Removing manifest: %s" % entry)
         # We can race against another package populating directories as we're removing them
