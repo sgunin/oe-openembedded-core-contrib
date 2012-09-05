@@ -222,7 +222,13 @@ def sstate_clean_manifest(manifest, d):
     from glob import glob
     import oe.path
 
-    check_package_arch = manifest.endswith('.package')
+    manifest_ending = '.package'
+    check_package_arch = manifest.endswith(manifest_ending)
+    if not check_package_arch:
+        deploy_pos = manifest.find('.deploy-')
+        check_package_arch = deploy_pos != -1
+    else:
+        deploy_pos = 0
     if check_package_arch:
         package_arch = d.getVar('PACKAGE_ARCH', True)
         machine = d.getVar('MACHINE', True)
@@ -231,8 +237,15 @@ def sstate_clean_manifest(manifest, d):
         pkg_set = set()
         pn = d.getVar('PN', True)
         sstate_manifests = d.getVar('SSTATE_MANIFESTS', True)
-        pkgdata_dir = d.getVar('PKGDATA_DIR', True)
-        pkgdata_root = '/'.join(pkgdata_dir.split('/')[:-1]) + '/'
+        if deploy_pos:
+            pkg_type = manifest[deploy_pos+8:]
+            manifest_ending = '.deploy-' + pkg_type
+            pkgdata_root = d.getVar('DEPLOY_DIR', True) + '/' + pkg_type + '/'
+            pkgdata_split_char = '/'
+        else:
+            pkgdata_dir = d.getVar('PKGDATA_DIR', True)
+            pkgdata_root = '/'.join(pkgdata_dir.split('/')[:-1]) + '/'
+            pkgdata_split_char = '-'
 
     mfile = open(manifest)
     entries = mfile.readlines()
@@ -241,11 +254,11 @@ def sstate_clean_manifest(manifest, d):
     for entry in entries:
         if check_package_arch:
             if not package_arch_old and entry.startswith(pkgdata_root):
-                package_arch_old = entry[len(pkgdata_root):].split('-')[0]
+                package_arch_old = entry[len(pkgdata_root):].split(pkgdata_split_char)[0]
             if package_arch_old:
                 if package_arch_old != package_arch:
                     if not dir_scanned:
-                        for f in glob('%s/manifest-*-%s.package' % (sstate_manifests, pn)):
+                        for f in glob('%s/manifest-*-%s%s' % (sstate_manifests, pn, manifest_ending)):
                             if f == manifest:
                                 continue
                             tfile = open(f)
