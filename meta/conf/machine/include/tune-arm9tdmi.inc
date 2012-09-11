@@ -1,4 +1,5 @@
 DEFAULTTUNE ?= "armv4t"
+OPTDEFAULTTUNE ?= "arm9tdmi"
 
 require conf/machine/include/arm/arch-armv4.inc
 

@@ -1,4 +1,5 @@
 DEFAULTTUNE ?= "armv5te"
+OPTDEFAULTTUNE ?= "xscale"
 
 require conf/machine/include/arm/arch-armv5-dsp.inc
 

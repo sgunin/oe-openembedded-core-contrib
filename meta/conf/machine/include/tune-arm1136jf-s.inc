@@ -1,4 +1,5 @@
 DEFAULTTUNE ?= "armv6"
+OPTDEFAULTTUNE ?= "arm1136jfs"
 
 require conf/machine/include/arm/arch-armv6.inc
 

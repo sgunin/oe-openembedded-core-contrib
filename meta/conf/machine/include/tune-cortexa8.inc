@@ -1,4 +1,5 @@
 DEFAULTTUNE ?= "armv7a-neon"
+OPTDEFAULTTUNE ?= "cortexa8"
 
 require conf/machine/include/arm/arch-armv7a.inc
 
