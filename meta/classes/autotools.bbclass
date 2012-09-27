@@ -99,6 +99,10 @@ autotools_preconfigure() {
 			mkdir ${B}
 		fi
 	fi
+
+	# not all recipes which use autotools use it's do_configure
+	install -m 0755 ${STAGING_DATADIR_NATIVE}/gnu-config/config.guess ${S}
+	install -m 0755 ${STAGING_DATADIR_NATIVE}/gnu-config/config.sub ${S}
 }
 
 autotools_postconfigure(){
