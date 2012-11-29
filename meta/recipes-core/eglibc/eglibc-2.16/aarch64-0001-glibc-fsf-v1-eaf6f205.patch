@@ -1,6 +1,7 @@
 import http://sourceware.org/ml/libc-alpha/2012-10/msg00008.html
 
 Upstream-Status: merged into trunk
+
 diff -x .git -uNr glibc.orig/ports/sysdeps/aarch64/Implies glibc/ports/sysdeps/aarch64/Implies
 --- glibc.orig/ports/sysdeps/aarch64/Implies	1970-01-01 01:00:00.000000000 +0100
 +++ glibc/ports/sysdeps/aarch64/Implies	2012-09-24 12:41:10.000000000 +0100

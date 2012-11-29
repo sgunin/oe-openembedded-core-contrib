@@ -1,7 +1,19 @@
-import http://sourceware.org/ml/libc-alpha/2012-11/msg00240.html
+Upstream-Status: backport
 
-Upstream-Status: merged into trunk
+Dropped ChangeLog part as it does not apply.
 
+From 19b2ecfcae9ccd7f9a974e8d1869d45ecd7310bb Mon Sep 17 00:00:00 2001
+From: Marcus Shawcroft <marcus.shawcroft@linaro.org>
+Date: Wed, 7 Nov 2012 13:32:08 +0000
+Subject: [PATCH] Adding AArch64 support to elf/elf.h
+
+---
+ ChangeLog | 12 ++++++++++++
+ elf/elf.h | 18 ++++++++++++++++++
+ 2 files changed, 30 insertions(+)
+
+diff --git a/ChangeLog b/ChangeLog
+index aeebbc4..69593de 100644
 diff --git a/elf/elf.h b/elf/elf.h
 index 2524924..5a9b13f 100644
 --- a/elf/elf.h
@@ -45,3 +57,6 @@ index 2524924..5a9b13f 100644
  /* ARM relocs.  */
  
  #define R_ARM_NONE		0	/* No reloc */
+-- 
+1.8.0
+

@@ -27,8 +27,9 @@ SRC_URI = "http://downloads.yoctoproject.org/releases/eglibc/eglibc-${PV}-svnr21
            file://0001-Add-name_to_handle_at-open_by_handle-etc.-to-PowerPC.patch \
            file://fsl-ppc-no-fsqrt.patch \
            file://0001-R_ARM_TLS_DTPOFF32.patch \
-           file://aarch64-glibc-fsf-v1-eaf6f205.patch \
-           file://aarch64-glibc-v3-elf.patch \
+           file://aarch64-0001-glibc-fsf-v1-eaf6f205.patch \
+           file://aarch64-0002-Synchronize-with-linux-elf.h.patch \
+           file://aarch64-0003-Adding-AArch64-support-to-elf-elf.h.patch \
           "
 
 SRC_URI[md5sum] = "88894fa6e10e58e85fbd8134b8e486a8"
