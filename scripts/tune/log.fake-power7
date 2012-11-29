@@ -1,0 +1,10 @@
+NOTE: Started PRServer with DBfile: /home2/mjansa/build/oe-core/cache/prserv.sqlite3, IP: 127.0.0.1, PORT: 33977, PID: 1283
+ERROR:  OE-core's config sanity checker detected a potential misconfiguration.
+    Either fix the cause of this error or at your own risk disable the checker (see sanity.conf).
+    Following is the list of potential problems / advisories:
+
+    Error, the PACKAGE_ARCHS variable (all any noarch ${PACKAGE_EXTRA_ARCHS_tune-ppcpr7} fake_power7) for DEFAULTTUNE (ppcpr7) does not contain TUNE_PKGARCH (${TUNE_PKGARCH_tune-ppcpr7}).Toolchain tunings invalid:
+Tuning 'ppcpr7' has no defined features, and cannot be used.
+
+
+Summary: There was 1 ERROR message shown, returning a non-zero exit code.
