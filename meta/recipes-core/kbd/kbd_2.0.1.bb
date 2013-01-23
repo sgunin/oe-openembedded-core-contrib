@@ -6,6 +6,10 @@ DEPENDS = "libcheck"
 
 inherit autotools gettext ptest
 
+RREPLACES_${PN}-dbg = "console-tools-dbg"
+RPROVIDES_${PN}-dbg = "console-tools-dbg"
+RCONFLICTS_${PN}-dbg = "console-tools-dbg"
+
 RREPLACES_${PN} = "console-tools"
 RPROVIDES_${PN} = "console-tools"
 RCONFLICTS_${PN} = "console-tools"

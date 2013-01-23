@@ -16,6 +16,13 @@ SRC_URI = "${SOURCEFORGE_MIRROR}/lct/console-tools-${PV}.tar.gz \
            file://lcmessage.m4 \
            file://Makevars"
 
+RREPLACES_${PN}-dbg = "kbd-dbg"
+RPROVIDES_${PN}-dbg = "kbd-dbg"
+RCONFLICTS_${PN}-dbg = "kbd-dbg"
+RREPLACES_${PN} = "kbd"
+RPROVIDES_${PN} = "kbd"
+RCONFLICTS_${PN} = "kbd"
+
 SRC_URI[md5sum] = "bf21564fc38b3af853ef724babddbacd"
 SRC_URI[sha256sum] = "eea6b441672dacd251079fc85ed322e196282e0e66c16303ec64c3a2b1c126c2"
 
