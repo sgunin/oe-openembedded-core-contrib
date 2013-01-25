@@ -34,6 +34,8 @@ do_install() {
     install -m 0755 ${WORKDIR}/debug ${D}/init.d/00-debug
 }
 
+EXCLUDE_PACKAGES_FROM_WORLD_IMAGE = "${PN}-base"
+
 PACKAGES = "${PN}-base \
             initramfs-module-mdev \
             initramfs-module-udev \

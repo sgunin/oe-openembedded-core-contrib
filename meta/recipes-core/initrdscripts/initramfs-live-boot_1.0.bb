@@ -5,6 +5,8 @@ DEPENDS = "virtual/kernel"
 RDEPENDS_${PN} = "udev udev-extraconf"
 SRC_URI = "file://init-live.sh"
 
+EXCLUDE_FROM_WORLD_IMAGE = "1"
+
 PR = "r11"
 
 do_install() {
