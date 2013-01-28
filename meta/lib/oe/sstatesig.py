@@ -1,5 +1,11 @@
 import bb.siggen
 
+def sstate_rundepfilter_lite(siggen, fn, recipename, task, dep, depname, dataCache):
+    # Always include our own inter-task dependencies
+    if recipename == depname:
+        return True
+    return False
+
 def sstate_rundepfilter(siggen, fn, recipename, task, dep, depname, dataCache):
     # Return True if we should keep the dependency, False to drop it
     def isNative(x):
@@ -62,6 +68,15 @@ class SignatureGeneratorOEBasic(bb.siggen.SignatureGeneratorBasic):
     def rundep_check(self, fn, recipename, task, dep, depname, dataCache = None):
         return sstate_rundepfilter(self, fn, recipename, task, dep, depname, dataCache)
 
+class SignatureGeneratorOEBasicHashLite(bb.siggen.SignatureGeneratorBasicHash):
+    name = "OEBasicHashLite"
+    def init_rundepcheck(self, data):
+        self.abisaferecipes = (data.getVar("SIGGEN_EXCLUDERECIPES_ABISAFE", True) or "").split()
+        self.saferecipedeps = (data.getVar("SIGGEN_EXCLUDE_SAFE_RECIPE_DEPS", True) or "").split()
+        pass
+    def rundep_check(self, fn, recipename, task, dep, depname, dataCache = None):
+        return sstate_rundepfilter_lite(self, fn, recipename, task, dep, depname, dataCache)
+
 class SignatureGeneratorOEBasicHash(bb.siggen.SignatureGeneratorBasicHash):
     name = "OEBasicHash"
     def init_rundepcheck(self, data):
@@ -74,6 +89,7 @@ class SignatureGeneratorOEBasicHash(bb.siggen.SignatureGeneratorBasicHash):
 # Insert these classes into siggen's namespace so it can see and select them
 bb.siggen.SignatureGeneratorOEBasic = SignatureGeneratorOEBasic
 bb.siggen.SignatureGeneratorOEBasicHash = SignatureGeneratorOEBasicHash
+bb.siggen.SignatureGeneratorOEBasicHashLite = SignatureGeneratorOEBasicHashLite
 
 
 def find_siginfo(pn, taskname, taskhashlist, d):
