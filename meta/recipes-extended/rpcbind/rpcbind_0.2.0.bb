@@ -14,6 +14,7 @@ SRC_URI = "${SOURCEFORGE_MIRROR}/rpcbind/rpcbind-${PV}.tar.bz2 \
            file://init.d \
            file://fix_host_path.patch \
            file://obsolete_automake_macros.patch \
+           file://rpcbind-01-no-yp-support.patch \
            ${UCLIBCPATCHES} \
           "
 
