@@ -85,7 +85,7 @@ EXTRA_OECONF = "--enable-kernel=${OLDEST_KERNEL} \
                 --enable-add-ons \
                 --with-headers=${STAGING_INCDIR} \
                 --without-selinux \
-                --enable-obsolete-rpc \
+                --disable-obsolete-rpc \
                 --with-kconfig=${STAGING_BINDIR_NATIVE} \
                 ${GLIBC_EXTRA_OECONF}"
 
