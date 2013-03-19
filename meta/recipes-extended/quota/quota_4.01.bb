@@ -15,11 +15,16 @@ SRC_URI[sha256sum] = "a36300bbc126b79b745bf937245092808b4585aa3309ef3335d4ab9d87
 
 S = "${WORKDIR}/quota-tools"
 
-DEPENDS = "gettext-native e2fsprogs"
+DEPENDS = "gettext-native e2fsprogs libtirpc"
 
 inherit autotools gettext
 
 EXTRA_OEMAKE += 'STRIP=""'
+
+do_configure_prepend() {
+    export CFLAGS="${CFLAGS} -I${STAGING_INCDIR}/tirpc"
+    export LDFLAGS="-ltirpc ${LDFLAGS} "
+}
 
 do_install() {
 	oe_runmake prefix=${D}${prefix} install
