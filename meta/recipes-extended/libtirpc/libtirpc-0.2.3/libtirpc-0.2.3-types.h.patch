@@ -1,0 +1,14 @@
+--- libtirpc-0.2.3/tirpc/rpc/types.h.bero	2013-01-28 23:59:14.383069929 +0100
++++ libtirpc-0.2.3/tirpc/rpc/types.h	2013-01-28 23:59:39.123777626 +0100
+@@ -38,6 +38,11 @@
+ #ifndef _TIRPC_TYPES_H
+ #define _TIRPC_TYPES_H
+ 
++#ifndef _BSD_SOURCE
++/* For uint_t and friends */
++#define _BSD_SOURCE 1
++#endif
++
+ #include <sys/types.h>
+ 
+ typedef int32_t bool_t;
