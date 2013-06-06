@@ -188,7 +188,7 @@ def get_layers_branch_rev(d):
     return layers_branch_rev
 
 
-BUILDCFG_FUNCS ??= "buildcfg_vars get_layers_branch_rev buildcfg_neededvars"
+BUILDCFG_FUNCS ??= "buildcfg_vars buildcfg_multilibs get_layers_branch_rev buildcfg_neededvars"
 BUILDCFG_FUNCS[type] = "list"
 
 def buildcfg_vars(d):
@@ -197,6 +197,17 @@ def buildcfg_vars(d):
         value = d.getVar(var)
         if value is not None:
             yield '%-20s = "%s"' % (var, value)
+
+def buildcfg_multilibs(d):
+    variants = d.getVar("MULTILIB_VARIANTS", True) or ""
+    for variant in variants.split():
+        localdata = get_multilib_datastore(variant, d)
+        statusvars = oe.data.typed_value('BUILDCFG_VARS', d)
+        for var in statusvars:
+            origvalue = d.getVar(var, True)
+            variantvalue = localdata.getVar(var, True)
+            if origvalue and variantvalue and origvalue != variantvalue:
+                yield '%-7s %-17s = "%s"' % (variant + ":", var, variantvalue)
 
 def buildcfg_neededvars(d):
     needed_vars = oe.data.typed_value("BUILDCFG_NEEDEDVARS", d)
