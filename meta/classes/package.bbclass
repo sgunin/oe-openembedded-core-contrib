@@ -1329,6 +1329,9 @@ python package_do_filedeps() {
 SHLIBSDIRS = "${PKGDATA_DIR}/${MLPREFIX}shlibs"
 SHLIBSWORKDIR = "${PKGDESTWORK}/${MLPREFIX}shlibs"
 
+# default search path when searching for shlibs provided by package
+SHLIBSSEARCHDIRS ?= "${baselib} ${libdir}"
+
 python package_do_shlibs() {
     import re, pipes
 
@@ -1339,6 +1342,20 @@ python package_do_shlibs() {
 
     lib_re = re.compile("^.*\.so")
     libdir_re = re.compile(".*/%s$" % d.getVar('baselib', True))
+    
+    shlibs_search_dirs = d.getVar('SHLIBSSEARCHDIRS', True)
+    shlibs_search_dirs_re_txt = ""
+    for dir in shlibs_search_dirs.split(' '):
+        # strip leading and trailing slash, it's added in regexp
+        if dir.endswith("/"):
+            dir = dir[:-1]
+        if dir.startswith("/"):
+            dir = dir[1:]
+        if shlibs_search_dirs_re_txt:
+            shlibs_search_dirs_re_txt += "|"
+        shlibs_search_dirs_re_txt += "(^.*/%s/.*$)" % dir
+    shlibs_search_dirs_re = re.compile(shlibs_search_dirs_re_txt)
+    bb.debug(2, "will use following RE to search for provides sonames %s" % shlibs_search_dirs_re_txt)
 
     packages = d.getVar('PACKAGES', True)
     targetos = d.getVar('TARGET_OS', True)
@@ -1400,9 +1417,12 @@ python package_do_shlibs() {
             if m:
                 this_soname = m.group(1)
                 if not this_soname in sonames:
-                    # if library is private (only used by package) then do not build shlib for it
-                    if not private_libs or this_soname not in private_libs:
-                        sonames.append(this_soname)
+                    if shlibs_search_dirs_re.match(file):
+                        # if library is private (only used by package) then do not build shlib for it
+                        if not private_libs or this_soname not in private_libs:
+                            sonames.append(this_soname)
+                    else:
+                        bb.debug(2, "ignoring soname %s from %s, because path doesn't match %s" % (this_soname, file, shlibs_search_dirs_re_txt))
                 if libdir_re.match(os.path.dirname(file)):
                     needs_ldconfig = True
                 if snap_symlinks and (os.path.basename(file) != this_soname):
