@@ -1,0 +1,102 @@
+Upstream-Status: Pending
+
+gcc-4.8 is compatible with texinfo-5, so this is only temporary fix 
+(we don't need info files on target)
+
+Signed-off-by: Martin Jansa <Martin.Jansa@gmail.com>
+
+Index: gcc-4_6-branch/configure.ac
+===================================================================
+--- gcc-4_6-branch.orig/configure.ac
++++ gcc-4_6-branch/configure.ac
+@@ -3245,7 +3245,7 @@ changequote(,)
+     # For an installed makeinfo, we require it to be from texinfo 4.7 or
+     # higher, else we use the "missing" dummy.
+     if ${MAKEINFO} --version \
+-       | egrep 'texinfo[^0-9]*(4\.([7-9]|[1-9][0-9])|[5-9]|[1-9][0-9])' >/dev/null 2>&1; then
++       | egrep 'texinfo[^0-9]*(4\.([7-9]|[1-9][0-9]))' >/dev/null 2>&1; then
+       :
+     else
+       MAKEINFO="$MISSING makeinfo"
+Index: gcc-4_6-branch/gcc/configure.ac
+===================================================================
+--- gcc-4_6-branch.orig/gcc/configure.ac
++++ gcc-4_6-branch/gcc/configure.ac
+@@ -831,7 +831,7 @@ AC_CHECK_PROG(have_mktemp_command, mktem
+ # that we can use it.
+ ACX_CHECK_PROG_VER(MAKEINFO, makeinfo, --version,
+   [GNU texinfo.* \([0-9][0-9.]*\)],
+-  [4.[7-9]*|4.[1-9][0-9]*|[5-9]*|[1-9][0-9]*])
++  [4.[7-9]*|4.[1-9][0-9]*])
+ if test $gcc_cv_prog_makeinfo_modern = no; then
+   AC_MSG_WARN([
+ *** Makeinfo is missing or too old.
+Index: gcc-4_6-branch/libgomp/configure.ac
+===================================================================
+--- gcc-4_6-branch.orig/libgomp/configure.ac
++++ gcc-4_6-branch/libgomp/configure.ac
+@@ -129,7 +129,7 @@ AC_PROG_INSTALL
+ # that we can use it.
+ ACX_CHECK_PROG_VER([MAKEINFO], [makeinfo], [--version],
+                    [GNU texinfo.* \([0-9][0-9.]*\)],
+-                   [4.[4-9]*|4.[1-9][0-9]*|[5-9]*|[1-9][0-9]*])
++                   [4.[4-9]*|4.[1-9][0-9]*])
+ AM_CONDITIONAL(BUILD_INFO, test $gcc_cv_prog_makeinfo_modern = "yes")
+ 
+ 
+Index: gcc-4_6-branch/libiberty/configure.ac
+===================================================================
+--- gcc-4_6-branch.orig/libiberty/configure.ac
++++ gcc-4_6-branch/libiberty/configure.ac
+@@ -84,6 +84,12 @@ else
+ 	    AC_MSG_WARN([
+ *** Makeinfo is too old. Info documentation will not be built.])
+ 	  ;;
++	  x*\ [[5-9]].* )
++	    MAKEINFO="@echo $MAKEINFO is too new, 5.0 or newer does not work; true"
++	    BUILD_INFO=
++	    AC_MSG_WARN([
++*** Makeinfo is too new. Info documentation will not be built.])
++	  ;;
+ 	esac
+ 	;;
+     esac
+Index: gcc-4_6-branch/libquadmath/configure.ac
+===================================================================
+--- gcc-4_6-branch.orig/libquadmath/configure.ac
++++ gcc-4_6-branch/libquadmath/configure.ac
+@@ -48,7 +48,7 @@ AC_USE_SYSTEM_EXTENSIONS
+ # that we can use it.
+ ACX_CHECK_PROG_VER([MAKEINFO], [makeinfo], [--version],
+                    [GNU texinfo.* \([0-9][0-9.]*\)],
+-                   [4.[4-9]*|4.[1-9][0-9]*|[5-9]*|[1-9][0-9]*])
++                   [4.[4-9]*|4.[1-9][0-9]*])
+ AM_CONDITIONAL(BUILD_INFO, test $gcc_cv_prog_makeinfo_modern = "yes")
+ 
+ ACX_BUGURL([http://gcc.gnu.org/bugs.html])
+Index: gcc-4_6-branch/libstdc++-v3/configure.ac
+===================================================================
+--- gcc-4_6-branch.orig/libstdc++-v3/configure.ac
++++ gcc-4_6-branch/libstdc++-v3/configure.ac
+@@ -332,7 +332,7 @@ GLIBCXX_CONFIGURE_TESTSUITE
+ # that we can use it.
+ ACX_CHECK_PROG_VER([MAKEINFO], [makeinfo], [--version],
+ 		   [GNU texinfo.* \([0-9][0-9.]*\)],
+-		   [4.[4-9]*|4.[1-9][0-9]*|[5-9]*|[1-9][0-9]*])
++		   [4.[4-9]*|4.[1-9][0-9]*])
+ AM_CONDITIONAL(BUILD_INFO, test $gcc_cv_prog_makeinfo_modern = "yes")
+ 
+ # Check for doxygen
+Index: gcc-4_6-branch/configure
+===================================================================
+--- gcc-4_6-branch.orig/configure
++++ gcc-4_6-branch/configure
+@@ -8051,7 +8051,7 @@ case " $build_configdirs " in
+     # For an installed makeinfo, we require it to be from texinfo 4.7 or
+     # higher, else we use the "missing" dummy.
+     if ${MAKEINFO} --version \
+-       | egrep 'texinfo[^0-9]*(4\.([7-9]|[1-9][0-9])|[5-9]|[1-9][0-9])' >/dev/null 2>&1; then
++       | egrep 'texinfo[^0-9]*(4\.([7-9]|[1-9][0-9]))' >/dev/null 2>&1; then
+       :
+     else
+       MAKEINFO="$MISSING makeinfo"
