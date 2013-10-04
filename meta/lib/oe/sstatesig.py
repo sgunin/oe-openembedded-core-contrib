@@ -109,7 +109,6 @@ def find_siginfo(pn, taskname, taskhashlist, d):
     skipsigs = []
     import glob
     for fullpath in glob.glob(filespec):
-        match = False
         if taskhashlist:
             for taskhash in taskhashlist:
                 if fullpath.endswith('.%s' % taskhash):
