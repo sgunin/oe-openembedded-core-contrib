@@ -106,6 +106,7 @@ def find_siginfo(pn, taskname, taskhashlist, d):
     stamp = localdata.getVar('STAMP', True)
     filespec = '%s.%s.sigdata.*' % (stamp, taskname)
     foundall = False
+    skipsigs = []
     import glob
     for fullpath in glob.glob(filespec):
         match = False
@@ -118,6 +119,7 @@ def find_siginfo(pn, taskname, taskhashlist, d):
                         break
         else:
             filedates[fullpath] = os.stat(fullpath).st_mtime
+            skipsigs.append(fullpath.rsplit('.', 1)[-1])
 
     if len(filedates) < 2 and not foundall:
         # That didn't work, look in sstate-cache
@@ -137,21 +139,31 @@ def find_siginfo(pn, taskname, taskhashlist, d):
             if not sstatename:
                 sstatename = taskname
             filespec = '%s_%s.*.siginfo' % (localdata.getVar('SSTATE_PKG', True), sstatename)
+            # We want to ignore any sstate siginfo files with the same signature as we've already found in the stamps
+            skipfilespecs = []
+            for skiphash in skipsigs:
+                localdata.setVar('BB_TASKHASH', skiphash)
+                skipfilespecs.append('%s_%s.*.siginfo' % (localdata.getVar('SSTATE_PKG', True), sstatename))
 
             if hashval != '*':
                 sstatedir = "%s/%s" % (d.getVar('SSTATE_DIR', True), hashval[:2])
             else:
                 sstatedir = d.getVar('SSTATE_DIR', True)
 
-            filedates = {}
             for root, dirs, files in os.walk(sstatedir):
                 for fn in files:
                     fullpath = os.path.join(root, fn)
                     if fnmatch.fnmatch(fullpath, filespec):
-                        if taskhashlist:
-                            hashfiles[hashval] = fullpath
-                        else:
-                            filedates[fullpath] = os.stat(fullpath).st_mtime
+                        skip = False
+                        for skipfilespec in skipfilespecs:
+                            if fnmatch.fnmatch(fullpath, skipfilespec):
+                                skip = True
+                                break
+                        if not skip:
+                            if taskhashlist:
+                                hashfiles[hashval] = fullpath
+                            else:
+                                filedates[fullpath] = os.stat(fullpath).st_mtime
 
     if taskhashlist:
         return hashfiles
