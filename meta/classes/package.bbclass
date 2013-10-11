@@ -435,7 +435,7 @@ python perform_packagecopy () {
 	# files to operate on
 	os.system('rm -rf %s/*' % (dvar))
 	# Preserve sparse files and hard links
-	os.system('tar -cf - -C %s -ps . | tar -xf - -C %s' % (dest, dvar))
+	os.system('tar -cf - -C %s -p . | tar -xf - -C %s' % (dest, dvar))
 }
 
 # We generate a master list of directories to process, we start by
