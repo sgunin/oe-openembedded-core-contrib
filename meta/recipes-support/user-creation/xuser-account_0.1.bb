@@ -4,7 +4,7 @@ LIC_FILES_CHKSUM = "file://${COREBASE}/meta/COPYING.MIT;md5=3da9cfbcb788c80a0384
 
 SRC_URI = ""
 
-inherit allarch useradd
+inherit useradd
 
 do_configure() {
     :
