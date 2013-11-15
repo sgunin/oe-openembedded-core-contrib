@@ -14,6 +14,7 @@ RRECOMMENDS_${PN} = "kernel-module-nfsd"
 
 SRC_URI = "${KERNELORG_MIRROR}/linux/utils/nfs-utils/${PV}/nfs-utils-${PV}.tar.bz2 \
            file://nfs-utils.1.2.8.rc3.patch \
+           file://0001-configure-Allow-to-explicitly-disable-nfsidmap.patch \
            file://nfs-utils-1.0.6-uclibc.patch \
            file://nfs-utils-1.2.3-uclibc-libio.h.patch \
            file://nfs-utils-1.2.3-sm-notify-res_init.patch \
@@ -46,6 +47,10 @@ EXTRA_OECONF = "--with-statduser=nobody \
                 --disable-nfsdcltrack \
                 --with-statdpath=/var/lib/nfs/statd \
                "
+
+PACKAGECONFIG ??= "tcp-wrappers"
+PACKAGECONFIG[tcp-wrappers] = "--with-tcp-wrappers,--without-tcp-wrappers,tcp-wrappers"
+PACKAGECONFIG[nfsidmap] = "--enable-nfsidmap,--disable-nfsidmap,keyutils"
 
 INHIBIT_AUTO_STAGE = "1"
 
