@@ -31,7 +31,7 @@ SRC_URI = "git://git.kernel.org/pub/scm/linux/kernel/git/firmware/linux-firmware
 
 S = "${WORKDIR}/git"
 
-inherit allarch update-alternatives
+inherit update-alternatives
 
 do_compile() {
 	:
