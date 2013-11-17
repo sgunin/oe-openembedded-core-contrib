@@ -16,8 +16,6 @@ SRC_URI = "${DEBIAN_MIRROR}/main/r/resolvconf/resolvconf_${PV}.tar.gz"
 SRC_URI[md5sum] = "2f190d3bb8960b69157f63590c262e93"
 SRC_URI[sha256sum] = "2e72e6884e9105cbf57101ab0f11e768717b6f76b7f5100c6a2a0cc69bb3d4a0"
 
-inherit allarch
-
 do_compile () {
 	:
 }
