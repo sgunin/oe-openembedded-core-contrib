@@ -10,7 +10,7 @@ LIC_FILES_CHKSUM = "file://${COREBASE}/LICENSE;md5=4d92cd373abda3937c2bc47fbc49d
 SRC_URI = "file://host-peer \
            file://ppp-dialin"
 
-inherit allarch useradd
+inherit useradd
 
 do_install() {
 	install -d ${D}${sysconfdir}/ppp/peers
