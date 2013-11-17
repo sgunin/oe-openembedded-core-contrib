@@ -5,8 +5,6 @@ RDEPENDS_${PN} += "busybox"
 
 PR = "r2"
 
-inherit allarch
-
 SRC_URI = "file://init \
            file://finish \
            file://mdev \
