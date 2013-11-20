@@ -68,6 +68,7 @@ UBOOT_LOADADDRESS ?= "${UBOOT_ENTRYPOINT}"
 
 # Some Linux kernel configurations need additional parameters on the command line
 KERNEL_EXTRA_ARGS ?= ""
+#KERNEL_EXTRA_ARGS ?= "LOADADDR=${UBOOT_LOADADDRESS}"
 
 # For the kernel, we don't want the '-e MAKEFLAGS=' in EXTRA_OEMAKE.
 # We don't want to override kernel Makefile variables from the environment
