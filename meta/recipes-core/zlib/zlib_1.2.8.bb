@@ -21,7 +21,7 @@ RDEPENDS_${PN}-ptest += "make"
 inherit ptest
 
 do_configure (){
-	./configure --prefix=${prefix} --shared --libdir=${libdir}
+	./configure --prefix=${base_prefix} --shared --libdir=${base_libdir}
 }
 
 do_compile (){
