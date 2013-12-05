@@ -13,9 +13,7 @@ RREPLACES_${PN} += "module-init-tools-insmod-static module-init-tools-depmod mod
 RCONFLICTS_libkmod2 += "module-init-tools-insmod-static module-init-tools-depmod module-init-tools"
 
 # autotools set prefix to /usr, however we want them in /bin and /sbin
-bindir = "${base_bindir}"
-sbindir = "${base_sbindir}"
-# libdir = "${base_libdir}"
+EXTRA_OECONF += "--bindir=${base_bindir} --sbindir=${base_sbindir} --libdir=${base_libdir}"
 
 do_install_append () {
         install -dm755 ${D}${base_bindir}
@@ -34,6 +32,11 @@ do_install_append () {
         # install depmod.d file for search/ dir
         install -Dm644 "${WORKDIR}/depmod-search.conf" "${D}${base_libdir}/depmod.d/search.conf"
 
+        if [ "${libdir}" != "${base_libdir}" ]; then
+            # mv the .pc file to ${libdir}
+            install -d ${D}${libdir}
+            mv ${D}${base_libdir}/pkgconfig ${D}${libdir}
+        fi
 }
 
 do_compile_prepend() {
