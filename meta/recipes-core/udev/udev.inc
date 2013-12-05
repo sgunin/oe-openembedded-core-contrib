@@ -42,7 +42,6 @@ EXTRA_OECONF = "--disable-introspection \
                 ac_cv_file__usr_share_misc_pci_ids=yes \
                 --sbindir=${base_sbindir} \
                 --libexecdir=${nonarch_base_libdir} \
-                --with-rootlibdir=${base_libdir} \
                 --with-rootprefix= \
                 --without-systemdsystemunitdir \
                "
@@ -91,6 +90,13 @@ do_install_append () {
 
 	# hid2hci has moved to bluez4. removed in udev as of version 169
 	rm -f ${D}${base_libdir}/udev/hid2hci
+
+	if [ "${libdir}" != "${base_libdir}" ]; then
+	    # install libgudev.so.* into libdir.
+	    so_img_name=`basename $(readlink ${D}${libdir}/libgudev-1.0.so)`
+	    mv ${D}${base_libdir}/libgudev-1.0.so.* ${D}${libdir}
+	    ln -sf $so_img_name ${D}${libdir}/libgudev-1.0.so
+	fi
 
 	echo 'udev_run="/var/run/udev"' >> ${D}${sysconfdir}/udev/udev.conf
 }
