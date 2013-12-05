@@ -1,0 +1,25 @@
+Subject: [PATCH] busybox: install ping6 to /usr/bin by default
+
+Upstream-Status: Pending
+
+Signed-off-by: Chen Qi <Qi.Chen@windriver.com>
+---
+ networking/ping.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/networking/ping.c b/networking/ping.c
+index 5e4771f..471c347 100644
+--- a/networking/ping.c
++++ b/networking/ping.c
+@@ -70,7 +70,7 @@
+ 
+ /* Needs socket(AF_INET, SOCK_RAW, IPPROTO_ICMP), therefore BB_SUID_MAYBE: */
+ //applet:IF_PING(APPLET(ping, BB_DIR_BIN, BB_SUID_MAYBE))
+-//applet:IF_PING6(APPLET(ping6, BB_DIR_BIN, BB_SUID_MAYBE))
++//applet:IF_PING6(APPLET(ping6, BB_DIR_USR_BIN, BB_SUID_MAYBE))
+ 
+ //kbuild:lib-$(CONFIG_PING)  += ping.o
+ //kbuild:lib-$(CONFIG_PING6) += ping.o
+-- 
+1.7.9.5
+
