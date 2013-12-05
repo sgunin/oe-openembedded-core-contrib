@@ -488,9 +488,7 @@ rootfs_install_complementary() {
     if [ "$GLOBS" != "" ] ; then
         # Use the magic script to do all the work for us :)
         : > ${WORKDIR}/complementary_pkgs.txt
-        for vendor in '${TARGET_VENDOR}' ${MULTILIB_VENDORS} ; do
-            oe-pkgdata-util glob ${PKGDATA_DIR} ${WORKDIR}/installed_pkgs.txt "$GLOBS" >> ${WORKDIR}/complementary_pkgs.txt
-        done
+        oe-pkgdata-util glob ${PKGDATA_DIR} ${WORKDIR}/installed_pkgs.txt "$GLOBS" >> ${WORKDIR}/complementary_pkgs.txt
 
         # Install the packages, if any
         sed -i '/^$/d' ${WORKDIR}/complementary_pkgs.txt
