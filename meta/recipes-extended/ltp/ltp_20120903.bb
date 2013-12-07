@@ -23,8 +23,9 @@ DEPENDS = "attr libaio libcap acl openssl"
 
 PR = "r2"
 
-SRC_URI = "${SOURCEFORGE_MIRROR}/ltp/ltp-full-${PV}.bz2"
-
+SRC_URI = "${SOURCEFORGE_MIRROR}/ltp/ltp-full-${PV}.bz2 \
+           file://0001-Rename-runtests_noltp.sh-script-so-have-unique-name.patch \
+"
 SRC_URI[md5sum] = "3c885047b137a6955e087ad20807a018"
 SRC_URI[sha256sum] = "41d2f4cd88619aa7b5cdad93cb7691b69166f7751bc9f2f72558937cbef581c2"
 
