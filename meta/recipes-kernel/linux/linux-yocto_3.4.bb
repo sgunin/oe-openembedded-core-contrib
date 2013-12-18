@@ -2,11 +2,13 @@ require recipes-kernel/linux/linux-yocto.inc
 
 KBRANCH_DEFAULT = "standard/base"
 KBRANCH = "${KBRANCH_DEFAULT}"
+KMACHINE_qemux86copy  = "qemux86"
 
 SRCREV_machine_qemuarm ?= "a4026fce19f8b2d28f37ea264693bd70126a7ade"
 SRCREV_machine_qemumips  ?= "372aba9e80c5f86a1f6795a7b2292a05159ef108"
 SRCREV_machine_qemuppc ?= "c456ec65de4d2ac099312b0ed8e4098b29447929"
 SRCREV_machine_qemux86 ?= "fff57da7886cf5e99c07adf6649610cb1cd89330"
+SRCREV_machine_qemux86copy ?= "fff57da7886cf5e99c07adf6649610cb1cd89330"
 SRCREV_machine_qemux86-64 ?= "fff57da7886cf5e99c07adf6649610cb1cd89330"
 SRCREV_machine ?= "fff57da7886cf5e99c07adf6649610cb1cd89330"
 SRCREV_meta ?= "1bab5bd090948b4cc4c4ed57c834603a3cf9f235"
@@ -20,10 +22,11 @@ PV = "${LINUX_VERSION}+git${SRCPV}"
 
 KMETA = "meta"
 
-COMPATIBLE_MACHINE = "qemuarm|qemux86|qemuppc|qemumips|qemux86-64"
+COMPATIBLE_MACHINE = "qemuarm|qemux86|qemux86copy|qemuppc|qemumips|qemux86-64"
 
 # Functionality flags
 KERNEL_FEATURES_append = " features/netfilter/netfilter.scc"
 KERNEL_FEATURES_append_qemux86=" cfg/sound.scc"
+KERNEL_FEATURES_append_qemux86copy=" cfg/sound.scc"
 KERNEL_FEATURES_append_qemux86-64=" cfg/sound.scc"
 KERNEL_FEATURES_append = " ${@bb.utils.contains("TUNE_FEATURES", "mx32", " cfg/x32.scc", "" ,d)}"
