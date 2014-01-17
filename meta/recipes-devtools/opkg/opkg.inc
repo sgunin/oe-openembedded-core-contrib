@@ -1,6 +1,5 @@
-DESCRIPTION = "Open Package Manager"
-DESCRIPTION_libopkg = "Open Package Manager Library"
-DESCRIPTION_update-alternatives-cworth = "Update alternatives"
+SUMMARY = "Open Package Manager"
+SUMMARY_libopkg = "Open Package Manager library"
 SECTION = "base"
 HOMEPAGE = "http://code.google.com/p/opkg/"
 BUGTRACKER = "http://code.google.com/p/opkg/issues/list"
