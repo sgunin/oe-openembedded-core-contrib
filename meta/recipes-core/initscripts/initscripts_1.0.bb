@@ -42,9 +42,11 @@ KERNEL_VERSION = ""
 inherit update-alternatives
 DEPENDS_append = " update-rc.d-native"
 
-PACKAGES =+ "${PN}-functions"
+PACKAGES =+ "${PN}-functions ${PN}-functions-dev"
 RDEPENDS_${PN} = "${PN}-functions"
 FILES_${PN}-functions = "${sysconfdir}/init.d/functions*"
+RDEPENDS_${PN}-functions-dev += "${PN}-functions"
+ALLOW_EMPTY_${PN}-functions-dev = "1"
 
 ALTERNATIVE_PRIORITY_${PN}-functions = "90"
 ALTERNATIVE_${PN}-functions = "functions"
