@@ -704,6 +704,17 @@ def sstate_checkhashes(sq_fn, sq_task, sq_hash, sq_hashfn, d):
             evdata['found'].append( (sq_fn[task], sq_task[task], sq_hash[task], sstatefile ) )
         bb.event.fire(bb.event.MetadataEvent("MissedSstate", evdata), d)
 
+    if hasattr(bb.parse.siggen, "lockedsigs"):
+        msgs = []
+        lockedsigs = bb.parse.siggen.lockedsigs
+        for task in range(len(sq_fn)):
+            if task not in ret:
+                for pn in lockedsigs:
+                    if sq_hash[task] in lockedsigs[pn].itervalues():
+                        msgs.append("Locked sig is set for %s:%s (%s) yet not in sstate cache?" % (pn, sq_task[task], sq_hash[task]))
+        if msgs:
+            bb.fatal("\n".join(msgs))
+
     return ret
 
 BB_SETSCENE_DEPVALID = "setscene_depvalid"
