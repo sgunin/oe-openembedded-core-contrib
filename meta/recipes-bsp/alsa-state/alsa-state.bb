@@ -18,16 +18,20 @@ SRC_URI = "\
   file://alsa-state-init \
 "
 
-inherit update-rc.d
+inherit update-rc.d systemd
 
 INITSCRIPT_NAME = "alsa-state"
 INITSCRIPT_PARAMS = "start 39 S . stop 31 0 6 ."
 
 do_install() {
-    sed -i -e "s:#STATEDIR#:${localstatedir}/lib/alsa:g" ${WORKDIR}/alsa-state-init
-    install -d ${D}${sysconfdir}/init.d
-    install -m 0755 ${WORKDIR}/alsa-state-init ${D}${sysconfdir}/init.d/alsa-state
-
+    # The alsa-utils-alsactl already provides corresponding systemd unit files.
+    # So the init script should not be installed in a systemd based image.
+    install -d ${D}${sysconfdir}
+    if ${@base_contains('DISTRO_FEATURES','systemd','false','true',d)}; then
+	sed -i -e "s:#STATEDIR#:${localstatedir}/lib/alsa:g" ${WORKDIR}/alsa-state-init
+	install -d ${D}${sysconfdir}/init.d
+	install -m 0755 ${WORKDIR}/alsa-state-init ${D}${sysconfdir}/init.d/alsa-state
+    fi
     install -d ${D}/${localstatedir}/lib/alsa
     install -m 0644 ${WORKDIR}/asound.conf ${D}${sysconfdir}
     install -m 0644 ${WORKDIR}/*.state ${D}${localstatedir}/lib/alsa
