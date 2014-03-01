@@ -37,6 +37,7 @@ SRC_URI += "\
             file://sysroot-include-headers.patch \
             file://unixccompiler.patch \
             file://avoid-ncursesw-include-path.patch \
+            file://run-ptest \
            "
 SRC_URI[md5sum] = "f3ebe34d4d8695bf889279b54673e10c"
 SRC_URI[sha256sum] = "e526e9b612f623888364d30cc9f3dfc34dcef39065c713bdbcddf47df84d8dcb"
@@ -210,6 +211,16 @@ FILES_${PN}-dbg += "${libdir}/python${PYTHON_MAJMIN}/lib-dynload/.debug"
 # catch all the rest (unsorted)
 PACKAGES += "${PN}-misc"
 FILES_${PN}-misc = "${libdir}/python${PYTHON_MAJMIN}"
+
+#inherit ptest after "require python-${PYTHON_MAJMIN}-manifest.inc" so PACKAGES doesn't get overwritten
+inherit ptest
+
+# This must come after inherit ptest for the override to take effect
+do_install_ptest() {
+    install -m 0755 -D ${S}/../run-ptest ${D}${PTEST_PATH}/run-ptest
+}
+
+RDEPENDS_${PN}-ptest = "${PN}-modules ${PN}-misc libgcc"
 
 # catch manpage
 PACKAGES += "${PN}-man"
