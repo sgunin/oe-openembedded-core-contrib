@@ -11,7 +11,9 @@ SRC_URI = "${GNU_MIRROR}/parted/parted-${PV}.tar.xz \
            file://syscalls.patch \
            file://fix-git-version-gen.patch \
            file://fix-doc-mandir.patch \
-           file://fix-dvh-overflows.patch"
+           file://fix-dvh-overflows.patch \
+           file://fix-deprecated-readline.patch \
+"
 
 SRC_URI[md5sum] = "5d89d64d94bcfefa9ce8f59f4b81bdcb"
 SRC_URI[sha256sum] = "5e9cc1f91eaf016e5033d85b9b893fd6d3ffaca532a48de1082df9b94225ca15"
