@@ -390,3 +390,23 @@
 #DISTRO_FEATURES_BACKFILL_CONSIDERED += "sysvinit"
 #VIRTUAL-RUNTIME_init_manager = "systemd"
 #VIRTUAL-RUNTIME_initscripts = "systemd-compat-units"
+
+# Uploading reports with report-error.bbclass
+#
+# Allow to automatically upload the reports without developer calling extra script to upload them.
+#
+# ERR_REPORT_SERVER = "errors.test.ltd"
+# ERR_REPORT_PORT = "8000"
+#
+# Username if you don't want to use "git config --get user.name"
+# ERR_REPORT_USERNAME = "Tester"
+# E-mail if you don't want to use "git config --get user.email"
+# ERR_REPORT_EMAIL = "tester@test.ltd"
+#
+# Upload reports from failed builds
+# ERR_REPORT_UPLOAD_FAILURES = "1"
+#
+# Upload reports from all builds, not only those with failures
+# ERR_REPORT_UPLOAD_ALL = "1"
+#
+# INHERIT += "report-error"
