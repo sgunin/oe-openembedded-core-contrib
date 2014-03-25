@@ -116,7 +116,7 @@ RDEPENDS_${PN} = "\
 	${@base_contains('PACKAGECONFIG', 'bluetooth', 'bluez4', '', d)} \
 	${@base_contains('PACKAGECONFIG', 'wifi','wpa-supplicant', '', d)} \
 	${@base_contains('PACKAGECONFIG', '3g','ofono', '', d)} \
-	xuser-account \
+	${@base_conditional('ROOTLESS_X', '1', 'xuser-account', '', d)} \
 	"
 
 PACKAGES_DYNAMIC += "^${PN}-plugin-.*"
