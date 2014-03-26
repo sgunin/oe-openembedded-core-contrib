@@ -68,6 +68,8 @@ package_install_internal_deb () {
 	local task="${INSTALL_TASK_DEB}"
 
 	mkdir -p ${APTCONF_TARGET}/apt
+	mkdir -p ${APTCONF_TARGET}/apt/lists/partial/
+	mkdir -p ${APTCONF_TARGET}/apt/apt.conf.d/
 	rm -f ${APTCONF_TARGET}/apt/sources.list.rev
 	rm -f ${APTCONF_TARGET}/apt/preferences
 
