@@ -6,8 +6,6 @@ DEPENDS += "cryptodev-linux"
 
 CFLAG += "-DHAVE_CRYPTODEV -DUSE_CRYPTODEV_DIGESTS"
 
-PR = "${INC_PR}.2"
-
 LIC_FILES_CHKSUM = "file://LICENSE;md5=f9a8f968107345e0b75aa8c2ecaa7ec8"
 
 export DIRS = "crypto ssl apps engines"
@@ -36,24 +34,10 @@ SRC_URI += "file://configure-targets.patch \
             file://initial-aarch64-bits.patch \
             file://find.pl \
             file://openssl-fix-des.pod-error.patch \
-            file://0001-Fix-for-TLS-record-tampering-bug-CVE-2013-4353.patch \
-            file://0001-Fix-DTLS-retransmission-from-previous-session.patch \
-            file://0001-Use-version-in-SSL_METHOD-not-SSL-structure.patch \
-            file://CVE-2014-0160.patch \
-            file://openssl-1.0.1e-cve-2014-0195.patch \
-            file://openssl-1.0.1e-cve-2014-0198.patch \
-            file://openssl-1.0.1e-cve-2014-0221.patch \
-            file://openssl-1.0.1e-cve-2014-0224.patch \
-            file://openssl-1.0.1e-cve-2014-3470.patch \
-            file://openssl-CVE-2010-5298.patch \
-	    file://openssl-fix-CVE-2014-3566.patch \
-	    file://openssl-fix-CVE-2014-3513.patch \
-	    file://openssl-fix-CVE-2014-3567.patch \
-	    file://openssl-fix-CVE-2014-3568.patch \
            "
 
-SRC_URI[md5sum] = "66bf6f10f060d561929de96f9dfe5b8c"
-SRC_URI[sha256sum] = "f74f15e8c8ff11aa3d5bb5f276d202ec18d7246e95f961db76054199c69c1ae3"
+SRC_URI[md5sum] = "de62b43dfcd858e66a74bee1c834e959"
+SRC_URI[sha256sum] = "53cb818c3b90e507a8348f4f5eaedb05d8bfe5358aabb508b7263cc670c3e028"
 
 PACKAGES =+ " \
 	${PN}-engines \
