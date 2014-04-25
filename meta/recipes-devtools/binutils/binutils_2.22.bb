@@ -31,6 +31,8 @@ SRC_URI = "\
      file://clone-shadow.patch \
      file://binutils-powerpc-e5500.patch \
      file://binutils-armv5e.patch \
+     file://replace_macros_with_static_inline.patch \
+     file://0001-Fix-MMIX-build-breakage-from-bfd_set_section_vma-cha.patch \
      "
 
 SRC_URI[md5sum] = "ee0f10756c84979622b992a4a61ea3f5"
