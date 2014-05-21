@@ -28,9 +28,7 @@ finish_run() {
 			fi
 		fi
 
-		if [ ! -d $ROOTFS_DIR/dev ]; then
-			fatal "ERROR: There's no '/dev' on rootfs."
-		fi
+		mkdir -p $ROOTFS_DIR/dev
 
 		info "Switching root to '$ROOTFS_DIR'..."
 
