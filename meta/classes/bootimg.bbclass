@@ -66,6 +66,11 @@ populate() {
 
 	# Install bzImage, initrd, and rootfs.img in DEST for all loaders to use.
 	install -m 0644 ${STAGING_KERNEL_DIR}/bzImage ${DEST}/vmlinuz
+	if [ -n "${INITRAMFS_IMAGE}" ] && [ "${INITRAMFS_IMAGE_BUNDLE}" = "1" ]; then
+		install -m 0644 ${STAGING_KERNEL_DIR}/bzImage-initramfs-${MACHINE}.bin ${DEST}/vmlinuz-initramfs
+	elif [ -n "${INITRAMFS_IMAGE}" ]; then
+		install -m 0644 ${DEPLOY_DIR_IMAGE}/${INITRAMFS_IMAGE}-${MACHINE}.cpio.gz ${DEST}/initrd.img
+	fi
 
 	if [ -n "${INITRD}" ] && [ -s "${INITRD}" ]; then
 		install -m 0644 ${INITRD} ${DEST}/initrd
@@ -237,4 +242,4 @@ IMAGE_TYPEDEP_iso = "ext3"
 IMAGE_TYPEDEP_hddimg = "ext3"
 IMAGE_TYPES_MASKED += "iso hddimg"
 
-addtask bootimg before do_build
+addtask bootimg before do_build after do_bundle_initramfs
