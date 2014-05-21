@@ -138,6 +138,7 @@ do_bundle_initramfs () {
 		# Update install area
 		echo "There is kernel image bundled with initramfs: ${B}/${KERNEL_OUTPUT}.initramfs"
 		install -m 0644 ${B}/${KERNEL_OUTPUT}.initramfs ${D}/boot/${KERNEL_IMAGETYPE}-initramfs-${MACHINE}.bin
+		install -m 0644 ${B}/${KERNEL_OUTPUT}.initramfs ${STAGING_KERNEL_DIR}/${KERNEL_IMAGETYPE}-initramfs-${MACHINE}.bin
 		echo "${B}/${KERNEL_OUTPUT}.initramfs"
 	fi
 }
