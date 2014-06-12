@@ -151,25 +151,55 @@ mkdir /tgt_root
 mkdir /src_root
 mkdir -p /boot
 
-# Handling of the target root partition
+# mount target filesystems
+mount $bootfs /boot
 mount $rootfs /tgt_root
+
+# Check whether an initramfs is available and get uuid of filesystems
+has_initramfs=""
+uuid_rootfs=""
+uuid_bootfs=""
+uuid_swap=""
+if [ -e /run/media/$1/vmlinuz-initramfs -o -e /run/media/$1/initrd.img ]; then
+    has_initramfs="yes"
+    uuid_rootfs="`blkid $rootfs | cut -d' ' -f2 | sed -e 's/\"//g'`"
+    uuid_bootfs="`blkid $bootfs | cut -d' ' -f2 | sed -e 's/\"//g'`"
+    uuid_swap="`blkid $swap | cut -d' ' -f2 | sed -e 's/\"//g'`"
+fi
+
+# Handling of the target root partition
 mount -o rw,loop,noatime,nodiratime /run/media/$1/$2 /src_root
 echo "Copying rootfs files..."
 cp -a /src_root/* /tgt_root
+# Try to use uuid entries in /etc/fstab
+if [ "$has_initramfs" = "yes" ]; then
+    swap="$uuid_swap"
+    bootfs="$uuid_bootfs"
+fi
 if [ -d /tgt_root/etc/ ] ; then
     echo "$swap                swap             swap       defaults              0  0" >> /tgt_root/etc/fstab
     echo "$bootfs              /boot            ext3       defaults              1  2" >> /tgt_root/etc/fstab
-    # We dont want udev to mount our root device while we're booting...
-    if [ -d /tgt_root/etc/udev/ ] ; then
-	echo "/dev/${device}" >> /tgt_root/etc/udev/mount.blacklist
-    fi
 fi
-umount /tgt_root
 umount /src_root
 
 # Handling of the target boot partition
-mount $bootfs /boot
 echo "Preparing boot partition..."
+
+# If there's an initramfs available, try to use UUID in grub.cfg.
+# We assume the initramfs has the ability to deal with the UUID parameter.
+if [ -e /run/media/$1/vmlinuz-initramfs ]; then
+    cp /run/media/$1/vmlinuz-initramfs /boot/vmlinuz
+    rootfs="$uuid_rootfs"
+else
+    cp /run/media/$1/vmlinuz /boot/
+fi
+
+if [ -e /run/media/$1/initrd.img ]; then
+    cp /run/media/$1/initrd.img /boot/initrd.img
+    rootfs="$uuid_rootfs"
+    initrd_line="initrd /initrd.img"
+fi
+
 if [ -f /etc/grub.d/00_header ] ; then
     echo "Preparing custom grub2 menu..."
     GRUBCFG="/boot/grub/grub.cfg"
@@ -178,6 +208,7 @@ if [ -f /etc/grub.d/00_header ] ; then
 menuentry "Linux" {
     set root=(hd0,1)
     linux /vmlinuz root=$rootfs $rootwait rw $5 $3 $4 quiet
+    $initrd_line
 }
 _EOF
     chmod 0444 $GRUBCFG
@@ -195,8 +226,8 @@ if [ ! -f /boot/grub/grub.cfg ] ; then
     echo "kernel /vmlinuz root=$rootfs rw $3 $4 quiet" >> /boot/grub/menu.lst
 fi
 
-cp /run/media/$1/vmlinuz /boot/
-
+# umount target filesystems
+umount /tgt_root
 umount /boot
 
 sync
