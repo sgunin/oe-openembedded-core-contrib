@@ -15,7 +15,7 @@ do_install() {
     install usb-gether ${D}${sysconfdir}/init.d
 }
 
-inherit update-rc.d allarch
+inherit update-rc.d
 
 INITSCRIPT_NAME = "usb-gether"
 INITSCRIPT_PARAMS = "start 99 5 2 . stop 20 0 1 6 ."

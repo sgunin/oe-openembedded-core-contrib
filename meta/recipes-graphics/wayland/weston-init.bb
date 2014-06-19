@@ -11,7 +11,7 @@ do_install() {
 	install -m755 ${WORKDIR}/init ${D}/${sysconfdir}/init.d/weston
 }
 
-inherit allarch update-rc.d
+inherit update-rc.d
 
 RDEPENDS_${PN} = "weston kbd"
 

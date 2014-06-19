@@ -9,7 +9,7 @@ SRC_URI = "file://run-postinsts \
            file://run-postinsts.init \
            file://run-postinsts.service"
 
-inherit allarch systemd update-rc.d
+inherit systemd update-rc.d
 
 INITSCRIPT_NAME = "run-postinsts"
 INITSCRIPT_PARAMS = "start 99 S ."
