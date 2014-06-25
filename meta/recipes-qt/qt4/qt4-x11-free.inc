@@ -8,6 +8,9 @@ DEPENDS += "virtual/libgl virtual/libx11 fontconfig libxft libxext libxrender li
 PROVIDES += "qt4-x11"
 QT4DEPENDS = ""
 
+# depends on virtual/libx11
+REQUIRED_DISTRO_FEATURES = "x11"
+
 INC_PR = "r50"
 
 QT_GLFLAGS ?= "${@bb.utils.contains('DISTRO_FEATURES', 'opengl', '-opengl', '-no-opengl', d)} "
@@ -21,7 +24,7 @@ QT_BASE_LIB  ?= "libqt"
 QT_KDE_FLAGS ?= "-accessibility -sm"
 QT_DISTRO_FLAGS ?= "${QT_KDE_FLAGS}"
 
-inherit qt4x11
+inherit qt4x11 distro_features_check
 
 do_install_append() {
   # fix pkgconfig, libtool and prl files
