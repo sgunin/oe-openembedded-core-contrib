@@ -13,6 +13,10 @@ PR = "${INC_PR}.0"
 
 DEPENDS += "virtual/libx11 randrproto libpciaccess"
 
+inherit distro_features_check
+# depends on virtual/libx11
+REQUIRED_DISTRO_FEATURES = "x11"
+
 COMPATIBLE_HOST = '(i.86|x86_64).*-linux'
 
 RRECOMMENDS_${PN} += "xserver-xorg-module-libint10"

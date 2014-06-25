@@ -11,6 +11,10 @@ DEPENDS += "virtual/libx11 xineramaproto videoproto libpciaccess"
 SRC_URI += "file://0001-configure-fix-build-without-xatracker.patch \
             file://0002-add-option-for-vmwgfx.patch"
 
+inherit distro_features_check
+# depends on virtual/libx11
+REQUIRED_DISTRO_FEATURES = "x11"
+
 SRC_URI[md5sum] = "91d1d7d33181766714405ab013d31244"
 SRC_URI[sha256sum] = "c8ba3d2cead3620dba2cbf5defb7f1759b2b96f4fe209f4bf6976832b6763c54"
 

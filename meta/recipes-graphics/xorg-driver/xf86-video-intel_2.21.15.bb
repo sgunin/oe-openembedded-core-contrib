@@ -11,6 +11,10 @@ LIC_FILES_CHKSUM = "file://COPYING;md5=8730ad58d11c7bbad9a7066d69f7808e"
 
 DEPENDS += "virtual/libx11 drm libpciaccess pixman"
 
+inherit distro_features_check
+# depends on virtual/libx11
+REQUIRED_DISTRO_FEATURES = "x11"
+
 SRC_URI += "file://disable-dri2-tests.patch \
             file://compat-api-Map-changes-of-DamageUnregister-API-in-1..patch \
            "
