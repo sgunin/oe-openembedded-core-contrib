@@ -7,6 +7,9 @@ PACKAGECONFIG ??= ""
 PACKAGECONFIG[python] = "--with-python=${WORKDIR}/python,--without-python,python"
 PACKAGECONFIG[babeltrace] = "--with-babeltrace,--without-babeltrace,babeltrace"
 
+# cc1 (4.9) call with -mthumb gets stuck and eats all available memory (over 20GB in my case)
+ARM_INSTRUCTION_SET = "arm"
+
 do_configure_prepend() {
 	if [ -n "${@bb.utils.contains('PACKAGECONFIG', 'python', 'python', '', d)}" ]; then
 		cat > ${WORKDIR}/python << EOF
