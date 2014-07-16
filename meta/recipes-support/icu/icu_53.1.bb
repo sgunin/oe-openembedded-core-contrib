@@ -8,6 +8,8 @@ def icu_download_version(d):
 
 ICU_PV = "${@icu_download_version(d)}"
 
+ARM_INSTRUCTION_SET = "arm"
+
 BASE_SRC_URI = "http://download.icu-project.org/files/icu4c/${PV}/icu4c-${ICU_PV}-src.tgz"
 SRC_URI = "${BASE_SRC_URI} \
            file://icu-pkgdata-large-cmd.patch \
