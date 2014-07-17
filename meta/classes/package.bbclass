@@ -1019,6 +1019,7 @@ python populate_packages () {
                 dest = os.path.join(dest, p)
                 fstat = cpath.stat(src)
                 os.mkdir(dest, fstat.st_mode)
+                os.chmod(dest, fstat.st_mode)
                 os.chown(dest, fstat.st_uid, fstat.st_gid)
                 if p not in seen:
                     seen.append(p)
