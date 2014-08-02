@@ -119,6 +119,7 @@ copy_initramfs() {
 
 INITRAMFS_BASE_NAME = "${KERNEL_IMAGETYPE}-initramfs-${PV}-${PR}-${MACHINE}-${DATETIME}"
 INITRAMFS_BASE_NAME[vardepsexclude] = "DATETIME"
+INITRAMFS_SYMLINK_NAME = "${KERNEL_IMAGETYPE}-initramfs-${MACHINE}"
 do_bundle_initramfs () {
 	if [ ! -z "${INITRAMFS_IMAGE}" -a x"${INITRAMFS_IMAGE_BUNDLE}" = x1 ]; then
 		echo "Creating a kernel image with a bundled initramfs..."
@@ -132,8 +133,7 @@ do_bundle_initramfs () {
 		mv -f ${KERNEL_OUTPUT}.bak ${KERNEL_OUTPUT}
 		# Update install area
 		echo "There is kernel image bundled with initramfs: ${B}/${KERNEL_OUTPUT}.initramfs"
-		install -m 0644 ${B}/${KERNEL_OUTPUT}.initramfs ${D}/boot/${KERNEL_IMAGETYPE}-initramfs-${MACHINE}.bin
-		echo "${B}/${KERNEL_OUTPUT}.initramfs"
+		install -m 0644 ${KERNEL_OUTPUT}.initramfs ${D}/boot/${INITRAMFS_SYMLINK_NAME}.bin
 	fi
 }
 
@@ -456,15 +456,11 @@ kernel_do_deploy() {
 
 	cp ${COREBASE}/meta/files/deploydir_readme.txt ${DEPLOYDIR}/README_-_DO_NOT_DELETE_FILES_IN_THIS_DIRECTORY.txt
 
-	cd ${B}
 	# Update deploy directory
-	if [ -e "${KERNEL_OUTPUT}.initramfs" ]; then
+	if [ -e "${B}/${KERNEL_OUTPUT}.initramfs" ]; then
 		echo "Copying deploy kernel-initramfs image and setting up links..."
-		initramfs_base_name=${INITRAMFS_BASE_NAME}
-		initramfs_symlink_name=${KERNEL_IMAGETYPE}-initramfs-${MACHINE}
-		install -m 0644 ${KERNEL_OUTPUT}.initramfs ${DEPLOYDIR}/${initramfs_base_name}.bin
-		cd ${DEPLOYDIR}
-		ln -sf ${initramfs_base_name}.bin ${initramfs_symlink_name}.bin
+		install -m 0644 ${B}/${KERNEL_OUTPUT}.initramfs ${DEPLOYDIR}/${INITRAMFS_BASE_NAME}.bin
+		ln -sf ${INITRAMFS_BASE_NAME}.bin ${DEPLOYDIR}/${INITRAMFS_SYMLINK_NAME}.bin
 	fi
 }
 do_deploy[dirs] = "${DEPLOYDIR} ${B}"
