@@ -1,0 +1,78 @@
+Upstream-Status: Pending
+
+From 00aa880888dda547b26ad84ebca04aae524c3638 Mon Sep 17 00:00:00 2001
+From: Andreas Oberritter <obi@opendreambox.org>
+Date: Wed, 6 Aug 2014 20:25:55 +0200
+Subject: [PATCH] If systemd is running, use systemctl to start or restart
+ services
+
+Otherwise postinst scripts using both update-rc.d and systemctl
+in hybrid setups may lead to inconsistent states.
+
+Signed-off-by: Andreas Oberritter <obi@opendreambox.org>
+---
+ update-rc.d | 20 ++++++++++++++++++--
+ 1 file changed, 18 insertions(+), 2 deletions(-)
+
+diff --git a/update-rc.d b/update-rc.d
+index e07cf85..582ed87 100644
+--- a/update-rc.d
++++ b/update-rc.d
+@@ -19,6 +19,8 @@ etcd="/etc/rc"
+ notreally=0
+ force=0
+ dostart=0
++systemd=0
++systemctl="systemctl"
+ verbose=0
+ 
+ usage()
+@@ -77,7 +79,11 @@ dolink()
+  		ln -s ../init.d/$bn $fn
+ 	fi
+ 	if [ $dostart -eq 1 ] && [ $startstop = "S" ] && [ $lev = $RUNLEVEL ]; then
+-		$fn start || true
++		if [ $systemd -eq 1 ]; then
++			${systemctl} start ${bn} || true
++		else
++			$fn start || true
++		fi
+ 	fi
+ }
+ 
+@@ -86,7 +92,11 @@ makelinks()
+ 	if ! checklinks; then
+ 		echo " System startup links for $initd/$bn already exist."
+ 		if [ $dostart -eq 1 ] && [ $notreally -eq 0 ] && [ -L ${etcd}${RUNLEVEL}.d/S??${bn} ]; then
+-			${etcd}${RUNLEVEL}.d/S??${bn} restart || true
++			if [ $systemd -eq 1 ]; then
++				${systemctl} restart ${bn} || true
++			else
++				${etcd}${RUNLEVEL}.d/S??${bn} restart || true
++			fi
+ 		fi
+ 		exit 0
+ 	fi
+@@ -123,6 +133,7 @@ while [ $# -gt 0 ]; do
+ 			root=$1
+ 			initd="${root}${initd}"
+ 			etcd="${root}${etcd}"
++			systemctl="${systemctl} --root=${root}"
+ 			shift
+ 			;;
+ 		-h | --help)
+@@ -193,6 +204,11 @@ if [ $dostart -eq 1 ]; then
+ 	fi
+ fi
+ 
++systemd_pid=`pidof systemd 2>/dev/null`
++if [ $? -eq 0 -a "$systemd_pid" = "1" ]; then
++	systemd=1
++fi
++
+ case $1 in
+ 	remove)
+ 		checklinks "remove"
+-- 
+1.9.1
+
