@@ -290,6 +290,8 @@ for perl_script in $($SUDO_EXEC find $native_sysroot -type f -exec grep "^#!.*pe
 		"s: /usr/bin/perl: /usr/bin/env perl:g" $perl_script
 done
 
+${SDK_POST_INSTALL_COMMAND}
+
 echo done
 
 # delete the relocating script, so that user is forced to re-run the installer
