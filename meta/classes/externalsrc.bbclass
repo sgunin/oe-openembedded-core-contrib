@@ -47,6 +47,8 @@ python () {
                 # Since configure will likely touch ${S}, ensure only we lock so one task has access at a time
                 d.appendVarFlag(task, "lockfiles", "${S}/singletask.lock")
 
+        d.setVarFlag('do_compile', 'nostamp', '1')
+
         for task in d.getVar("SRCTREECOVEREDTASKS", True).split():
             bb.build.deltask(task, d)
 }
