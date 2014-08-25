@@ -115,6 +115,22 @@ package_install_internal_deb () {
 
 	apt-get update
 
+	# prime the status file with bits that we don't want
+	for i in ${BAD_RECOMMENDATIONS}; do
+		pkginfo="`apt-cache show $i`"
+		if [ ! -z "$pkginfo" ]; then
+			# Take just the first package stanza as otherwise only
+			# the last one will have the right Status line.
+			echo "$pkginfo" | awk "/^Package:/ { print } \
+                                               /^Architecture:/ { print } \
+                                               /^Version:/ { print } \
+                                               /^$/ { exit } \
+                                               END { print \"Status: hold ok not-installed\n\" }" - >> ${IMAGE_ROOTFS}/var/lib/dpkg/status
+		else
+			echo "Requested ignored recommendation $i is not a package"
+		fi
+	done
+
 	if [ ! -z "${package_linguas}" ]; then
 		for i in ${package_linguas}; do
 			apt-get ${APT_ARGS} install $i --force-yes --allow-unauthenticated
