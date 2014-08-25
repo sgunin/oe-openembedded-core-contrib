@@ -13,12 +13,6 @@ do_rootfs[vardeps] += "PACKAGE_FEED_URIS"
 do_rootfs[lockfiles] += "${DEPLOY_DIR_DEB}/deb.lock"
 do_populate_sdk[lockfiles] += "${DEPLOY_DIR_DEB}/deb.lock"
 
-python rootfs_deb_bad_recommendations() {
-    if d.getVar("BAD_RECOMMENDATIONS", True):
-        bb.warn("Debian package install does not support BAD_RECOMMENDATIONS")
-}
-do_rootfs[prefuncs] += "rootfs_deb_bad_recommendations"
-
 DEB_POSTPROCESS_COMMANDS = ""
 
 opkglibdir = "${localstatedir}/lib/opkg"

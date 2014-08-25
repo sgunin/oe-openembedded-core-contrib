@@ -652,6 +652,8 @@ class DpkgRootfs(DpkgOpkgRootfs):
 
         self.pm.update()
 
+        self.pm.handle_bad_recommendations()
+
         for pkg_type in self.install_order:
             if pkg_type in pkgs_to_install:
                 self.pm.install(pkgs_to_install[pkg_type],

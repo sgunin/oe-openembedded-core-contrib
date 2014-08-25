@@ -1966,6 +1966,32 @@ class DpkgPM(PackageManager):
     def list_installed(self):
         return DpkgPkgsList(self.d, self.target_rootfs).list_pkgs()
 
+    def handle_bad_recommendations(self):
+        bad_recommendations = (self.d.getVar("BAD_RECOMMENDATIONS", True) or "").strip()
+        if not bad_recommendations:
+            return
+
+        status_file = self.target_rootfs + "/var/lib/dpkg/status"
+
+        with open(status_file + ".tmp", "w") as status:
+            for pkg in bad_recommendations.split():
+                pkg_info = ('apt-cache', 'show', pkg)
+
+                try:
+                    output = subprocess.check_output(pkg_info, stderr=subprocess.STDOUT)
+                except subprocess.CalledProcessError as e:
+                    bb.fatal("Cannot get package info. Command '%s' "
+                             "returned %d:\n%s" % (' '.join(pkg_info), e.returncode, e.output))
+
+                for line in output.splitlines():
+                    if not line:
+                        status.write("Status: hold ok not-installed\n\n")
+                        break
+
+                    if line.startswith(' ') or line.split(': ', 1)[0] not in ('Filename', 'Size', 'MD5sum', 'MSDOS-Filename'):
+                        status.write(line + "\n")
+
+        os.rename(status_file + ".tmp", status_file)
 
 def generate_index_files(d):
     classes = d.getVar('PACKAGE_CLASSES', True).replace("package_", "").split()
