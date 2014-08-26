@@ -1,0 +1,19 @@
+Upstream-Status: Invalid [embedded specific]
+
+libcpp: Let __FILE__ macro expand to basename.
+
+Saves space on disk and screen, especially with OE's
+long build paths.
+
+Signed-off-by: Andreas Oberritter <obi@opendreambox.org>
+
+--- gcc-4.8.1/libcpp/macro.c.orig	2014-08-25 10:05:59.620084235 +0200
++++ gcc-4.8.1/libcpp/macro.c	2014-08-25 10:10:50.530026877 +0200
+@@ -284,6 +284,7 @@
+ 	    if (!name)
+ 	      abort ();
+ 	  }
++	name = lbasename (name);
+ 	len = strlen (name);
+ 	buf = _cpp_unaligned_alloc (pfile, len * 2 + 3);
+ 	result = buf;

@@ -79,6 +79,7 @@ SRC_URI = "${GNU_MIRROR}/gcc/gcc-${PV}/gcc-${PV}.tar.bz2 \
 	   file://0047-repomembug.patch \
 	   file://0048-PR57532.patch \
 	   file://0048-PR58854_fix_arm_apcs_epilogue.patch \
+	   file://0049-file-basename.patch \
            file://0001-fix-ICE-when-building-opus.patch \
 	  "
 SRC_URI[md5sum] = "3b2386c114cd74185aa3754b58a79304"
