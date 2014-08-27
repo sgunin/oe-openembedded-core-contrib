@@ -1,6 +1,6 @@
 SUMMARY = "Package maintenance system from Debian"
-LICENSE = "GPLv2.0+"
 SECTION = "base"
+LICENSE = "GPLv2+"
 DEPENDS = "perl"
 DEPENDS_append_class-native = " bzip2-replacement-native ${@bb.utils.contains('PACKAGECONFIG', 'update-alternatives', '', 'virtual/update-alternatives-native', d)}"
 PROVIDES = "${@bb.utils.contains('PACKAGECONFIG', 'update-alternatives', 'virtual/update-alternatives', '', d)}"
