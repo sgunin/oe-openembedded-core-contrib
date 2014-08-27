@@ -59,16 +59,59 @@ do_install_append () {
 	fi
 }
 
-PACKAGES =+ "update-alternatives-dpkg"
+PACKAGES =+ "dpkg-perl dselect libdpkg-perl update-alternatives-dpkg"
 
 RDEPENDS_${PN} = "${VIRTUAL-RUNTIME_update-alternatives} run-postinsts perl"
 RDEPENDS_${PN}_class-native = ""
+RSUGGESTS_${PN} = "apt"
 
-FILES_update-alternatives-dpkg = "${bindir}/update-alternatives ${localstatedir}/lib/dpkg/alternatives ${sysconfdir}/alternatives"
+RDEPENDS_dpkg-perl = "binutils libdpkg-perl make xz"
+RRECOMMENDS_dpkg-perl = "gnupg gpgv"
+
+RDEPENDS_dselect = "dpkg"
+RSUGGESTS_dselect = "perl"
+
+RDEPENDS_libdpkg-perl = "dpkg libtimedate-perl perl"
+RRECOMMENDS_libdpkg-perl = "xz"
+RSUGGESTS_libdpkg-perl = "binutils gnupg gpgv"
+
 RPROVIDES_update-alternatives-dpkg = "update-alternatives"
 RCONFLICTS_update-alternatives-dpkg = "update-alternatives"
 
-PACKAGES += "${PN}-perl"
-FILES_${PN}-perl = "${libdir}/perl"
+FILES_dpkg-perl = " \
+    ${bindir}/dpkg-architecture \
+    ${bindir}/dpkg-buildflags \
+    ${bindir}/dpkg-buildpackage \
+    ${bindir}/dpkg-checkbuilddeps \
+    ${bindir}/dpkg-distaddfile \
+    ${bindir}/dpkg-genchanges \
+    ${bindir}/dpkg-gencontrol \
+    ${bindir}/dpkg-gensymbols \
+    ${bindir}/dpkg-mergechangelogs \
+    ${bindir}/dpkg-name \
+    ${bindir}/dpkg-parsechangelog \
+    ${bindir}/dpkg-scanpackages \
+    ${bindir}/dpkg-scansources \
+    ${bindir}/dpkg-shlibdeps \
+    ${bindir}/dpkg-source \
+    ${bindir}/dpkg-vendor \
+    ${datadir}/dpkg/*.mk \
+"
+
+FILES_dselect = "${bindir}/dselect"
+
+FILES_libdpkg-perl = " \
+    ${libdir}/dpkg/parsechangelog \
+    ${libdir}/perl \
+"
+
+FILES_update-alternatives-dpkg = " \
+    ${sysconfdir}/alternatives \
+    ${bindir}/update-alternatives \
+    ${localstatedir}/lib/dpkg/alternatives \
+"
+
+PKG_dpkg-dev = "libdpkg-dev"
+PKG_dpkg-perl = "dpkg-dev"
 
 BBCLASSEXTEND = "native"
