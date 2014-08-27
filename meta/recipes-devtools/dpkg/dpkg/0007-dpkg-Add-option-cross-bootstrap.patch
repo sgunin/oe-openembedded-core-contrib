@@ -1,0 +1,86 @@
+From bc12439e443dc4d2e7a9ddadf60f31db462aa824 Mon Sep 17 00:00:00 2001
+From: Andreas Oberritter <obi@opendreambox.org>
+Date: Thu, 28 Aug 2014 04:51:16 +0200
+Subject: [PATCH] dpkg: Add option --cross-bootstrap
+
+If --cross-bootstrap is set, don't chroot into the target root
+directory, but just export DPKG_INSTDIR for the execution of
+maintscripts.
+
+This is useful for Yocto/OpenEmbedded, where programs like
+update-alternatives, update-rc.d or systemctl run natively or
+emulated on the build system when creating the cross-compiled
+root filesystem with apt-get.
+
+Signed-off-by: Andreas Oberritter <obi@opendreambox.org>
+---
+ src/main.c   | 3 +++
+ src/main.h   | 1 +
+ src/script.c | 6 ++++--
+ 3 files changed, 8 insertions(+), 2 deletions(-)
+
+diff --git a/src/main.c b/src/main.c
+index 0ff04f1..4decf21 100644
+--- a/src/main.c
++++ b/src/main.c
+@@ -137,6 +137,7 @@ usage(const struct cmdinfo *ci, const char *value)
+ "  --admindir=<directory>     Use <directory> instead of %s.\n"
+ "  --root=<directory>         Install on a different root directory.\n"
+ "  --instdir=<directory>      Change installation dir without changing admin dir.\n"
++"  --cross-bootstrap          Don't chroot into root directory for scripts.\n"
+ "  --path-exclude=<pattern>   Do not install paths which match a shell pattern.\n"
+ "  --path-include=<pattern>   Re-include a pattern after a previous exclusion.\n"
+ "  -O|--selected-only         Skip packages not selected for install/upgrade.\n"
+@@ -187,6 +188,7 @@ static const char printforhelp[] = N_(
+ int f_pending=0, f_recursive=0, f_alsoselect=1, f_skipsame=0, f_noact=0;
+ int f_autodeconf=0, f_nodebsig=0;
+ int f_triggers = 0;
++int f_cross = 0;
+ int fc_downgrade=1, fc_configureany=0, fc_hold=0, fc_removereinstreq=0, fc_overwrite=0;
+ int fc_removeessential=0, fc_conflicts=0, fc_depends=0, fc_dependsversion=0;
+ int fc_breaks=0, fc_badpath=0, fc_overwritediverted=0, fc_architecture=0;
+@@ -725,6 +727,7 @@ static const struct cmdinfo cmdinfos[]= {
+   { "abort-after",       0,   1, &errabort,     NULL,      set_integer,   0 },
+   { "admindir",          0,   1, NULL,          &admindir, NULL,          0 },
+   { "instdir",           0,   1, NULL,          NULL,      set_instdir,   0 },
++  { "cross-bootstrap",   0,   0, &f_cross,      NULL,      NULL,          1 },
+   { "ignore-depends",    0,   1, NULL,          NULL,      set_ignore_depends, 0 },
+   { "force",             0,   2, NULL,          NULL,      set_force,     1 },
+   { "refuse",            0,   2, NULL,          NULL,      set_force,     0 },
+diff --git a/src/main.h b/src/main.h
+index 021d611..5b91f05 100644
+--- a/src/main.h
++++ b/src/main.h
+@@ -133,6 +133,7 @@ extern const char *const statusstrings[];
+ extern int f_pending, f_recursive, f_alsoselect, f_skipsame, f_noact;
+ extern int f_autodeconf, f_nodebsig;
+ extern int f_triggers;
++extern int f_cross;
+ extern int fc_downgrade, fc_configureany, fc_hold, fc_removereinstreq, fc_overwrite;
+ extern int fc_removeessential, fc_conflicts, fc_depends, fc_dependsversion;
+ extern int fc_breaks, fc_badpath, fc_overwritediverted, fc_architecture;
+diff --git a/src/script.c b/src/script.c
+index d9514da..747c27f 100644
+--- a/src/script.c
++++ b/src/script.c
+@@ -106,8 +106,10 @@ maintscript_pre_exec(struct command *cmd)
+ 		if (setenv("DPKG_ADMINDIR", admindir + instdirl, 1) < 0)
+ 			ohshite(_("unable to setenv for subprocesses"));
+ 
+-		if (chroot(instdir))
++		if (!f_cross && chroot(instdir))
+ 			ohshite(_("failed to chroot to '%.250s'"), instdir);
++		if (setenv("DPKG_INSTDIR", f_cross ? instdir : "", 1) < 0)
++			ohshite(_("unable to setenv for subprocesses"));
+ 	}
+ 	/* Switch to a known good directory to give the maintainer script
+ 	 * a saner environment, also needed after the chroot(). */
+@@ -126,7 +128,7 @@ maintscript_pre_exec(struct command *cmd)
+ 		      args.buf);
+ 		varbuf_destroy(&args);
+ 	}
+-	if (!instdirl)
++	if (f_cross || !instdirl)
+ 		return cmd->filename;
+ 
+ 	assert(strlen(cmd->filename) >= instdirl);
