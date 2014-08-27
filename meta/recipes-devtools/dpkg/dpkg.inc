@@ -1,12 +1,9 @@
 SUMMARY = "Package maintenance system from Debian"
 LICENSE = "GPLv2.0+"
 SECTION = "base"
+DEPENDS = "perl"
+DEPENDS_append_class-native = " bzip2-replacement-native ${@bb.utils.contains('PACKAGECONFIG', 'update-alternatives', '', 'virtual/update-alternatives-native', d)}"
 PROVIDES = "${@bb.utils.contains('PACKAGECONFIG', 'update-alternatives', 'virtual/update-alternatives', '', d)}"
-
-DEPENDS = "zlib bzip2 perl ncurses"
-DEPENDS_class-native = "bzip2-replacement-native zlib-native ${@bb.utils.contains('PACKAGECONFIG', 'update-alternatives', '', 'virtual/update-alternatives-native', d)} gettext-native perl-native"
-RDEPENDS_${PN} = "${VIRTUAL-RUNTIME_update-alternatives} perl"
-RDEPENDS_${PN}_class-native = ""
 
 UPSTREAM_CHECK_URI = "${DEBIAN_MIRROR}/main/d/dpkg/"
 
@@ -20,22 +17,20 @@ PERL_LIBDIR_class-native = "${libdir}/perl-native/perl/${@get_perl_version(d)}"
 UA = "update-alternatives"
 UA_native = "${@['', 'update-alternatives'][d.getVar('PREFERRED_PROVIDER_virtual/update-alternatives-native', True) == 'dpkg-native']}"
 
-PACKAGECONFIG ??= "${UA}"
-PACKAGECONFIG[update-alternatives] = "--enable-update-alternatives,--disable-update-alternatives"
+DPKG_DEB_COMPRESSOR ?= "${@bb.utils.contains('PACKAGECONFIG', 'liblzma', 'xz', 'gzip', d)}"
 
-EXTRA_OECONF = "\
-		--disable-dselect \
-		--enable-start-stop-daemon \
-		--with-libz \
-		--with-libbz2 \
-		--without-libselinux \
-		TAR=tar \
-		"
+EXTRA_OECONF += "--with-dpkg-deb-compressor=${DPKG_DEB_COMPRESSOR} TAR=tar"
 
 EXTRA_OECONF_append_class-target = " --disable-update-alternatives DEB_HOST_ARCH=${DPKG_ARCH}"
 
-PACKAGECONFIG = "liblzma"
+PACKAGECONFIG = "bzip2 gzip liblzma start-stop-daemon ${UA}"
+PACKAGECONFIG[bzip2] = "--with-libbz2,--without-libbz2,bzip2"
+PACKAGECONFIG[dselect] = "--enable-dselect,--disable-dselect,ncurses"
+PACKAGECONFIG[gzip] = "--with-libz,--without-libz,zlib"
 PACKAGECONFIG[liblzma] = "--with-liblzma,--without-liblzma, xz"
+PACKAGECONFIG[selinux] = "--with-libselinux,--without-libselinux,libselinux"
+PACKAGECONFIG[start-stop-daemon] = "--enable-start-stop-daemon,--disable-start-stop-daemon"
+PACKAGECONFIG[update-alternatives] = "--enable-update-alternatives,--disable-update-alternatives"
 
 do_configure_prepend_class-native() {
     sed -i -e 's|SYSCONFDIR|"${sysconfdir_native}"|' ${S}/utils/update-alternatives.c
@@ -50,6 +45,10 @@ do_install_append () {
 }
 
 PACKAGES =+ "update-alternatives-dpkg"
+
+RDEPENDS_${PN} = "${VIRTUAL-RUNTIME_update-alternatives} perl"
+RDEPENDS_${PN}_class-native = ""
+
 FILES_update-alternatives-dpkg = "${bindir}/update-alternatives ${localstatedir}/lib/dpkg/alternatives ${sysconfdir}/alternatives"
 RPROVIDES_update-alternatives-dpkg = "update-alternatives"
 RCONFLICTS_update-alternatives-dpkg = "update-alternatives"
