@@ -63,23 +63,28 @@ do_install_append () {
 	fi
 }
 
-PACKAGES =+ "start-stop-daemon update-alternatives-dpkg"
+PACKAGES =+ "dpkg-perl dselect libdpkg-perl start-stop-daemon update-alternatives-dpkg"
 
-RDEPENDS_${PN} = "${VIRTUAL-RUNTIME_update-alternatives} perl"
+RDEPENDS_${PN} = "${VIRTUAL-RUNTIME_update-alternatives}"
 RDEPENDS_${PN}_class-native = ""
 RRECOMMENDS_${PN} = "start-stop-daemon"
 RRECOMMENDS_${PN}_class-native = ""
+RSUGGESTS_${PN} = "apt"
 
-FILES_start-stop-daemon = "${base_sbindir}/start-stop-daemon"
+RDEPENDS_dpkg-perl = "binutils libdpkg-perl make xz"
+RRECOMMENDS_dpkg-perl = "gnupg"
 
-FILES_update-alternatives-dpkg = "${bindir}/update-alternatives ${localstatedir}/lib/dpkg/alternatives ${sysconfdir}/alternatives"
+RDEPENDS_dselect = "dpkg"
+RSUGGESTS_dselect = "perl"
+
+RDEPENDS_libdpkg-perl = "dpkg libtimedate-perl perl"
+RRECOMMENDS_libdpkg-perl = "xz"
+RSUGGESTS_libdpkg-perl = "binutils gnupg"
+
 RPROVIDES_update-alternatives-dpkg = "update-alternatives"
 RCONFLICTS_update-alternatives-dpkg = "update-alternatives"
 
-PACKAGES += "${PN}-perl"
-FILES_${PN}-perl = "${libdir}/perl/${@get_perl_version(d)}"
-
-RDEPENDS_${PN}-perl += "perl-module-carp perl-module-constant \
+RDEPENDS_libdpkg-perl += "perl-module-carp perl-module-constant \
                         perl-module-cwd perl-module-digest \
                         perl-module-digest-md5 perl-module-errno \
                         perl-module-exporter perl-module-fcntl \
@@ -97,5 +102,43 @@ RDEPENDS_${PN}-perl += "perl-module-carp perl-module-constant \
                         perl-module-tie-hash perl-module-storable \
                         perl-module-time-hires perl-module-time-piece \
                         perl-module-xsloader"
+
+FILES_dpkg-perl = " \
+    ${bindir}/dpkg-architecture \
+    ${bindir}/dpkg-buildflags \
+    ${bindir}/dpkg-buildpackage \
+    ${bindir}/dpkg-checkbuilddeps \
+    ${bindir}/dpkg-distaddfile \
+    ${bindir}/dpkg-genchanges \
+    ${bindir}/dpkg-gencontrol \
+    ${bindir}/dpkg-gensymbols \
+    ${bindir}/dpkg-mergechangelogs \
+    ${bindir}/dpkg-name \
+    ${bindir}/dpkg-parsechangelog \
+    ${bindir}/dpkg-scanpackages \
+    ${bindir}/dpkg-scansources \
+    ${bindir}/dpkg-shlibdeps \
+    ${bindir}/dpkg-source \
+    ${bindir}/dpkg-vendor \
+    ${datadir}/dpkg/*.mk \
+"
+
+FILES_dselect = "${bindir}/dselect"
+
+FILES_libdpkg-perl = " \
+    ${libdir}/dpkg/parsechangelog \
+    ${libdir}/perl/${@get_perl_version(d)} \
+"
+
+FILES_start-stop-daemon = "${base_sbindir}/start-stop-daemon"
+
+FILES_update-alternatives-dpkg = " \
+    ${sysconfdir}/alternatives \
+    ${bindir}/update-alternatives \
+    ${localstatedir}/lib/dpkg/alternatives \
+"
+
+PKG_dpkg-dev = "libdpkg-dev"
+PKG_dpkg-perl = "dpkg-dev"
 
 BBCLASSEXTEND = "native"
