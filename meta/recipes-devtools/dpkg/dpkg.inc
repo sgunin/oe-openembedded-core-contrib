@@ -1,15 +1,12 @@
 SUMMARY = "Package maintenance system from Debian"
 LICENSE = "GPLv2.0+"
 SECTION = "base"
+DEPENDS = "perl"
+DEPENDS_append_class-native = " bzip2-replacement-native"
 PROVIDES = "virtual/update-alternatives"
 
 SRC_URI = "${DEBIAN_MIRROR}/main/d/dpkg/dpkg_${PV}.tar.xz \
            file://ignore_extra_fields.patch"
-
-DEPENDS = "zlib bzip2 perl ncurses"
-DEPENDS_class-native = "bzip2-replacement-native zlib-native gettext-native perl-native"
-RDEPENDS_${PN} = "${VIRTUAL-RUNTIME_update-alternatives} xz run-postinsts"
-RDEPENDS_${PN}_class-native = "xz-native"
 
 S = "${WORKDIR}/${BPN}-${PV}"
 
@@ -29,14 +26,18 @@ PERL_class-native = "${STAGING_BINDIR_NATIVE}/perl-native/perl"
 export PERL_LIBDIR = "${libdir}/perl"
 PERL_LIBDIR_class-native = "${libdir}/perl-native/perl"
 
-EXTRA_OECONF = "\
-		--disable-dselect \
-		--enable-start-stop-daemon \
-		--with-zlib \
-		--with-bz2 \
-		--without-liblzma \
-		--without-selinux \
-		"
+PACKAGECONFIG ??= "bzip2 gzip start-stop-daemon update-alternatives"
+PACKAGECONFIG[bzip2] = "--with-bz2,--without-bz2,bzip2"
+PACKAGECONFIG[dselect] = "--enable-dselect,--disable-dselect,ncurses"
+PACKAGECONFIG[gzip] = "--with-zlib,--without-zlib,zlib"
+PACKAGECONFIG[selinux] = "--with-selinux,--without-selinux,libselinux"
+PACKAGECONFIG[start-stop-daemon] = "--enable-start-stop-daemon,--disable-start-stop-daemon"
+PACKAGECONFIG[update-alternatives] = "--enable-update-alternatives,--disable-update-alternatives"
+PACKAGECONFIG[xz] = "--with-liblzma,--without-liblzma,xz"
+
+DPKG_DEB_COMPRESSOR ?= "${@base_contains('PACKAGECONFIG', 'xz', 'xz', 'gzip', d)}"
+
+EXTRA_OECONF += "--with-dpkg-deb-compressor=${DPKG_DEB_COMPRESSOR}"
 
 do_configure () {
     echo >> ${S}/m4/compiler.m4
@@ -63,6 +64,10 @@ do_install_append () {
 }
 
 PACKAGES =+ "update-alternatives-dpkg"
+
+RDEPENDS_${PN} = "${VIRTUAL-RUNTIME_update-alternatives} run-postinsts"
+RDEPENDS_${PN}_class-native = ""
+
 FILES_update-alternatives-dpkg = "${bindir}/update-alternatives ${localstatedir}/lib/dpkg/alternatives ${sysconfdir}/alternatives"
 RPROVIDES_update-alternatives-dpkg = "update-alternatives"
 
