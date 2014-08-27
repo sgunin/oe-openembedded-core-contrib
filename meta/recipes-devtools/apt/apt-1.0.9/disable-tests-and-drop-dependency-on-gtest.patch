@@ -1,0 +1,45 @@
+Upstream-Status: Invalid [configuration]
+
+From 0f39cc30fcc6b3440d93c213caf348e3784e29d9 Mon Sep 17 00:00:00 2001
+From: Andreas Oberritter <obi@opendreambox.org>
+Date: Wed, 27 Aug 2014 12:14:43 +0200
+Subject: [PATCH] disable tests and drop dependency on gtest
+
+Signed-off-by: Andreas Oberritter <obi@opendreambox.org>
+---
+ Makefile     | 1 -
+ configure.ac | 6 ------
+ 2 files changed, 7 deletions(-)
+
+diff --git a/Makefile b/Makefile
+index 6e1edbd..659f110 100644
+--- a/Makefile
++++ b/Makefile
+@@ -21,7 +21,6 @@ all headers library clean veryclean binary program doc manpages docbook test upd
+ 	$(MAKE) -C dselect $@
+ 	$(MAKE) -C doc $@
+ 	$(MAKE) -C po $@
+-	$(MAKE) -C test $@
+ 
+ all headers library clean veryclean binary program doc manpages docbook test update-po: startup dirs
+ 
+diff --git a/configure.ac b/configure.ac
+index e605528..7910cbc 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -89,12 +89,6 @@ AC_CHECK_LIB(curl, curl_easy_init,
+      AC_MSG_ERROR([failed: I need CURL due https support]),
+ )
+ 
+-AC_LANG_PUSH([C++])
+-AC_CHECK_HEADER(gtest/gtest.h,,
+-     AC_MSG_ERROR([failed: I need gtest to build tests]),
+-)
+-AC_LANG_POP([C++])
+-
+ 
+ AC_SUBST(BDBLIB)
+ 
+-- 
+1.9.1
+
