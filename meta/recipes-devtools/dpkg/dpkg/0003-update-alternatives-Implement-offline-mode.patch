@@ -1,0 +1,263 @@
+From 6989ade07f96e2b232539680fc5822f3702e7bb2 Mon Sep 17 00:00:00 2001
+From: Andreas Oberritter <obi@opendreambox.org>
+Date: Thu, 8 Mar 2018 17:20:48 +0100
+Subject: [PATCH] update-alternatives: Implement offline mode
+
+Let update-alternatives manage symlinks inside a cross-arch root
+filesystem in a directory specified by DPKG_ROOT.
+
+Signed-off-by: Andreas Oberritter <obi@opendreambox.org>
+---
+ utils/Makefile.am           |   1 +
+ utils/update-alternatives.c | 108 +++++++++++++++++++++++++++++++++++++++-----
+ 2 files changed, 97 insertions(+), 12 deletions(-)
+
+diff --git a/utils/Makefile.am b/utils/Makefile.am
+index ed67e94c9..c16a21b1a 100644
+--- a/utils/Makefile.am
++++ b/utils/Makefile.am
+@@ -27,6 +27,7 @@ update_alternatives_SOURCES = \
+ update_alternatives_CPPFLAGS = \
+ 	-DALT_TMP_EXT=\".dpkg-tmp\" \
+ 	-DADMINDIR_ENVVAR=\"DPKG_ADMINDIR\" \
++	-DINSTDIR_ENVVAR=\"DPKG_ROOT\" \
+ 	$(AM_CPPFLAGS)
+ 
+ update_alternatives_LDADD = \
+diff --git a/utils/update-alternatives.c b/utils/update-alternatives.c
+index 9a9d10c62..5b398e3f0 100644
+--- a/utils/update-alternatives.c
++++ b/utils/update-alternatives.c
+@@ -51,6 +51,7 @@
+ #define PROGNAME "update-alternatives"
+ 
+ static const char *altdir = SYSCONFDIR "/alternatives";
++static const char *instdir;
+ static const char *admdir;
+ 
+ static const char *prog_path = "update-alternatives";
+@@ -294,7 +295,7 @@ xasprintf(const char *fmt, ...)
+ }
+ 
+ static char *
+-areadlink(const char *linkname)
++_areadlink(const char *linkname)
+ {
+ 	struct stat st;
+ 	char *buf;
+@@ -326,6 +327,19 @@ areadlink(const char *linkname)
+ 	return buf;
+ }
+ 
++static char *
++areadlink(const char *linkname)
++{
++	char *instdir_linkname;
++	char *ret;
++
++	instdir_linkname = xasprintf("%s%s", instdir, linkname);
++	ret = _areadlink(instdir_linkname);
++	free(instdir_linkname);
++
++	return ret;
++}
++
+ static char *
+ xreadlink(const char *linkname)
+ {
+@@ -339,7 +353,7 @@ xreadlink(const char *linkname)
+ }
+ 
+ static bool
+-pathname_is_missing(const char *pathname)
++_pathname_is_missing(const char *pathname)
+ {
+ 	struct stat st;
+ 
+@@ -353,6 +367,19 @@ pathname_is_missing(const char *pathname)
+ 	syserr(_("cannot stat file '%s'"), pathname);
+ }
+ 
++static bool
++pathname_is_missing(const char *pathname)
++{
++	char *instdir_pathname;
++	bool ret;
++
++	instdir_pathname = xasprintf("%s%s", instdir, pathname);
++	ret = _pathname_is_missing(instdir_pathname);
++	free(instdir_pathname);
++
++	return ret;
++}
++
+ static void
+ set_action(const char *new_action)
+ {
+@@ -362,10 +389,23 @@ set_action(const char *new_action)
+ 	action = new_action;
+ }
+ 
++static const char *
++instdir_init(void)
++{
++	const char *dpkg_instdir;
++
++	dpkg_instdir = getenv(INSTDIR_ENVVAR);
++	if (dpkg_instdir)
++		return dpkg_instdir;
++
++	return "";
++}
++
+ static const char *
+ admindir_init(void)
+ {
+ 	const char *basedir, *basedir_env;
++	size_t length;
+ 
+ 	/* Try to get the admindir from an environment variable, usually set
+ 	 * by the system package manager. */
+@@ -375,6 +415,12 @@ admindir_init(void)
+ 	else
+ 		basedir = ADMINDIR;
+ 
++	/* If instdir is set and admindir is below instdir, treat admindir
++	 * as relative. */
++	length = strlen(instdir);
++	if (strncmp(basedir, instdir, length) == 0)
++		basedir += length;
++
+ 	return xasprintf("%s/%s", basedir, "alternatives");
+ }
+ 
+@@ -447,25 +493,43 @@ rename_mv(const char *src, const char *dst)
+ static void
+ checked_symlink(const char *filename, const char *linkname)
+ {
+-	if (symlink(filename, linkname))
++	char *instdir_linkname;
++
++	instdir_linkname = xasprintf("%s%s", instdir, linkname);
++
++	if (symlink(filename, instdir_linkname))
+ 		syserr(_("error creating symbolic link '%.255s'"), linkname);
++
++	free(instdir_linkname);
+ }
+ 
+ static void
+ checked_mv(const char *src, const char *dst)
+ {
+-	if (!rename_mv(src, dst))
++	char *instdir_src;
++	char *instdir_dst;
++
++	instdir_src = xasprintf("%s%s", instdir, src);
++	instdir_dst = xasprintf("%s%s", instdir, dst);
++
++	if (!rename_mv(instdir_src, instdir_dst))
+ 		syserr(_("unable to install '%.250s' as '%.250s'"), src, dst);
++
++	free(instdir_src);
++	free(instdir_dst);
+ }
+ 
+ static void
+ checked_rm(const char *f)
+ {
+-	if (!unlink(f))
+-		return;
++	char *instdir_f;
++
++	instdir_f = xasprintf("%s%s", instdir, f);
+ 
+-	if (errno != ENOENT)
++	if (unlink(instdir_f) && errno != ENOENT)
+ 		syserr(_("unable to remove '%s'"), f);
++
++	free(instdir_f);
+ }
+ 
+ static void DPKG_ATTR_PRINTF(1)
+@@ -1046,10 +1110,15 @@ static int
+ altdb_get_namelist(struct dirent ***table)
+ {
+ 	int count;
++	char *instdir_admdir;
++
++	instdir_admdir = xasprintf("%s%s", instdir, admdir);
+ 
+-	count = scandir(admdir, table, altdb_filter_namelist, alphasort);
++	count = scandir(instdir_admdir, table, altdb_filter_namelist, alphasort);
+ 	if (count < 0)
+-		syserr(_("cannot scan directory '%.255s'"), admdir);
++		syserr(_("cannot scan directory '%.255s'"), instdir_admdir);
++
++	free(instdir_admdir);
+ 
+ 	return count;
+ }
+@@ -1255,7 +1324,7 @@ alternative_load(struct alternative *a, enum altdb_flags flags)
+ 		ctx.bad_format = altdb_parse_stop;
+ 	else
+ 		ctx.bad_format = altdb_parse_error;
+-	ctx.filename = xasprintf("%s/%s", admdir, a->master_name);
++	ctx.filename = xasprintf("%s%s/%s", instdir, admdir, a->master_name);
+ 
+ 	/* Open the alternative file. */
+ 	ctx.fh = fopen(ctx.filename, "r");
+@@ -1349,7 +1418,7 @@ alternative_save(struct alternative *a)
+ 	file = xasprintf("%s/%s", admdir, a->master_name);
+ 	filenew = xasprintf("%s" ALT_TMP_EXT, file);
+ 
+-	ctx.filename = filenew;
++	ctx.filename = xasprintf("%s%s", instdir, filenew);
+ 	ctx.fh = fopen(ctx.filename, "w");
+ 	if (ctx.fh == NULL)
+ 		syserr(_("unable to create file '%s'"), ctx.filename);
+@@ -1388,6 +1457,7 @@ alternative_save(struct alternative *a)
+ 		syserr(_("unable to sync file '%s'"), ctx.filename);
+ 	if (fclose(ctx.fh))
+ 		syserr(_("unable to close file '%s'"), ctx.filename);
++	free(ctx.filename);
+ 
+ 	/* Put in place atomically. */
+ 	checked_mv(filenew, file);
+@@ -1681,7 +1751,7 @@ enum alternative_path_status {
+ };
+ 
+ static enum alternative_path_status
+-alternative_path_classify(const char *linkname)
++_alternative_path_classify(const char *linkname)
+ {
+ 	struct stat st;
+ 
+@@ -1697,6 +1767,19 @@ alternative_path_classify(const char *linkname)
+ 	}
+ }
+ 
++static enum alternative_path_status
++alternative_path_classify(const char *linkname)
++{
++	enum alternative_path_status ret;
++	char *instdir_linkname;
++
++	instdir_linkname = xasprintf("%s%s", instdir, linkname);
++	ret = _alternative_path_classify(instdir_linkname);
++	free(instdir_linkname);
++
++	return ret;
++}
++
+ static bool
+ alternative_path_can_remove(const char *linkname)
+ {
+@@ -2563,6 +2646,7 @@ main(int argc, char **argv)
+ 	bindtextdomain(PACKAGE, LOCALEDIR);
+ 	textdomain(PACKAGE);
+ 
++	instdir = instdir_init();
+ 	admdir = admindir_init();
+ 
+ 	if (setvbuf(stdout, NULL, _IONBF, 0))
