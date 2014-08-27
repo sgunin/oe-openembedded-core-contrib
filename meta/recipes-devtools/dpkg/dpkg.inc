@@ -1,9 +1,10 @@
 SUMMARY = "Package maintenance system from Debian"
 LICENSE = "GPLv2.0+"
 SECTION = "base"
+PROVIDES = "${@bb.utils.contains('PACKAGECONFIG', 'update-alternatives', 'virtual/update-alternatives', '', d)}"
 
 DEPENDS = "zlib bzip2 perl ncurses"
-DEPENDS_class-native = "bzip2-replacement-native zlib-native virtual/update-alternatives-native gettext-native perl-native"
+DEPENDS_class-native = "bzip2-replacement-native zlib-native ${@bb.utils.contains('PACKAGECONFIG', 'update-alternatives', '', 'virtual/update-alternatives-native', d)} gettext-native perl-native"
 RDEPENDS_${PN} = "${VIRTUAL-RUNTIME_update-alternatives} perl"
 RDEPENDS_${PN}_class-native = ""
 
@@ -23,6 +24,12 @@ PERL_class-native = "${STAGING_BINDIR_NATIVE}/perl-native/perl"
 export PERL_LIBDIR = "${libdir}/perl/${@get_perl_version(d)}"
 PERL_LIBDIR_class-native = "${libdir}/perl-native/perl/${@get_perl_version(d)}"
 
+UA = "update-alternatives"
+UA_native = "${@['', 'update-alternatives'][d.getVar('PREFERRED_PROVIDER_virtual/update-alternatives-native', True) == 'dpkg-native']}"
+
+PACKAGECONFIG ??= "${UA}"
+PACKAGECONFIG[update-alternatives] = "--enable-update-alternatives,--disable-update-alternatives"
+
 EXTRA_OECONF = "\
 		--disable-dselect \
 		--enable-start-stop-daemon \
@@ -39,8 +46,6 @@ EXTRA_OECONF_append_class-target = " DEB_HOST_ARCH=${DPKG_ARCH}"
 
 do_install_append () {
 	if [ "${PN}" = "dpkg-native" ]; then
-		# update-alternatives doesn't have an offline mode
-		rm ${D}${bindir}/update-alternatives
 		sed -i -e 's|^#!.*${bindir}/perl-native.*/perl|#!/usr/bin/env nativeperl|' ${D}${bindir}/dpkg-*
 	else
 		sed -i -e 's|^#!.*${bindir}/perl-native.*/perl|#!/usr/bin/env perl|' ${D}${bindir}/dpkg-*
@@ -57,14 +62,9 @@ do_install_append () {
 	fi
 }
 
-PROV = "virtual/update-alternatives"
-PROV_class-native = ""
-
-PROVIDES += "${PROV}"
-
 PACKAGES =+ "update-alternatives-dpkg"
 FILES_update-alternatives-dpkg = "${bindir}/update-alternatives ${localstatedir}/lib/dpkg/alternatives ${sysconfdir}/alternatives"
-RPROVIDES_update-alternatives-dpkg += "update-alternatives"
+RPROVIDES_update-alternatives-dpkg = "update-alternatives"
 
 PACKAGES += "${PN}-perl"
 FILES_${PN}-perl = "${libdir}/perl/${@get_perl_version(d)}"

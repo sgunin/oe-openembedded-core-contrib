@@ -8,7 +8,7 @@ SRC_URI = "http://snapshot.debian.org/archive/debian/20160731T221931Z/pool/main/
            file://dpkg-configure.service \
            file://add_armeb_triplet_entry.patch \
            file://0002-Adapt-to-linux-wrs-kernel-version-which-has-characte.patch \
-           file://0003-Our-pre-postinsts-expect-D-to-be-set-when-running-in.patch \
+           file://0003-update-alternatives-Implement-offline-mode.patch \
            file://0004-The-lutimes-function-doesn-t-work-properly-for-all-s.patch \
            file://0005-dpkg-compiler.m4-remove-Wvla.patch \
            file://0006-add-musleabi-to-known-target-tripets.patch \
