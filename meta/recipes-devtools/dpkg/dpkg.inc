@@ -65,6 +65,7 @@ do_install_append () {
 PACKAGES =+ "update-alternatives-dpkg"
 FILES_update-alternatives-dpkg = "${bindir}/update-alternatives ${localstatedir}/lib/dpkg/alternatives ${sysconfdir}/alternatives"
 RPROVIDES_update-alternatives-dpkg = "update-alternatives"
+RCONFLICTS_update-alternatives-dpkg = "update-alternatives"
 
 PACKAGES += "${PN}-perl"
 FILES_${PN}-perl = "${libdir}/perl"
