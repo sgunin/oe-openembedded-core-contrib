@@ -9,11 +9,7 @@ UPSTREAM_CHECK_URI = "${DEBIAN_MIRROR}/main/d/dpkg/"
 
 inherit autotools gettext perlnative pkgconfig systemd perl-version
 
-python () {
-    if not bb.utils.contains('DISTRO_FEATURES', 'sysvinit', True, False, d):
-        pn = d.getVar('PN')
-        d.setVar('SYSTEMD_SERVICE_%s' % (pn), 'dpkg-configure.service')
-}
+SYSTEMD_SERVICE_${PN} = "dpkg-configure.service"
 
 export PERL = "${bindir}/perl"
 PERL_class-native = "${STAGING_BINDIR_NATIVE}/perl-native/perl"
@@ -52,15 +48,13 @@ do_install_append_class-native() {
 }
 
 do_install_append () {
-	if ${@bb.utils.contains('DISTRO_FEATURES','sysvinit','false','true',d)};then
-		install -d ${D}${systemd_unitdir}/system
-		install -m 0644 ${WORKDIR}/dpkg-configure.service ${D}${systemd_unitdir}/system/
-		sed -i -e 's,@BASE_BINDIR@,${base_bindir},g' \
-			-e 's,@SYSCONFDIR@,${sysconfdir},g' \
-			-e 's,@BINDIR@,${bindir},g' \
-			-e 's,@SYSTEMD_UNITDIR@,${systemd_unitdir},g' \
-			${D}${systemd_unitdir}/system/dpkg-configure.service
-	fi
+    install -d ${D}${systemd_unitdir}/system
+    install -m 0644 ${WORKDIR}/dpkg-configure.service ${D}${systemd_unitdir}/system
+    sed -e 's,@BASE_BINDIR@,${base_bindir},g' \
+        -e 's,@SYSCONFDIR@,${sysconfdir},g' \
+        -e 's,@BINDIR@,${bindir},g' \
+        -e 's,@SYSTEMD_UNITDIR@,${systemd_unitdir},g' \
+        -i ${D}${systemd_unitdir}/system/dpkg-configure.service
 }
 
 PACKAGES =+ "dpkg-perl dselect libdpkg-perl start-stop-daemon update-alternatives-dpkg"
