@@ -97,6 +97,8 @@ python copy_buildsystem () {
         if layer != bitbakepath:
             layerrelpath = os.path.relpath(layer, os.path.dirname(toplevel))
             sdkbblayers.append(layerrelpath)
+        else:
+	    d.setVar('BITBAKE_LAYER', os.path.basename(toplevel))
 
     # Create a layer for new recipes / appends
     bb.utils.mkdirhier(baseoutpath + '/workspace/conf')
@@ -173,6 +175,7 @@ python copy_buildsystem () {
 install_sdktool() {
 	install -d ${SDK_OUTPUT}/${SDKPATHNATIVE}${bindir_nativesdk}
 	install -m 0755 ${WORKDIR}/sdktool.py ${SDK_OUTPUT}/${SDKPATHNATIVE}${bindir_nativesdk}/sdktool
+	sed -i -e 's#BITBAKE_LAYER#${BITBAKE_LAYER}#g' ${SDK_OUTPUT}/${SDKPATHNATIVE}${bindir_nativesdk}/sdktool
 }
 
 toolchain_create_sdk_env_script () {
@@ -194,7 +197,7 @@ sdk_postinst() {
 	echo done
 	printf "Preparing build system..."
 	cd $target_sdk_dir
-	sh -c ". layers/poky/oe-init-build-env . > /dev/null && bitbake ${SDK_TARGETS} > /dev/null"
+	sh -c ". layers/${BITBAKE_LAYER}/oe-init-build-env . > /dev/null && bitbake ${SDK_TARGETS} > /dev/null"
 }
 
 SDK_POST_INSTALL_COMMAND = "${sdk_postinst}"

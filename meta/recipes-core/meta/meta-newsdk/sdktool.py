@@ -10,9 +10,8 @@ import sys
 import os
 import argparse
 
-# FIXME these should be written out when producing the SDK
-bitbake_subdir = 'layers/poky/bitbake'
-init_subdir = 'layers/poky'
+bitbake_subdir = 'layers/BITBAKE_LAYER/bitbake'
+init_subdir = 'layers/BITBAKE_LAYER'
 init_script = 'oe-init-build-env'
 
 basepath = os.path.abspath(__file__)
