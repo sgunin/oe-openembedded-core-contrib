@@ -73,14 +73,15 @@ fakeroot rootfs_deb_do_rootfs () {
 	install -d ${IMAGE_ROOTFS}/${sysconfdir}
 	echo ${BUILDNAME} > ${IMAGE_ROOTFS}/${sysconfdir}/version
 
-	# Hacks to allow opkg's update-alternatives and opkg to coexist for now
-	mkdir -p ${IMAGE_ROOTFS}${opkglibdir}
-	if [ -e ${IMAGE_ROOTFS}/var/lib/dpkg/alternatives ]; then
-		rmdir ${IMAGE_ROOTFS}/var/lib/dpkg/alternatives
+	# Hacks to allow opkg's update-alternatives and dpkg to coexist for now
+	if [ -d "${IMAGE_ROOTFS}${opkglibdir}/alternatives" ]; then
+		if [ -e ${IMAGE_ROOTFS}/var/lib/dpkg/alternatives ]; then
+			rmdir ${IMAGE_ROOTFS}/var/lib/dpkg/alternatives
+		fi
+		ln -s ${opkglibdir}/alternatives ${IMAGE_ROOTFS}/var/lib/dpkg/alternatives
+		ln -s /var/lib/dpkg/info ${IMAGE_ROOTFS}${opkglibdir}/info
+		ln -s /var/lib/dpkg/status ${IMAGE_ROOTFS}${opkglibdir}/status
 	fi
-	ln -s ${opkglibdir}/alternatives ${IMAGE_ROOTFS}/var/lib/dpkg/alternatives
-	ln -s /var/lib/dpkg/info ${IMAGE_ROOTFS}${opkglibdir}/info
-	ln -s /var/lib/dpkg/status ${IMAGE_ROOTFS}${opkglibdir}/status
 
 	${ROOTFS_POSTPROCESS_COMMAND}
 
