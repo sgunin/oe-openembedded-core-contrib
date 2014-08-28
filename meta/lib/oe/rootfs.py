@@ -663,10 +663,6 @@ class DpkgRootfs(DpkgOpkgRootfs):
 
         self.pm.fix_broken_dependencies()
 
-        self.pm.mark_packages("installed")
-
-        self.pm.run_pre_post_installs()
-
         execute_pre_post_process(self.d, deb_post_process_cmds)
 
         if self.progress_reporter:
