@@ -1,0 +1,369 @@
+From f08346a2ab4b0da2099197d2f81131b6869fe8cb Mon Sep 17 00:00:00 2001
+From: Andreas Oberritter <obi@opendreambox.org>
+Date: Wed, 6 Apr 2016 00:46:49 +0200
+Subject: [PATCH] apt-opkg: compatibility shim to ease migration from opkg to
+ apt-get
+
+Signed-off-by: Andreas Oberritter <obi@opendreambox.org>
+---
+ apt-private/private-cmndline.cc |  17 ++
+ apt-private/private-cmndline.h  |   1 +
+ cmdline/apt-opkg.cc             | 283 ++++++++++++++++++++++++++++++++
+ cmdline/makefile                |   7 +
+ 4 files changed, 308 insertions(+)
+ create mode 100644 cmdline/apt-opkg.cc
+
+diff --git a/apt-private/private-cmndline.cc b/apt-private/private-cmndline.cc
+index 829085916..644c3db16 100644
+--- a/apt-private/private-cmndline.cc
++++ b/apt-private/private-cmndline.cc
+@@ -301,6 +301,22 @@ static bool addArgumentsAPTSortPkgs(std::vector<CommandLine::Args> &Args, char c
+    return true;
+ }
+ 									/*}}}*/
++static bool addArgumentsAPTOpkg(std::vector<CommandLine::Args> &Args, char const * const Cmd)/*{{{*/
++{
++   if (CmdMatches("info", "list", "list_installed", "list-installed",
++                  "list_upgradable", "list-upgradable", "status")) {
++      ;
++   } else if (CmdMatches("update", "upgrade", "install", "remove")) {
++      addArg(0, "autoremove", "APT::Get::AutomaticRemove", 0);
++      addArg(0, "force-maintainer", "APT::Opkg::ForceMaintainer", 0);
++      addArg(0, "noaction", "APT::Get::Simulate", 0);
++   } else {
++      return false;
++   }
++
++   return true;
++}
++								/*}}}*/
+ static bool addArgumentsAPT(std::vector<CommandLine::Args> &Args, char const * const Cmd)/*{{{*/
+ {
+    if (CmdMatches("list"))
+@@ -351,6 +367,7 @@ std::vector<CommandLine::Args> getCommandArgs(APT_CMD const Program, char const
+ 	 case APT_CMD::APT_HELPER: addArgumentsAPTHelper(Args, Cmd); break;
+ 	 case APT_CMD::APT_INTERNAL_SOLVER: addArgumentsAPTInternalSolver(Args, Cmd); break;
+ 	 case APT_CMD::APT_MARK: addArgumentsAPTMark(Args, Cmd); break;
++	 case APT_CMD::APT_OPKG: addArgumentsAPTOpkg(Args, Cmd); break;
+ 	 case APT_CMD::APT_SORTPKG: addArgumentsAPTSortPkgs(Args, Cmd); break;
+       }
+ 
+diff --git a/apt-private/private-cmndline.h b/apt-private/private-cmndline.h
+index 6235ef9f5..ac770475d 100644
+--- a/apt-private/private-cmndline.h
++++ b/apt-private/private-cmndline.h
+@@ -20,6 +20,7 @@ enum class APT_CMD {
+    APT_HELPER,
+    APT_INTERNAL_SOLVER,
+    APT_MARK,
++   APT_OPKG,
+    APT_SORTPKG,
+ };
+ struct aptDispatchWithHelp
+diff --git a/cmdline/apt-opkg.cc b/cmdline/apt-opkg.cc
+new file mode 100644
+index 000000000..82da9a2f2
+--- /dev/null
++++ b/cmdline/apt-opkg.cc
+@@ -0,0 +1,283 @@
++// vim: tabstop=8 softtabstop=0 expandtab shiftwidth=3 smarttab
++#include <config.h>
++
++#include <apt-pkg/acquire-item.h>
++#include <apt-pkg/cacheset.h>
++#include <apt-pkg/error.h>
++#include <apt-pkg/fileutl.h>
++#include <apt-pkg/init.h>
++#include <apt-pkg/pkgrecords.h>
++#include <apt-pkg/pkgsystem.h>
++#include <apt-pkg/policy.h>
++#include <apt-pkg/sourcelist.h>
++#include <apt-pkg/strutl.h>
++#include <apt-pkg/tagfile.h>
++#include <apt-pkg/update.h>
++
++#include <apt-private/private-cachefile.h>
++#include <apt-private/private-cacheset.h>
++#include <apt-private/private-cmndline.h>
++#include <apt-private/private-install.h>
++#include <apt-private/private-list.h>
++#include <apt-private/private-main.h>
++#include <apt-private/private-output.h>
++#include <apt-private/private-update.h>
++#include <apt-private/private-upgrade.h>
++
++static bool ShowHelp(CommandLine &)					/*{{{*/
++{
++   std::cout <<
++      _("usage: apt-opkg [options...] sub-command [arguments...]\n"
++            "where sub-command is one of:\n"
++
++            "\nPackage Manipulation:\n"
++            "\tupdate                          Update list of available packages\n"
++            "\tupgrade                         Upgrade installed packages\n"
++            "\tinstall <pkgs>                  Install package(s)\n"
++            "\tremove <pkgs|glob>              Remove package(s)\n"
++
++            "\nInformational Commands:\n"
++            "\tlist                            List available packages\n"
++            "\tlist-installed                  List installed packages\n"
++            "\tlist-upgradable                 List installed and upgradable packages\n"
++            "\tinfo [pkg|glob]                 Display all info for <pkg>\n"
++            "\tstatus [pkg|glob]               Display all status for <pkg>\n"
++
++            "\nForce Options:\n"
++            "\t--force-maintainer              Overwrite preexisting config files\n"
++            "\t--noaction                      No action -- test only\n"
++            "\t--autoremove                    Remove packages that were installed\n"
++            "\t                                automatically to satisfy dependencies\n"
++            "\n"
++            " glob could be something like 'pkgname*' '*file*' or similar\n"
++            " e.g. opkg remove 'libncur*'\n");
++
++   return true;
++}
++									/*}}}*/
++static const char *OpkgInfoOrder[] = {
++   "Package",
++   "Version",
++   "Depends",
++   "Recommends",
++   "Suggests",
++   "Provides",
++   "Replaces",
++   "Conflicts",
++   "Status",
++   "Section",
++   "Essential",
++   "Architecture",
++   "Maintainer",
++   "MD5sum",
++   "Size",
++   "Filename",
++   "Conffiles",
++   "Source",
++   "Description",
++   "Installed-Time",
++   "Tags",
++   0
++};
++
++static bool OpkgDisplayRecord(pkgCacheFile &CacheFile, pkgCache::VerIterator V)
++{
++   pkgCache *Cache = CacheFile.GetPkgCache();
++   if (unlikely(Cache == NULL))
++      return false;
++
++   pkgDepCache *depCache = CacheFile.GetDepCache();
++   if (unlikely(depCache == NULL))
++      return false;
++
++   // Find an appropriate file
++   pkgCache::VerFileIterator Vf = V.FileList();
++   for (; Vf.end() == false; ++Vf)
++      if ((Vf.File()->Flags & pkgCache::Flag::NotSource) == 0)
++         break;
++   if (Vf.end() == true)
++      Vf = V.FileList();
++
++   // Check and load the package list file
++   pkgCache::PkgFileIterator I = Vf.File();
++   if (I.IsOk() == false)
++      return _error->Error("Package file %s is out of sync.",
++                 I.FileName());
++
++   // find matching sources.list metaindex
++   pkgSourceList *SrcList = CacheFile.GetSourceList();
++   pkgIndexFile *Index;
++   if (SrcList->FindIndex(I, Index) == false &&
++       _system->FindIndex(I, Index) == false)
++      return _error->Error("Can not find indexfile for Package %s (%s)",
++           V.ParentPkg().Name(), V.VerStr());
++
++   // Read the record
++   FileFd PkgF;
++   if (!PkgF.Open(I.FileName(), FileFd::ReadOnly, FileFd::Extension))
++      return false;
++
++   pkgTagSection Tags;
++   pkgTagFile TagF(&PkgF);
++   if (!TagF.Jump(Tags, V.FileList()->Offset))
++      return _error->Error("Internal Error, Unable to parse a package record");
++
++   std::vector<pkgTagSection::Tag> RW;
++   // we use the translated description
++   RW.push_back(pkgTagSection::Tag::Remove("Description"));
++   RW.push_back(pkgTagSection::Tag::Remove("Description-md5"));
++
++   FileFd stdoutfd;
++   if (stdoutfd.OpenDescriptor(STDOUT_FILENO, FileFd::WriteOnly, false) == false ||
++      Tags.Write(stdoutfd, OpkgInfoOrder, RW) == false || stdoutfd.Close() == false)
++      return _error->Error("Internal Error, Unable to parse a package record");
++
++   // write the description
++   pkgRecords Recs(*Cache);
++   pkgCache::DescIterator Desc = V.TranslatedDescription();
++   if (Desc.end() == false) {
++      pkgRecords::Parser &P = Recs.Lookup(Desc.FileList());
++      std::cout << "Description: " << P.LongDesc() << std::endl;
++   }
++   // write a final newline (after the description)
++   std::cout << std::endl;
++
++   return true;
++}
++
++static bool OpkgInfoStatus(CommandLine &cmdline, APT::CacheSetHelper::VerSelector select)
++{
++   pkgCacheFile CacheFile;
++   APT::CacheSetHelper helper;
++
++   APT::VersionList const verset = APT::VersionList::FromCommandLine(CacheFile, &cmdline.FileList[1], select, helper);
++   for (APT::VersionList::const_iterator Ver = verset.begin(); Ver != verset.end(); ++Ver)
++      if (!OpkgDisplayRecord(CacheFile, Ver))
++         return false;
++
++   if (verset.empty())
++      _error->Notice("No packages found");
++
++   return true;
++}
++
++static bool OpkgInfo(CommandLine &cmdline)
++{
++   return OpkgInfoStatus(cmdline, APT::CacheSetHelper::ALL);
++}
++
++static bool OpkgClean()
++{
++   std::string const archivedir = _config->FindDir("Dir::Cache::archives");
++
++   // Lock the archive directory
++   FileFd Lock;
++   if (_config->FindB("Debug::NoLocking",false) == false) {
++      int lock_fd = GetLock(archivedir + "lock");
++      if (lock_fd < 0)
++         return _error->Error(_("Unable to lock the download directory"));
++      Lock.Fd(lock_fd);
++   }
++
++   pkgAcquire Fetcher;
++   Fetcher.Clean(archivedir);
++   Fetcher.Clean(archivedir + "partial/");
++   return true;
++}
++
++static bool OpkgInstall(CommandLine &cmdline)
++{
++   return DoInstall(cmdline) && OpkgClean();
++}
++
++static bool OpkgList(CommandLine &cmdline)
++{
++   _config->Set("APT::Cmd::use-format", true);
++   _config->Set("APT::Cmd::format", "${Package} - ${candidate:Version} - ${Description}");
++   _config->Set("quiet", 2);
++
++   return DoList(cmdline);
++}
++
++static bool OpkgListInstalled(CommandLine &cmdline)
++{
++   _config->Set("APT::Cmd::Installed", true);
++   _config->Set("APT::Cmd::use-format", true);
++   _config->Set("APT::Cmd::format", "${Package} - ${installed:Version} - ${Description}");
++   _config->Set("quiet", 2);
++
++   cmdline.FileList[0] = "list";
++   return DoList(cmdline);
++}
++
++static bool OpkgListUpgradable(CommandLine &cmdline)
++{
++   _config->Set("APT::Cmd::Upgradable", true);
++   _config->Set("APT::Cmd::use-format", true);
++   _config->Set("APT::Cmd::format", "${Package} - ${installed:Version} - ${candidate:Version}");
++   _config->Set("quiet", 2);
++
++   cmdline.FileList[0] = "list";
++   return DoList(cmdline);
++}
++
++static bool OpkgStatus(CommandLine &cmdline)
++{
++   return OpkgInfoStatus(cmdline, APT::CacheSetHelper::INSTALLED);
++}
++
++static bool OpkgUpgrade(CommandLine &cmdline)
++{
++   _config->Set("APT::Get::Show-Upgraded", true);
++
++   cmdline.FileList[0] = "dist-upgrade";
++   return DoDistUpgrade(cmdline) && OpkgClean();
++}
++
++static std::vector<aptDispatchWithHelp> GetCommands()
++{
++   return {
++      {"update", &DoUpdate, nullptr},
++      {"upgrade", &OpkgUpgrade, nullptr},
++      {"install", &OpkgInstall, nullptr},
++      {"remove", &DoInstall, nullptr},
++      {"dist-upgrade", &OpkgUpgrade, nullptr}, // not available in opkg, but needed by CmdL.DispatchArg
++      {"list", &OpkgList, nullptr},
++      {"list_installed", &OpkgListInstalled, nullptr},
++      {"list-installed", &OpkgListInstalled, nullptr},
++      {"list_upgradable", &OpkgListUpgradable, nullptr},
++      {"list-upgradable", &OpkgListUpgradable, nullptr},
++      {"info", &OpkgInfo, nullptr},
++      {"status", &OpkgStatus, nullptr},
++      {nullptr, nullptr, nullptr},
++   };
++}
++
++int main(int argc,const char *argv[])					/*{{{*/
++{
++   // Parse the command line and initialize the package library
++   CommandLine CmdL;
++   auto const Cmds = ParseCommandLine(CmdL, APT_CMD::APT_OPKG, &_config, &_system, argc, argv, &ShowHelp, &GetCommands);
++
++   if (CmdL.FileSize() == 0) {
++      ShowHelp(CmdL);
++      return 1;
++   }
++
++   if (Glob("/etc/apt/trusted.gpg.d/*.gpg").size() == 0)
++      _config->Set("APT::Get::AllowUnauthenticated", true);
++   _config->Set("APT::Get::Assume-Yes", true);
++   _config->Set("APT::Get::force-yes", true);
++   _config->Set("quiet", 1);
++
++   if (_config->FindB("APT::Opkg::ForceMaintainer"))
++      _config->Set("Dpkg::Options::", "--force-confnew");
++
++   InitSignals();
++   InitOutput();
++
++   CheckIfSimulateMode(CmdL);
++
++   return DispatchCommandLine(CmdL, Cmds);
++}
++									/*}}}*/
+diff --git a/cmdline/makefile b/cmdline/makefile
+index 6d21b0803..a9d2468c9 100644
+--- a/cmdline/makefile
++++ b/cmdline/makefile
+@@ -40,6 +40,13 @@ LIB_MAKES = apt-pkg/makefile apt-private/makefile
+ SOURCE = apt-cdrom.cc 
+ include $(PROGRAM_H)
+ 
++# The apt-opkg program
++PROGRAM=apt-opkg
++SLIBS = -lapt-pkg -lapt-private
++LIB_MAKES = apt-pkg/makefile apt-private/makefile
++SOURCE = apt-opkg.cc
++include $(PROGRAM_H)
++
+ # The apt-mark program
+ PROGRAM=apt-mark
+ SLIBS = -lapt-pkg -lapt-private $(INTLLIBS)
