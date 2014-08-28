@@ -39,6 +39,10 @@ DPKG_DEB_COMPRESSOR ?= "${@base_contains('PACKAGECONFIG', 'xz', 'xz', 'gzip', d)
 
 EXTRA_OECONF += "--sbindir=${base_sbindir} --with-dpkg-deb-compressor=${DPKG_DEB_COMPRESSOR}"
 
+do_configure_prepend_class-native() {
+    sed -i -e 's|SYSCONFDIR|"/etc"|' ${S}/utils/update-alternatives.c
+}
+
 do_install_append_class-native() {
     sed -i -e 's|^#!${PERL}|#!/usr/bin/env nativeperl|' ${D}${bindir}/dpkg-*
 }
