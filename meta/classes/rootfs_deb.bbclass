@@ -15,14 +15,6 @@ DEB_POSTPROCESS_COMMANDS = ""
 
 opkglibdir = "${localstatedir}/lib/opkg"
 
-deb_package_setflag() {
-	sed -i -e "/^Package: $2\$/{n; s/Status: install ok .*/Status: install ok $1/;}" ${IMAGE_ROOTFS}/var/lib/dpkg/status
-}
-
-deb_package_getflag() {
-	cat ${IMAGE_ROOTFS}/var/lib/dpkg/status | sed -n -e "/^Package: $2\$/{n; s/Status: install ok .*/$1/; p}"
-}
-
 fakeroot rootfs_deb_do_rootfs () {
 	set +e
 
@@ -40,11 +32,6 @@ fakeroot rootfs_deb_do_rootfs () {
 	export INSTALL_PACKAGES_LINGUAS_DEB="${LINGUAS_INSTALL}"
 	export INSTALL_TASK_DEB="rootfs"
 
-	package_install_internal_deb
-	${DEB_POSTPROCESS_COMMANDS}
-
-	rootfs_install_complementary
-
 	export D=${IMAGE_ROOTFS}
 	export OFFLINE_ROOT=${IMAGE_ROOTFS}
 	export IPKG_OFFLINE_ROOT=${IMAGE_ROOTFS}
@@ -52,21 +39,10 @@ fakeroot rootfs_deb_do_rootfs () {
 	export INTERCEPT_DIR=${WORKDIR}/intercept_scripts
 	export NATIVE_ROOT=${STAGING_DIR_NATIVE}
 
-	# Attempt to run preinsts
-	# Mark packages with preinst failures as unpacked
-	for i in ${IMAGE_ROOTFS}/var/lib/dpkg/info/*.preinst; do
-		if [ -f $i ] && ! sh $i; then
-			deb_package_setflag unpacked `basename $i .preinst`
-		fi
-	done
+	package_install_internal_deb
+	${DEB_POSTPROCESS_COMMANDS}
 
-	# Attempt to run postinsts
-	# Mark packages with postinst failures as unpacked
-	for i in ${IMAGE_ROOTFS}/var/lib/dpkg/info/*.postinst; do
-		if [ -f $i ] && ! sh $i configure; then
-			deb_package_setflag unpacked `basename $i .postinst`
-		fi
-	done
+	rootfs_install_complementary
 
 	set -e
 
