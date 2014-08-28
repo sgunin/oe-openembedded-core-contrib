@@ -1757,79 +1757,6 @@ class DpkgPM(PackageManager):
 
         self.indexer = DpkgIndexer(self.d, self.deploy_dir)
 
-    """
-    This function will change a package's status in /var/lib/dpkg/status file.
-    If 'packages' is None then the new_status will be applied to all
-    packages
-    """
-    def mark_packages(self, status_tag, packages=None):
-        status_file = self.target_rootfs + "/var/lib/dpkg/status"
-
-        with open(status_file, "r") as sf:
-            with open(status_file + ".tmp", "w+") as tmp_sf:
-                if packages is None:
-                    tmp_sf.write(re.sub(r"Package: (.*?)\n((?:[^\n]+\n)*?)Status: (.*)(?:unpacked|installed)",
-                                        r"Package: \1\n\2Status: \3%s" % status_tag,
-                                        sf.read()))
-                else:
-                    if type(packages).__name__ != "list":
-                        raise TypeError("'packages' should be a list object")
-
-                    status = sf.read()
-                    for pkg in packages:
-                        status = re.sub(r"Package: %s\n((?:[^\n]+\n)*?)Status: (.*)(?:unpacked|installed)" % pkg,
-                                        r"Package: %s\n\1Status: \2%s" % (pkg, status_tag),
-                                        status)
-
-                    tmp_sf.write(status)
-
-        os.rename(status_file + ".tmp", status_file)
-
-    """
-    Run the pre/post installs for package "package_name". If package_name is
-    None, then run all pre/post install scriptlets.
-    """
-    def run_pre_post_installs(self, package_name=None):
-        info_dir = self.target_rootfs + "/var/lib/dpkg/info"
-        suffixes = [(".preinst", "Preinstall"), (".postinst", "Postinstall")]
-        status_file = self.target_rootfs + "/var/lib/dpkg/status"
-        installed_pkgs = []
-
-        with open(status_file, "r") as status:
-            for line in status.read().split('\n'):
-                m = re.match("^Package: (.*)", line)
-                if m is not None:
-                    installed_pkgs.append(m.group(1))
-
-        if package_name is not None and not package_name in installed_pkgs:
-            return
-
-        os.environ['D'] = self.target_rootfs
-        os.environ['OFFLINE_ROOT'] = self.target_rootfs
-        os.environ['IPKG_OFFLINE_ROOT'] = self.target_rootfs
-        os.environ['OPKG_OFFLINE_ROOT'] = self.target_rootfs
-        os.environ['INTERCEPT_DIR'] = os.path.join(self.d.getVar('WORKDIR', True),
-                                                   "intercept_scripts")
-        os.environ['NATIVE_ROOT'] = self.d.getVar('STAGING_DIR_NATIVE', True)
-
-        failed_pkgs = []
-        for pkg_name in installed_pkgs:
-            for suffix in suffixes:
-                p_full = os.path.join(info_dir, pkg_name + suffix[0])
-                if os.path.exists(p_full):
-                    try:
-                        bb.note("Executing %s for package: %s ..." %
-                                 (suffix[1].lower(), pkg_name))
-                        subprocess.check_output(p_full, stderr=subprocess.STDOUT)
-                    except subprocess.CalledProcessError as e:
-                        bb.note("%s for package %s failed with %d:\n%s" %
-                                (suffix[1], pkg_name, e.returncode, e.output))
-                        failed_pkgs.append(pkg_name)
-                        break
-
-        if len(failed_pkgs):
-            self.mark_packages("unpacked", failed_pkgs)
-
     def update(self):
         os.environ['APT_CONFIG'] = self.apt_conf_file
 
@@ -1850,6 +1777,14 @@ class DpkgPM(PackageManager):
             return
 
         os.environ['APT_CONFIG'] = self.apt_conf_file
+
+        os.environ['D'] = self.target_rootfs
+        os.environ['OFFLINE_ROOT'] = self.target_rootfs
+        os.environ['IPKG_OFFLINE_ROOT'] = self.target_rootfs
+        os.environ['OPKG_OFFLINE_ROOT'] = self.target_rootfs
+        os.environ['INTERCEPT_DIR'] = os.path.join(self.d.getVar('WORKDIR', True),
+                                                   "intercept_scripts")
+        os.environ['NATIVE_ROOT'] = self.d.getVar('STAGING_DIR_NATIVE', True)
 
         cmd = "%s %s install --force-yes --allow-unauthenticated %s" % \
               (self.apt_get_cmd, self.apt_args, ' '.join(pkgs))

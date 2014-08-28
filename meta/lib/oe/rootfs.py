@@ -663,10 +663,6 @@ class DpkgRootfs(DpkgOpkgRootfs):
 
         self.pm.fix_broken_dependencies()
 
-        self.pm.mark_packages("installed")
-
-        self.pm.run_pre_post_installs()
-
         execute_pre_post_process(self.d, deb_post_process_cmds)
 
     @staticmethod
@@ -683,7 +679,7 @@ class DpkgRootfs(DpkgOpkgRootfs):
         return self._save_postinsts_common(dst_postinst_dir, src_postinst_dir)
 
     def _handle_intercept_failure(self, registered_pkgs):
-        self.pm.mark_packages("unpacked", registered_pkgs.split())
+        pass
 
     def _log_check(self):
         self._log_check_warn()
