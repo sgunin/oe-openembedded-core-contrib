@@ -39,12 +39,6 @@ DPKG_DEB_COMPRESSOR ?= "${@base_contains('PACKAGECONFIG', 'xz', 'xz', 'gzip', d)
 
 EXTRA_OECONF += "--sbindir=${base_sbindir} --with-dpkg-deb-compressor=${DPKG_DEB_COMPRESSOR}"
 
-do_configure () {
-    echo >> ${S}/m4/compiler.m4
-    sed -i -e 's#PERL_LIBDIR=.*$#PERL_LIBDIR="${libdir}/perl"#' ${S}/configure
-    autotools_do_configure
-}
-
 do_install_append () {
 	if [ "${PN}" = "dpkg-native" ]; then
 		sed -i -e 's|^#!.*${bindir}/perl-native.*/perl|#!/usr/bin/env nativeperl|' ${D}${bindir}/dpkg-*
