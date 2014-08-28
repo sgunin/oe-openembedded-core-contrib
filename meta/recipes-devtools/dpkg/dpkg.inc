@@ -39,13 +39,11 @@ DPKG_DEB_COMPRESSOR ?= "${@base_contains('PACKAGECONFIG', 'xz', 'xz', 'gzip', d)
 
 EXTRA_OECONF += "--sbindir=${base_sbindir} --with-dpkg-deb-compressor=${DPKG_DEB_COMPRESSOR}"
 
-do_install_append () {
-	if [ "${PN}" = "dpkg-native" ]; then
-		sed -i -e 's|^#!.*${bindir}/perl-native.*/perl|#!/usr/bin/env nativeperl|' ${D}${bindir}/dpkg-*
-	else
-		sed -i -e 's|^#!.*${bindir}/perl-native.*/perl|#!/usr/bin/env perl|' ${D}${bindir}/dpkg-*
-	fi
+do_install_append_class-native() {
+    sed -i -e 's|^#!${PERL}|#!/usr/bin/env nativeperl|' ${D}${bindir}/dpkg-*
+}
 
+do_install_append () {
 	if ${@base_contains('DISTRO_FEATURES','sysvinit','false','true',d)};then
 		install -d ${D}${systemd_unitdir}/system
 		install -m 0644 ${WORKDIR}/dpkg-configure.service ${D}${systemd_unitdir}/system/
