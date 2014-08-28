@@ -43,12 +43,6 @@ do_configure_prepend_class-native() {
     sed -i -e 's|SYSCONFDIR|"/etc"|' ${S}/utils/update-alternatives.c
 }
 
-do_configure () {
-    echo >> ${S}/m4/compiler.m4
-    sed -i -e 's#PERL_LIBDIR=.*$#PERL_LIBDIR="${libdir}/perl"#' ${S}/configure
-    autotools_do_configure
-}
-
 do_install_append () {
 	if [ "${PN}" = "dpkg-native" ]; then
 		sed -i -e 's|^#!.*${bindir}/perl-native.*/perl|#!/usr/bin/env nativeperl|' ${D}${bindir}/dpkg-*
