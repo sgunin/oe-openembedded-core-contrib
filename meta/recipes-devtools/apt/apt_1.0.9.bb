@@ -13,13 +13,14 @@ SRC_URI = "${DEBIAN_MIRROR}/main/a/apt/apt_${PV}.tar.xz \
            file://db_linking_hack.patch \
            file://Fix-regression-for-file-uris-from-CVE-2014-0487.patch \
            file://disable-tests-and-drop-dependency-on-gtest.patch \
+           file://apt-opkg-compatibility-shim-to-ease-migration-from-o.patch \
            file://apt.conf.in"
 SRC_URI[md5sum] = "14d68e7bc6a5f3cef28ca1edf744cdbe"
 SRC_URI[sha256sum] = "4e6f25464a38e94961e107ebd1afb72dbb865d096504aa7194f55c755706c071"
 
 S = "${WORKDIR}/apt-1.0.8"
 
-inherit autotools gettext
+inherit autotools gettext update-alternatives
 
 EXTRA_AUTORECONF = "--exclude=autopoint,autoheader"
 EXTRA_OECONF = "--disable-rpath --without-getconf"
@@ -45,7 +46,7 @@ do_install() {
     install -d ${D}${sysconfdir}/apt/trusted.gpg.d
 
     install -d ${D}${bindir}
-    for f in apt apt-cache apt-cdrom apt-config apt-extracttemplates apt-ftparchive apt-get apt-key apt-mark apt-sortpkgs; do
+    for f in apt apt-cache apt-cdrom apt-config apt-extracttemplates apt-ftparchive apt-get apt-key apt-mark apt-opkg apt-sortpkgs; do
         install -m 0755 bin/$f ${D}${bindir}
     done
 
@@ -98,20 +99,26 @@ do_install_append_class-target() {
     echo 'APT::Architecture "${DPKG_ARCH}";' > ${D}${sysconfdir}/apt/apt.conf
 }
 
-PACKAGES =+ "apt-transport-https apt-utils libapt-inst libapt-pkg"
+PACKAGES =+ "apt-opkg apt-transport-https apt-utils libapt-inst libapt-pkg"
 
 RDEPENDS_${PN} = "dpkg"
 
 RRECOMMENDS_${PN} = "gnupg"
 RRECOMMENDS_${PN}_class-native = ""
 
+RPROVIDES_apt-opkg = "opkg"
+
 FILES_${PN} += "${libdir}/dpkg"
 FILES_${PN}-dbg += "${libdir}/apt/methods/.debug"
+FILES_apt-opkg = "${bindir}/apt-opkg"
 FILES_apt-transport-https = "${libdir}/apt/methods/https"
 FILES_apt-utils = "${bindir}/apt-extracttemplates \
                    ${bindir}/apt-ftparchive \
                    ${bindir}/apt-sortpkgs"
 FILES_libapt-inst = "${libdir}/libapt-inst${SOLIBS}"
 FILES_libapt-pkg = "${libdir}/libapt-pkg${SOLIBS}"
+
+ALTERNATIVE_apt-opkg = "opkg"
+ALTERNATIVE_TARGET_apt-opkg[opkg] = "${bindir}/apt-opkg"
 
 BBCLASSEXTEND = "native"
