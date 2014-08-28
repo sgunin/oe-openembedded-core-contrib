@@ -70,6 +70,7 @@ package_install_internal_deb () {
 	mkdir -p ${APTCONF_TARGET}/apt
 	mkdir -p ${APTCONF_TARGET}/apt/lists/partial/
 	mkdir -p ${APTCONF_TARGET}/apt/apt.conf.d/
+	mkdir -p ${APTCONF_TARGET}/apt/preferences.d/
 	rm -f ${APTCONF_TARGET}/apt/sources.list.rev
 	rm -f ${APTCONF_TARGET}/apt/preferences
 
