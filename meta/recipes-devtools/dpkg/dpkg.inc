@@ -37,6 +37,10 @@ EXTRA_OECONF_append_class-target = " --disable-update-alternatives DEB_HOST_ARCH
 PACKAGECONFIG = "liblzma"
 PACKAGECONFIG[liblzma] = "--with-liblzma,--without-liblzma, xz"
 
+do_configure_prepend_class-native() {
+    sed -i -e 's|SYSCONFDIR|"${sysconfdir_native}"|' ${S}/utils/update-alternatives.c
+}
+
 do_install_append () {
 	if [ "${PN}" = "dpkg-native" ]; then
 		sed -i -e 's|^#!.*${bindir}/perl-native.*/perl|#!/usr/bin/env nativeperl|' ${D}${bindir}/dpkg-*
