@@ -43,13 +43,11 @@ do_configure_prepend_class-native() {
     sed -i -e 's|SYSCONFDIR|"/etc"|' ${S}/utils/update-alternatives.c
 }
 
-do_install_append () {
-	if [ "${PN}" = "dpkg-native" ]; then
-		sed -i -e 's|^#!.*${bindir}/perl-native.*/perl|#!/usr/bin/env nativeperl|' ${D}${bindir}/dpkg-*
-	else
-		sed -i -e 's|^#!.*${bindir}/perl-native.*/perl|#!/usr/bin/env perl|' ${D}${bindir}/dpkg-*
-	fi
+do_install_append_class-native() {
+    sed -i -e 's|^#!${PERL}|#!/usr/bin/env nativeperl|' ${D}${bindir}/dpkg-*
+}
 
+do_install_append () {
 	if ${@bb.utils.contains('DISTRO_FEATURES','sysvinit','false','true',d)};then
 		install -d ${D}${systemd_unitdir}/system
 		install -m 0644 ${WORKDIR}/dpkg-configure.service ${D}${systemd_unitdir}/system/
