@@ -35,7 +35,7 @@ PACKAGECONFIG[xz] = "--with-liblzma,--without-liblzma,xz"
 
 DPKG_DEB_COMPRESSOR ?= "${@bb.utils.contains('PACKAGECONFIG', 'xz', 'xz', 'gzip', d)}"
 
-EXTRA_OECONF += "--with-dpkg-deb-compressor=${DPKG_DEB_COMPRESSOR}"
+EXTRA_OECONF += "--sbindir=${base_sbindir} --with-dpkg-deb-compressor=${DPKG_DEB_COMPRESSOR}"
 
 PACKAGECONFIG = "liblzma"
 PACKAGECONFIG[liblzma] = "--with-liblzma,--without-liblzma, xz"
@@ -65,10 +65,14 @@ do_install_append () {
 	fi
 }
 
-PACKAGES =+ "update-alternatives-dpkg"
+PACKAGES =+ "start-stop-daemon update-alternatives-dpkg"
 
 RDEPENDS_${PN} = "${VIRTUAL-RUNTIME_update-alternatives} perl"
 RDEPENDS_${PN}_class-native = ""
+RRECOMMENDS_${PN} = "start-stop-daemon"
+RRECOMMENDS_${PN}_class-native = ""
+
+FILES_start-stop-daemon = "${base_sbindir}/start-stop-daemon"
 
 FILES_update-alternatives-dpkg = "${bindir}/update-alternatives ${localstatedir}/lib/dpkg/alternatives ${sysconfdir}/alternatives"
 RPROVIDES_update-alternatives-dpkg = "update-alternatives"
@@ -95,15 +99,5 @@ RDEPENDS_${PN}-perl += "perl-module-carp perl-module-constant \
                         perl-module-tie-hash perl-module-storable \
                         perl-module-time-hires perl-module-time-piece \
                         perl-module-xsloader"
-
-# Split out start-stop-daemon to its own package.  Note that it
-# is installed in a different directory than the one used for
-# the bitbake version.
-#
-PACKAGES =+ "${PN}-start-stop"
-FILES_${PN}-start-stop = "${sbindir}/start-stop-daemon"
-
-RDEPENDS_${PN} += "${PN}-start-stop"
-
 
 BBCLASSEXTEND = "native"
