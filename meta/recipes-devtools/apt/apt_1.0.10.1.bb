@@ -16,6 +16,7 @@ SRC_URI = "http://snapshot.debian.org/archive/debian/20150805T094928Z/pool/main/
            file://0001-environment.mak-musl-based-systems-can-generate-shar.patch \
            file://0001-remove-Wsuggest-attribute-from-CFLAGS.patch \
            file://0001-fix-the-gcc-version-check.patch \
+           file://apt-opkg-compatibility-shim-to-ease-migration-from-o.patch \
            file://apt.conf.in \
            "
 SRC_URI[md5sum] = "6505c4297b338adb2087ce87bbc4a276"
@@ -25,13 +26,14 @@ SRC_URI[sha256sum] = "3fb1de9598363c416591d49e3c285458e095b035e6c06d5b944a54e15f
 # so we check the latest upstream from a directory that does get updated
 UPSTREAM_CHECK_URI = "${DEBIAN_MIRROR}/main/a/apt/"
 
-inherit autotools gettext
+inherit autotools gettext update-alternatives
 
 EXTRA_AUTORECONF = "--exclude=autopoint,autoheader"
 
 PACKAGECONFIG ??= "lzma"
 PACKAGECONFIG[lzma] = "ac_cv_lib_lzma_lzma_easy_encoder=yes,ac_cv_lib_lzma_lzma_easy_encoder=no,xz"
 PACKAGECONFIG[bz2] = "ac_cv_lib_bz2_BZ2_bzopen=yes,ac_cv_lib_bz2_BZ2_bzopen=no,bzip2"
+PACKAGECONFIG[opkg] = ",,,"
 
 USE_NLS_class-native = "yes"
 
@@ -43,6 +45,7 @@ do_configure_prepend() {
 PROGRAMS = " \
     apt apt-cache apt-cdrom apt-config apt-extracttemplates \
     apt-ftparchive apt-get apt-key apt-mark apt-sortpkgs \
+    ${@bb.utils.contains('PACKAGECONFIG', 'opkg', 'apt-opkg', '', d)} \
 "
 
 do_install () {
@@ -99,7 +102,7 @@ do_install_append_class-target() {
     echo 'APT::Architecture "${DPKG_ARCH}";' > ${D}${sysconfdir}/apt/apt.conf
 }
 
-PACKAGES =+ "${PN}-dselect ${PN}-transport-https ${PN}-utils lib${PN}-inst lib${PN}-pkg"
+PACKAGES =+ "${PN}-dselect ${PN}-opkg ${PN}-transport-https ${PN}-utils lib${PN}-inst lib${PN}-pkg"
 
 RDEPENDS_${PN} = "dpkg debianutils"
 RDEPENDS_${PN}-dselect = "bash"
@@ -107,13 +110,19 @@ RDEPENDS_${PN}-dselect = "bash"
 RRECOMMENDS_${PN} = "gnupg"
 RRECOMMENDS_${PN}_class-native = ""
 
+RPROVIDES_${PN}-opkg = "opkg"
+
 FILES_${PN} += "${libdir}/dpkg"
 FILES_${PN}-dselect = "${libdir}/dpkg/methods/apt"
+FILES_${PN}-opkg = "${bindir}/apt-opkg"
 FILES_${PN}-transport-https = "${libdir}/apt/methods/https"
 FILES_${PN}-utils = "${bindir}/apt-extracttemplates \
                      ${bindir}/apt-ftparchive \
                      ${bindir}/apt-sortpkgs"
 FILES_lib${PN}-inst = "${libdir}/libapt-inst${SOLIBS}"
 FILES_lib${PN}-pkg = "${libdir}/libapt-pkg${SOLIBS}"
+
+ALTERNATIVE_${PN}-opkg = "${@bb.utils.contains('PACKAGECONFIG', 'opkg', 'opkg', '', d)}"
+ALTERNATIVE_TARGET[opkg] = "${bindir}/apt-opkg"
 
 BBCLASSEXTEND = "native"
