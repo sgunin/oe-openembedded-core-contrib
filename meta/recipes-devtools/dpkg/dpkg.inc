@@ -10,8 +10,6 @@ SRC_URI = "${DEBIAN_MIRROR}/main/d/dpkg/dpkg_${PV}.tar.xz \
 
 S = "${WORKDIR}/${BPN}-${PV}"
 
-PARALLEL_MAKE = ""
-
 inherit autotools gettext perlnative pkgconfig systemd
 
 python () {
