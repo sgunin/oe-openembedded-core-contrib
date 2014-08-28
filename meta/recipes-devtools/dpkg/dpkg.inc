@@ -34,7 +34,7 @@ PACKAGECONFIG[xz] = "--with-liblzma,--without-liblzma,xz"
 
 DPKG_DEB_COMPRESSOR ?= "${@base_contains('PACKAGECONFIG', 'xz', 'xz', 'gzip', d)}"
 
-EXTRA_OECONF += "--with-dpkg-deb-compressor=${DPKG_DEB_COMPRESSOR}"
+EXTRA_OECONF += "--sbindir=${base_sbindir} --with-dpkg-deb-compressor=${DPKG_DEB_COMPRESSOR}"
 
 EXTRA_OECONF += "TAR=tar"
 EXTRA_OECONF += "DEB_HOST_ARCH=${DPKG_ARCH}"
