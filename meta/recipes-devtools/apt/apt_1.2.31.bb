@@ -16,6 +16,7 @@ SRC_URI = "https://launchpad.net/ubuntu/+archive/primary/+sourcefiles/${BPN}/${P
            file://0001-environment.mak-musl-based-systems-can-generate-shar.patch \
            file://0001-apt-1.2.12-Fix-musl-build.patch \
            file://0001-Include-array.h-for-std-array.patch \
+           file://0001-apt-opkg-compatibility-shim-to-ease-migration-from-o.patch \
            file://gcc_4.x_apt-pkg-contrib-strutl.cc-Include-array-header.patch \
            file://gcc_4.x_Revert-avoid-changing-the-global-LC_TIME-for-Release.patch \
            file://gcc_4.x_Revert-use-de-localed-std-put_time-instead-rolling-o.patch \
@@ -28,7 +29,7 @@ SRC_URI[sha256sum] = "03ded4f5e9b8d43ecec083704b2dcabf20c182ed382db9ac7251da0b0b
 # so we check the latest upstream from a directory that does get updated
 UPSTREAM_CHECK_URI = "${DEBIAN_MIRROR}/main/a/apt/"
 
-inherit autotools gettext useradd
+inherit autotools gettext update-alternatives useradd
 
 AUTOTOOLS_AUXDIR = "${S}/buildlib"
 
@@ -39,6 +40,7 @@ PACKAGECONFIG ??= "lzma"
 PACKAGECONFIG[lzma] = "ac_cv_lib_lzma_lzma_easy_encoder=yes,ac_cv_lib_lzma_lzma_easy_encoder=no,xz"
 PACKAGECONFIG[bz2] = "ac_cv_lib_bz2_BZ2_bzopen=yes,ac_cv_lib_bz2_BZ2_bzopen=no,bzip2"
 PACKAGECONFIG[lz4] = "ac_cv_lib_lz4_LZ4F_createCompressionContext=yes,ac_cv_lib_lz4_LZ4F_createCompressionContext=no,lz4"
+PACKAGECONFIG[opkg] = ",,,"
 
 USE_NLS_class-native = "yes"
 
@@ -53,6 +55,7 @@ USERADD_PARAM_${PN} = "--system --no-create-home --home-dir /nonexistent --shell
 PROGRAMS = " \
     apt apt-cache apt-cdrom apt-config apt-extracttemplates \
     apt-ftparchive apt-get apt-key apt-mark apt-sortpkgs \
+    ${@bb.utils.contains('PACKAGECONFIG', 'opkg', 'apt-opkg', '', d)} \
 "
 
 inherit systemd
@@ -122,7 +125,7 @@ do_install_append_class-target() {
     echo 'APT::Architecture "${DPKG_ARCH}";' > ${D}${sysconfdir}/apt/apt.conf
 }
 
-PACKAGES =+ "${PN}-dselect ${PN}-transport-https ${PN}-utils lib${PN}-inst lib${PN}-pkg"
+PACKAGES =+ "${PN}-dselect ${PN}-opkg ${PN}-transport-https ${PN}-utils lib${PN}-inst lib${PN}-pkg"
 
 RDEPENDS_${PN} = "dpkg debianutils"
 RDEPENDS_${PN}-dselect = "bash perl"
@@ -130,13 +133,19 @@ RDEPENDS_${PN}-dselect = "bash perl"
 RRECOMMENDS_${PN} = "gnupg"
 RRECOMMENDS_${PN}_class-native = ""
 
+RPROVIDES_${PN}-opkg = "opkg"
+
 FILES_${PN} += "${libdir}/dpkg ${systemd_system_unitdir}/apt-daily.service"
 FILES_${PN}-dselect = "${libdir}/dpkg/methods/apt"
+FILES_${PN}-opkg = "${bindir}/apt-opkg"
 FILES_${PN}-transport-https = "${libdir}/apt/methods/https"
 FILES_${PN}-utils = "${bindir}/apt-extracttemplates \
                      ${bindir}/apt-ftparchive \
                      ${bindir}/apt-sortpkgs"
 FILES_lib${PN}-inst = "${libdir}/libapt-inst${SOLIBS}"
 FILES_lib${PN}-pkg = "${libdir}/libapt-pkg${SOLIBS}"
+
+ALTERNATIVE_${PN}-opkg = "${@bb.utils.contains('PACKAGECONFIG', 'opkg', 'opkg', '', d)}"
+ALTERNATIVE_TARGET[opkg] = "${bindir}/apt-opkg"
 
 BBCLASSEXTEND = "native"
