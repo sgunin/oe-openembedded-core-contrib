@@ -38,6 +38,10 @@ EXTRA_OECONF = "\
 EXTRA_OECONF += "TAR=tar"
 EXTRA_OECONF += "DEB_HOST_ARCH=${DPKG_ARCH}"
 
+do_configure_prepend_class-native() {
+    sed -i -e 's|SYSCONFDIR|"/etc"|' ${S}/utils/update-alternatives.c
+}
+
 do_configure () {
     echo >> ${S}/m4/compiler.m4
     sed -i -e 's#PERL_LIBDIR=.*$#PERL_LIBDIR="${libdir}/perl"#' ${S}/configure
