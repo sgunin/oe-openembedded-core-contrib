@@ -97,9 +97,6 @@ remove_packaging_data_files() {
 
 rootfs_install_packages() {
 	${STAGING_BINDIR_NATIVE}/apt-get ${APT_ARGS} install `cat $1` --force-yes --allow-unauthenticated
-
-	# Mark all packages installed
-	sed -i -e "s/Status: install ok unpacked/Status: install ok installed/;" $INSTALL_ROOTFS_DEB/var/lib/dpkg/status
 }
 
 rootfs_uninstall_packages() {
