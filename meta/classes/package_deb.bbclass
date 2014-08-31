@@ -31,14 +31,29 @@ package_update_index_deb () {
 		fi
 	done
 
+	mkdir -p ${APTCONF_TARGET}/apt
+	mkdir -p ${APTCONF_TARGET}/apt/lists/partial/
+	mkdir -p ${APTCONF_TARGET}/apt/apt.conf.d/
+	mkdir -p ${APTCONF_TARGET}/apt/preferences.d/
+	> ${APTCONF_TARGET}/apt/sources.list
+	> ${APTCONF_TARGET}/apt/preferences
+
+	sed -e "s:#APTCONF#:${APTCONF_TARGET}/apt:g" \
+	    < "${STAGING_ETCDIR_NATIVE}/apt/apt.conf.sample" \
+	    > "${APTCONF_TARGET}/apt/apt.conf"
+
+	export APT_CONFIG="${APTCONF_TARGET}/apt/apt.conf"
+
 	found=0
 	for arch in $debarchs; do
 		if [ ! -d ${DEPLOY_DIR_DEB}/$arch ]; then
 			continue;
 		fi
 		cd ${DEPLOY_DIR_DEB}/$arch
-		dpkg-scanpackages . | gzip > Packages.gz
+		PSEUDO_UNLOAD=1 apt-ftparchive packages . > Packages
+		gzip -fc Packages > Packages.gz
 		echo "Label: $arch" > Release
+		PSEUDO_UNLOAD=1 apt-ftparchive release . >> Release
 		found=1
 	done
 	if [ "$found" != "1" ]; then
