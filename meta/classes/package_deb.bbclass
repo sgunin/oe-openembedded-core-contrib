@@ -335,5 +335,6 @@ addtask package_write_deb after do_packagedata do_package
 
 PACKAGEINDEXDEPS += "dpkg-native:do_populate_sysroot"
 PACKAGEINDEXDEPS += "apt-native:do_populate_sysroot"
+PACKAGEINDEXDEPS += "xz-native:do_populate_sysroot"
 
 do_build[recrdeptask] += "do_package_write_deb"
