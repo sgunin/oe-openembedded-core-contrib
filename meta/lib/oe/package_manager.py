@@ -248,6 +248,7 @@ class DpkgIndexer(Indexer):
 
         apt_ftparchive = bb.utils.which(os.getenv('PATH'), "apt-ftparchive")
         gzip = bb.utils.which(os.getenv('PATH'), "gzip")
+        xz = bb.utils.which(os.getenv('PATH'), "xz")
 
         index_cmds = []
         deb_dirs_found = False
@@ -259,6 +260,7 @@ class DpkgIndexer(Indexer):
             cmd = "cd %s; PSEUDO_UNLOAD=1 %s packages . > Packages;" % (arch_dir, apt_ftparchive)
 
             cmd += "%s -fc Packages > Packages.gz;" % gzip
+            cmd += "%s -fc Packages > Packages.xz;" % xz
 
             with open(os.path.join(arch_dir, "Release"), "w+") as release:
                 release.write("Label: %s\n" % arch)
