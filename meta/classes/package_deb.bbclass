@@ -52,6 +52,7 @@ package_update_index_deb () {
 		cd ${DEPLOY_DIR_DEB}/$arch
 		PSEUDO_UNLOAD=1 apt-ftparchive packages . > Packages
 		gzip -fc Packages > Packages.gz
+		xz -fc Packages > Packages.xz
 		echo "Label: $arch" > Release
 		PSEUDO_UNLOAD=1 apt-ftparchive release . >> Release
 		found=1
