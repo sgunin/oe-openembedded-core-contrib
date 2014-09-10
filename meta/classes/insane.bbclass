@@ -782,6 +782,7 @@ def package_qa_check_deps(pkg, pkgdest, d):
     check_valid_deps('RPROVIDES')
     check_valid_deps('RREPLACES')
     check_valid_deps('RCONFLICTS')
+    check_valid_deps('RBREAKS')
 
 QAPKGTEST[usrmerge] = "package_qa_check_usrmerge"
 def package_qa_check_usrmerge(pkg, d, messages):
@@ -1245,7 +1246,7 @@ python () {
     if (d.getVar('PACKAGES') or "").split():
         for dep in (d.getVar('QADEPENDS') or "").split():
             d.appendVarFlag('do_package_qa', 'depends', " %s:do_populate_sysroot" % dep)
-        for var in 'RDEPENDS', 'RRECOMMENDS', 'RSUGGESTS', 'RCONFLICTS', 'RPROVIDES', 'RREPLACES', 'FILES', 'pkg_preinst', 'pkg_postinst', 'pkg_prerm', 'pkg_postrm', 'ALLOW_EMPTY':
+        for var in 'RDEPENDS', 'RRECOMMENDS', 'RSUGGESTS', 'RCONFLICTS', 'RPROVIDES', 'RREPLACES', 'RBREAKS', 'FILES', 'pkg_preinst', 'pkg_postinst', 'pkg_prerm', 'pkg_postrm', 'ALLOW_EMPTY':
             if d.getVar(var, False):
                 issues.append(var)
 
