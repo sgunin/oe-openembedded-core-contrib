@@ -254,6 +254,8 @@ python do_package_deb () {
         debian_cmp_remap(rreplaces)
         rconflicts = bb.utils.explode_dep_versions2(localdata.getVar("RCONFLICTS", True) or "")
         debian_cmp_remap(rconflicts)
+        rbreaks = bb.utils.explode_dep_versions2(localdata.getVar("RBREAKS", True) or "")
+        debian_cmp_remap(rbreaks)
         if rdepends:
             ctrlfile.write("Depends: %s\n" % unicode(bb.utils.join_deps(rdepends)))
         if rsuggests:
@@ -266,6 +268,8 @@ python do_package_deb () {
             ctrlfile.write("Replaces: %s\n" % unicode(bb.utils.join_deps(rreplaces)))
         if rconflicts:
             ctrlfile.write("Conflicts: %s\n" % unicode(bb.utils.join_deps(rconflicts)))
+        if rbreaks:
+            ctrlfile.write("Breaks: %s\n" % unicode(bb.utils.join_deps(rbreaks)))
         ctrlfile.close()
 
         for script in ["preinst", "postinst", "prerm", "postrm"]:
