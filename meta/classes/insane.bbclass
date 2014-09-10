@@ -955,6 +955,7 @@ def package_qa_check_deps(pkg, pkgdest, skip, d):
     check_valid_deps('RPROVIDES')
     check_valid_deps('RREPLACES')
     check_valid_deps('RCONFLICTS')
+    check_valid_deps('RBREAKS')
 
 QAPATHTEST[expanded-d] = "package_qa_check_expanded_d"
 def package_qa_check_expanded_d(path,name,d,elf,messages):
@@ -1301,7 +1302,7 @@ python () {
     if (d.getVar('PACKAGES', True) or "").split():
         for dep in (d.getVar('QADEPENDS', True) or "").split():
             d.appendVarFlag('do_package_qa', 'depends', " %s:do_populate_sysroot" % dep)
-        for var in 'RDEPENDS', 'RRECOMMENDS', 'RSUGGESTS', 'RCONFLICTS', 'RPROVIDES', 'RREPLACES', 'FILES', 'pkg_preinst', 'pkg_postinst', 'pkg_prerm', 'pkg_postrm', 'ALLOW_EMPTY':
+        for var in 'RDEPENDS', 'RRECOMMENDS', 'RSUGGESTS', 'RCONFLICTS', 'RPROVIDES', 'RREPLACES', 'RBREAKS', 'FILES', 'pkg_preinst', 'pkg_postinst', 'pkg_prerm', 'pkg_postrm', 'ALLOW_EMPTY':
             if d.getVar(var, False):
                 issues.append(var)
 
