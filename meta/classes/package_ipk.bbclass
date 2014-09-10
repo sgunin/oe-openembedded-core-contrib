@@ -358,6 +358,8 @@ python do_package_ipk () {
         debian_cmp_remap(rreplaces)
         rconflicts = bb.utils.explode_dep_versions2(localdata.getVar("RCONFLICTS", True) or "")
         debian_cmp_remap(rconflicts)
+        rbreaks = bb.utils.explode_dep_versions2(localdata.getVar("RBREAKS", True) or "")
+        debian_cmp_remap(rbreaks)
 
         if rdepends:
             ctrlfile.write("Depends: %s\n" % bb.utils.join_deps(rdepends))
@@ -371,6 +373,8 @@ python do_package_ipk () {
             ctrlfile.write("Replaces: %s\n" % bb.utils.join_deps(rreplaces))
         if rconflicts:
             ctrlfile.write("Conflicts: %s\n" % bb.utils.join_deps(rconflicts))
+        if rbreaks:
+            ctrlfile.write("Breaks: %s\n" % bb.utils.join_deps(rbreaks))
         src_uri = localdata.getVar("SRC_URI", True) or "None"
         if src_uri:
             src_uri = re.sub("\s+", " ", src_uri)

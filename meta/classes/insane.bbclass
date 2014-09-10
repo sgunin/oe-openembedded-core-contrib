@@ -767,6 +767,8 @@ def package_qa_check_deps(pkg, pkgdest, skip, d):
         sane = False
     if not check_valid_deps('RCONFLICTS'):
         sane = False
+    if not check_valid_deps('RBREAKS'):
+        sane = False
 
     return sane
 
@@ -946,7 +948,7 @@ python () {
 
     issues = []
     if (d.getVar('PACKAGES', True) or "").split():
-        for var in 'RDEPENDS', 'RRECOMMENDS', 'RSUGGESTS', 'RCONFLICTS', 'RPROVIDES', 'RREPLACES', 'FILES', 'pkg_preinst', 'pkg_postinst', 'pkg_prerm', 'pkg_postrm', 'ALLOW_EMPTY':
+        for var in 'RDEPENDS', 'RRECOMMENDS', 'RSUGGESTS', 'RCONFLICTS', 'RPROVIDES', 'RREPLACES', 'RBREAKS', 'FILES', 'pkg_preinst', 'pkg_postinst', 'pkg_prerm', 'pkg_postrm', 'ALLOW_EMPTY':
             if d.getVar(var):
                 issues.append(var)
     for i in issues:
