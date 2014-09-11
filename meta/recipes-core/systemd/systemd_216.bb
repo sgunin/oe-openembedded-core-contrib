@@ -148,6 +148,8 @@ do_install() {
 
 	# Enable journal to forward message to syslog daemon
 	sed -i -e 's/.*ForwardToSyslog.*/ForwardToSyslog=yes/' ${D}${sysconfdir}/systemd/journald.conf
+	# Enable syslog.socket by default, this is specific to our system
+	ln -sf ../syslog.socket ${D}${systemd_unitdir}/system/sockets.target.wants/syslog.socket
 }
 
 do_install_ptest () {
