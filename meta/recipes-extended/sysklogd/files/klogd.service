@@ -1,0 +1,9 @@
+[Unit]
+Description=sysklogd Kernel Logging Service
+
+[Service]
+Type=forking
+EnvironmentFile=-@SYSCONFDIR@/default/klogd
+PIDFile=/var/run/klogd.pid
+ExecStart=@BASE_SBINDIR@/klogd $KLOGD
+StandardOutput=null

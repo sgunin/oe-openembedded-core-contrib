@@ -1,0 +1,246 @@
+Upstream-Status: Pending
+
+Subject: syslogd.c: add systemd support
+
+1. add socket activation support
+2. unlink /dev/log if it's not provided by systemd
+
+Signed-off-by: Chen Qi <Qi.Chen@windriver.com>
+---
+ syslogd.c | 157 ++++++++++++++++++++++++++++++++++++++++++++++++++++++--------
+ 1 file changed, 137 insertions(+), 20 deletions(-)
+
+diff --git a/syslogd.c b/syslogd.c
+index acfd8f1..81e45e6 100644
+--- a/syslogd.c
++++ b/syslogd.c
+@@ -602,6 +602,9 @@ static char sccsid[] = "@(#)syslogd.c	5.27 (Berkeley) 10/10/88";
+ #define _PATH_LOG	"/dev/log"
+ #endif
+ 
++/* systemd support */
++#define SD_LISTEN_FDS_START 3
++
+ char	*ConfFile = _PATH_LOGCONF;
+ char	*PidFile = _PATH_LOGPID;
+ char	ctty[] = _PATH_CONSOLE;
+@@ -612,6 +615,7 @@ int inetm = 0;
+ static int debugging_on = 0;
+ static int nlogs = -1;
+ static int restart = 0;
++static int socket_from_systemd = 0;
+ 
+ #define MAXFUNIX	20
+ 
+@@ -822,6 +826,8 @@ int decode(char *name, struct code *codetab);
+ static void dprintf(char *, ...);
+ static void allocate_log(void);
+ void sighup_handler();
++/* systemd support */
++int sd_listen_fds(void);
+ 
+ #ifdef SYSLOG_UNIXAF
+ static int create_unix_socket(const char *path);
+@@ -963,9 +969,37 @@ int main(argc, argv)
+ 				 */
+ 				exit(1);
+ 			}
++
++			/* We keep stdout and stderr open in case we have to emit something */
++			close(0);
++			i = 3;
++
++			/* Trying to pass on LISTEN_PID with appropriate value */
++			const char *e;
++			unsigned long l;
++			char buf[24] = { '\0' };
++			int sd_fds;
++
++			if ( (e = getenv("LISTEN_PID")) ) {
++				errno = 0;
++				l = strtoul(e, NULL, 10);
++				if (errno == 0) {
++					if (getppid() == (pid_t)l) {
++						snprintf(buf,sizeof(buf), "%d", (int)getpid());
++						setenv("LISTEN_PID", buf, 1);
++					} 
++				}
++			}
++
+ 			signal (SIGTERM, SIG_DFL);
+ 			num_fds = getdtablesize();
+-			for (i= 0; i < num_fds; i++)
++
++			/* close all further fds except of the fds provided by systemd */
++			sd_fds = sd_listen_fds();
++			if (sd_fds > 0) {
++				i = SD_LISTEN_FDS_START + sd_fds;
++			}
++			for ( ; i < num_fds; i++)
+ 				(void) close(i);
+ 			untty();
+ 		}
+@@ -1248,28 +1282,37 @@ static int create_unix_socket(const char *path)
+ {
+ 	struct sockaddr_un sunx;
+ 	int fd;
++	int n;
+ 	char line[MAXLINE +1];
+ 
+-	if (path[0] == '\0')
++	n = sd_listen_fds();
++	if (n > 1) {
+ 		return -1;
+-
+-	(void) unlink(path);
+-
+-	memset(&sunx, 0, sizeof(sunx));
+-	sunx.sun_family = AF_UNIX;
+-	(void) strncpy(sunx.sun_path, path, sizeof(sunx.sun_path));
+-	fd = socket(AF_UNIX, SOCK_DGRAM, 0);
+-	if (fd < 0 || bind(fd, (struct sockaddr *) &sunx,
+-			   sizeof(sunx.sun_family)+strlen(sunx.sun_path)) < 0 ||
+-	    chmod(path, 0666) < 0) {
+-		(void) snprintf(line, sizeof(line), "cannot create %s", path);
+-		logerror(line);
+-		dprintf("cannot create %s (%d).\n", path, errno);
+-		close(fd);
++	} else if (n == 1) {
++		socket_from_systemd = 1;
++		fd = SD_LISTEN_FDS_START + 0;
++	} else {
++		if (path[0] == '\0')
++			return -1;
++
++		(void) unlink(path);
++
++		memset(&sunx, 0, sizeof(sunx));
++		sunx.sun_family = AF_UNIX;
++		(void) strncpy(sunx.sun_path, path, sizeof(sunx.sun_path));
++		fd = socket(AF_UNIX, SOCK_DGRAM, 0);
++		if (fd < 0 || bind(fd, (struct sockaddr *) &sunx,
++				   sizeof(sunx.sun_family)+strlen(sunx.sun_path)) < 0 ||
++		    chmod(path, 0666) < 0) {
++			(void) snprintf(line, sizeof(line), "cannot create %s", path);
++			logerror(line);
++			dprintf("cannot create %s (%d).\n", path, errno);
++			close(fd);
+ #ifndef SYSV
+-		die(0);
++			die(0);
+ #endif
+-		return -1;
++			return -1;
++		}
+ 	}
+ 	return fd;
+ }
+@@ -1998,12 +2041,27 @@ void wallmsg(f, iov)
+ 	/* open the user login file */
+ 	setutent();
+ 
+-
+ 	/*
+ 	 * Might as well fork instead of using nonblocking I/O
+ 	 * and doing notty().
+ 	 */
+ 	if (fork() == 0) {
++		/* Trying to pass on the LISTEN_PID with appropriate value */
++		const char *e;
++		unsigned long l;
++		char buf[24] = { '\0' };
++
++		if ( (e = getenv("LISTEN_PID")) ) {
++			errno = 0;
++			l = strtoul(e, NULL, 10);
++			if (errno == 0) {
++				if (getppid() == (pid_t)l) {
++					snprintf(buf,sizeof(buf), "%d", (int)getpid());
++					setenv("LISTEN_PID", buf, 1);
++				}
++			} 
++		}
++
+ 		(void) signal(SIGTERM, SIG_DFL);
+ 		(void) alarm(0);
+ #ifndef SYSV
+@@ -2254,9 +2312,15 @@ void die(sig)
+ 	if (InetInuse) close(inetm);
+ 
+ 	/* Clean-up files. */
+-        for (i = 0; i < nfunix; i++)
++	if (socket_from_systemd) {
++		i = 1;
++	} else {
++		i = 0;
++	}
++	for (; i < nfunix; i++)
+ 		if (funixn[i] && funix[i] != -1)
+ 			(void)unlink(funixn[i]);
++
+ #ifndef TESTING
+ 	(void) remove_pid(PidFile);
+ #endif
+@@ -2896,6 +2960,59 @@ void sighup_handler()
+ 	return;
+ }
+ 
++int sd_listen_fds() {
++	int r, fd;
++	const char *e;
++	unsigned long l;
++
++	e = getenv("LISTEN_PID");
++	if (!e) {
++		return 0;
++	}
++
++	errno = 0;
++	l = strtoul(e, NULL, 10);
++
++	if (errno != 0) {
++		return -errno;
++	}
++
++	if (getpid() != (pid_t)l) {
++		return 0;
++	}
++
++	e = getenv("LISTEN_FDS");
++	if (!e) {
++		return 0;
++	}
++
++	errno = 0;
++	l = strtoul(e, NULL, 10);
++
++	if (errno != 0) {
++		return -errno;
++	}
++
++	for (fd = SD_LISTEN_FDS_START; fd < SD_LISTEN_FDS_START + (int)l; fd++) {
++		int flags;
++
++		flags = fcntl(fd, F_GETFD);
++		if (flags < 0) {
++			return -errno;
++		}
++
++		if (flags & FD_CLOEXEC)
++			continue;
++
++		if (fcntl(fd, F_SETFD, flags | FD_CLOEXEC) < 0) {
++			return -errno;
++		}
++	}
++
++	r = (int)l;
++
++	return r;
++}
+ /*
+  * Local variables:
+  *  c-indent-level: 8
+-- 
+1.9.1
+

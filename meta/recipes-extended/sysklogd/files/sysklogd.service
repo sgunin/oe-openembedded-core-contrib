@@ -1,0 +1,14 @@
+[Unit]
+Description=System Logging Service
+Wants=klogd.service
+Requires=syslog.socket
+
+[Service]
+Type=forking
+EnvironmentFile=-@SYSCONFDIR@/default/sysklogd
+PIDFile=/var/run/syslogd.pid
+ExecStart=@BASE_SBINDIR@/syslogd $SYSLOGD
+StandardOutput=null
+
+[Install]
+Also=klogd.service
