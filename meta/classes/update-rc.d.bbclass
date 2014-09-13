@@ -13,7 +13,7 @@ INITSCRIPT_PARAMS ?= "defaults"
 INIT_D_DIR = "${sysconfdir}/init.d"
 
 updatercd_preinst() {
-if [ -z "$D" -a -f "${INIT_D_DIR}/${INITSCRIPT_NAME}" ]; then
+if [ -z "$D" -a -f "${INIT_D_DIR}/${INITSCRIPT_NAME}" -a -z "`systemctl is-enabled ${INITSCRIPT_NAME} 2>/dev/null`" ]; then
 	${INIT_D_DIR}/${INITSCRIPT_NAME} stop
 fi
 if type update-rc.d >/dev/null 2>/dev/null; then
@@ -38,7 +38,7 @@ fi
 }
 
 updatercd_prerm() {
-if [ -z "$D" ]; then
+if [ -z "$D" -a -z "`systemctl is-enabled ${INITSCRIPT_NAME} 2>/dev/null`" ]; then
 	${INIT_D_DIR}/${INITSCRIPT_NAME} stop
 fi
 }
