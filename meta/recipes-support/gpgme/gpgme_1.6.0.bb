@@ -38,3 +38,5 @@ do_install_append () {
         install -d ${D}${libdir}/pkgconfig
         install -m 0644 ${WORKDIR}/gpgme.pc ${D}${libdir}/pkgconfig/
 }
+
+BBCLASSEXTEND = "native"
