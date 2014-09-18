@@ -4,7 +4,9 @@ After=network.target
 After=time-sync.target
 
 [Service]
-EnvironmentFile=@SYSCONFDIR@/default/dhcp-server
+Type=forking
+PIDFile=/var/run/dhcpd.pid
+EnvironmentFile=-@SYSCONFDIR@/default/dhcp-server
 ExecStart=-@SBINDIR@/dhcpd -q $INTERFACES
 
 [Install]
