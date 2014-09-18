@@ -27,3 +27,5 @@ do_configure() {
 	( cd ${S}; autoconf )
 	oe_runconf
 }
+
+BBCLASSEXTEND = "native"
