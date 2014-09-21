@@ -112,6 +112,8 @@ do_compile_prepend() {
 }
 
 do_install_append () {
+	chown -R rpcuser:rpcuser ${D}${localstatedir}/lib/nfs/statd
+
 	install -d ${D}${sysconfdir}/init.d
 	install -m 0755 ${WORKDIR}/nfsserver ${D}${sysconfdir}/init.d/nfsserver
 	install -m 0755 ${WORKDIR}/nfscommon ${D}${sysconfdir}/init.d/nfscommon
