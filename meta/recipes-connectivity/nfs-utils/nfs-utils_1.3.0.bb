@@ -9,7 +9,8 @@ LIC_FILES_CHKSUM = "file://COPYING;md5=95f3a93a5c3c7888de623b46ea085a84"
 
 # util-linux for libblkid
 DEPENDS = "libcap libnfsidmap libevent util-linux sqlite3"
-RDEPENDS_${PN}-client = "rpcbind"
+PR = "r1"
+
 RDEPENDS_${PN} = "${PN}-client"
 RRECOMMENDS_${PN} = "kernel-module-nfsd"
 
@@ -71,14 +72,20 @@ PACKAGECONFIG[nfsidmap] = "--enable-nfsidmap,--disable-nfsidmap,keyutils"
 
 INHIBIT_AUTO_STAGE = "1"
 
-PACKAGES =+ "${PN}-client ${PN}-stats"
-FILES_${PN}-client = "${base_sbindir}/*mount.nfs* ${sbindir}/*statd \
+PACKAGES =+ "${PN}-client ${PN}-mount ${PN}-stats"
+FILES_${PN}-client = "${sbindir}/*statd \
 		      ${sbindir}/rpc.idmapd ${sbindir}/sm-notify \
 		      ${sbindir}/showmount ${sbindir}/nfsstat \
 		      ${localstatedir}/lib/nfs \
 		      ${sysconfdir}/nfs-utils.conf \
 		      ${sysconfdir}/init.d/nfscommon \
 		      ${systemd_unitdir}/system/nfs-statd.service"
+RDEPENDS_${PN}-client = "${PN}-mount rpcbind"
+
+FILES_${PN}-mount = "${base_sbindir}/*mount.nfs*"
+RREPLACES_${PN}-mount = "${PN}-client (< 1.3.0-r1)"
+RBREAKS_${PN}-mount = "${PN}-client (< 1.3.0-r1)"
+
 FILES_${PN}-stats = "${sbindir}/mountstats ${sbindir}/nfsiostat"
 RDEPENDS_${PN}-stats = "python"
 
