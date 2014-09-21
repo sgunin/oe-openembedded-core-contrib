@@ -87,6 +87,8 @@ FILES_${PN}-client = "${sbindir}/*statd \
 		      ${sysconfdir}/init.d/nfscommon \
 		      ${systemd_unitdir}/system/nfs-statd.service"
 RDEPENDS_${PN}-client = "${PN}-mount rpcbind"
+RREPLACES_${PN}-client = "${PN} (< 1.3.0-r0)"
+RBREAKS_${PN}-client = "${PN} (< 1.3.0-r0)"
 
 FILES_${PN}-mount = "${base_sbindir}/*mount.nfs*"
 
