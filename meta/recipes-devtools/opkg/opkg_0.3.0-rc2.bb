@@ -5,24 +5,22 @@ HOMEPAGE = "http://code.google.com/p/opkg/"
 BUGTRACKER = "http://code.google.com/p/opkg/issues/list"
 LICENSE = "GPLv2+"
 LIC_FILES_CHKSUM = "file://COPYING;md5=94d55d512a9ba36caa9b7df079bae19f \
-                    file://src/opkg-cl.c;beginline=1;endline=20;md5=321f658c3f6b6c832e25c8850b5dffba"
+                    file://src/opkg.c;beginline=2;endline=21;md5=90435a519c6ea69ef22e4a88bcc52fa0"
+
+DEPENDS = "libarchive"
 
 PE = "1"
 
 SRC_URI = "http://downloads.yoctoproject.org/releases/${BPN}/${BPN}-${PV}.tar.gz \
-           file://no-install-recommends.patch \
-           file://add-exclude.patch \
-           file://libopkg-opkg_remove.c-avoid-remove-pkg-repeatly-with.patch \
            file://remove-ACLOCAL_AMFLAGS-I-shave-I-m4.patch \
            file://opkg-configure.service \
            file://opkg.conf \
-           file://0001-opkg-key-Backport-improvements.patch \
 "
 
 S = "${WORKDIR}/${BPN}-${PV}"
 
-SRC_URI[md5sum] = "40ed2aee15abc8d550539449630091bd"
-SRC_URI[sha256sum] = "0f40c7e457d81edf9aedc07c778f4697111ab163a38ef95999faece015453086"
+SRC_URI[md5sum] = "7114589bd821efd5b9a0b5bf0ec82b8d"
+SRC_URI[sha256sum] = "2bb3c09e7b216e57290dc65a63221981d9c34e74b25033b25a27899113ec6a84"
 
 inherit autotools pkgconfig systemd
 
@@ -73,12 +71,6 @@ do_install_append () {
 			-e 's,@SYSTEMD_UNITDIR@,${systemd_unitdir},g' \
 			${D}${systemd_unitdir}/system/opkg-configure.service
 	fi
-
-	# The installed binary is 'opkg-cl' but people and scripts often expect
-	# it to just be 'opkg'
-	ln -sf opkg-cl ${D}${bindir}/opkg
-
-	rm ${D}${bindir}/update-alternatives
 }
 
 RDEPENDS_${PN} = "${VIRTUAL-RUNTIME_update-alternatives} opkg-arch-config run-postinsts"
