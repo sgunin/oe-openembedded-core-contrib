@@ -1883,7 +1883,7 @@ class DpkgPM(PackageManager):
             cmd = "%s purge %s" % (self.apt_get_cmd, ' '.join(pkgs))
         else:
             cmd = "%s --admindir=%s/var/lib/dpkg --instdir=%s" \
-                  " -P --force-depends %s" % \
+                  " -P --force-depends --cross-bootstrap %s" % \
                   (bb.utils.which(os.getenv('PATH'), "dpkg"),
                    self.target_rootfs, self.target_rootfs, ' '.join(pkgs))
 
