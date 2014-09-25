@@ -101,6 +101,6 @@ rootfs_install_packages() {
 
 rootfs_uninstall_packages() {
 	# for some reason, --root doesn't really work here... We use --admindir&--instdir instead.
-	${STAGING_BINDIR_NATIVE}/dpkg --admindir=${IMAGE_ROOTFS}/var/lib/dpkg --instdir=${IMAGE_ROOTFS} -r --force-depends $@
+	${STAGING_BINDIR_NATIVE}/dpkg --admindir=${IMAGE_ROOTFS}/var/lib/dpkg --instdir=${IMAGE_ROOTFS} -r --force-depends --cross-bootstrap $@
 }
 
