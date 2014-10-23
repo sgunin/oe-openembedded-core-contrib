@@ -23,6 +23,7 @@ SRC_URI = "http://www.freedesktop.org/software/systemd/systemd-${PV}.tar.xz \
            file://binfmt-install.patch \
            file://journald-fix-fd-leak-in-journal_file_empty.patch \
            file://journald-fix-vacuuming-of-archived-journals.patch \
+           file://order-remote-mounts-from-mountinfo-before-remote-fs-target.patch \
            file://touchscreen.rules \
            ${UCLIBCPATCHES} \
            file://00-create-volatile.conf \
