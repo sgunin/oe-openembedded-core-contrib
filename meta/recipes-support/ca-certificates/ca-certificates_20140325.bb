@@ -31,6 +31,10 @@ EXTRA_OEMAKE = "\
     'SBINDIR=${sbindir}' \
 "
 
+do_compile_prepend() {
+    oe_runmake clean
+}
+
 do_install () {
     install -d ${D}${datadir}/ca-certificates \
                ${D}${sysconfdir}/ssl/certs \
