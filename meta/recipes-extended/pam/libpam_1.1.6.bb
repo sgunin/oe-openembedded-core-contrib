@@ -17,6 +17,7 @@ SRC_URI = "http://linux-pam.org/library/Linux-PAM-${PV}.tar.bz2 \
            file://pam.d/common-session \
            file://pam.d/common-session-noninteractive \
            file://pam.d/other \
+           ${@bb.utils.contains('DISTRO_FEATURES', 'systemd', 'file://pam.d/system-auth', '', d)} \
            file://libpam-xtests.patch \
            file://destdirfix.patch \
            file://fixsepbuild.patch \
