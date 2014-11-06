@@ -148,6 +148,9 @@ do_install() {
 
 	# Enable journal to forward message to syslog daemon
 	sed -i -e 's/.*ForwardToSyslog.*/ForwardToSyslog=yes/' ${D}${sysconfdir}/systemd/journald.conf
+
+	# Make /etc/sysctl.conf have real effect on systemd based systems
+	ln -sf ../sysctl.conf ${D}${sysconfdir}/sysctl.d/99-sysctl.conf
 }
 
 do_install_ptest () {
