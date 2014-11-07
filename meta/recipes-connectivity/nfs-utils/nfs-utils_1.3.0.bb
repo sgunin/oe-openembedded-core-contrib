@@ -57,7 +57,7 @@ SYSTEMD_SERVICE_${PN} = "nfs-server.service nfs-mountd.service"
 SYSTEMD_SERVICE_${PN}-client = "nfs-statd.service"
 
 # --enable-uuid is need for cross-compiling
-EXTRA_OECONF = "--with-statduser=nobody \
+EXTRA_OECONF = "--with-statduser=rpcuser \
                 --enable-mountconfig \
                 --enable-libmount-mount \
                 --disable-nfsv41 \
@@ -101,7 +101,6 @@ do_compile_prepend() {
 
 do_install_append () {
 	install -d ${D}${sysconfdir}/init.d
-	install -d ${D}${localstatedir}/lib/nfs/statd
 	install -m 0755 ${WORKDIR}/nfsserver ${D}${sysconfdir}/init.d/nfsserver
 	install -m 0755 ${WORKDIR}/nfscommon ${D}${sysconfdir}/init.d/nfscommon
 
@@ -116,6 +115,10 @@ do_install_append () {
 
 	# kernel code as of 3.8 hard-codes this path as a default
 	install -d ${D}/var/lib/nfs/v4recovery
+
+	# chown the directories and files
+	chown -R rpcuser:rpcuser ${D}${localstatedir}/lib/nfs/statd
+	chmod 0644 ${D}${localstatedir}/lib/nfs/statd/state
 
 	# the following are built by CC_FOR_BUILD
 	rm -f ${D}${sbindir}/rpcdebug
