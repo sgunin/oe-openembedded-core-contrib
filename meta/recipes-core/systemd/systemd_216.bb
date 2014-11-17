@@ -87,7 +87,7 @@ EXTRA_OECONF = " --with-rootprefix=${rootprefix} \
                  --enable-split-usr \
                  --without-python \
                  --with-sysvrcnd-path=${sysconfdir} \
-                 --with-firmware-path=/lib/firmware \
+                 --with-firmware-path=${nonarch_base_libdir}/firmware \
                  ac_cv_path_KILL=${base_bindir}/kill \
                "
 # uclibc does not have NSS
@@ -260,10 +260,10 @@ FILES_${PN} = " ${base_bindir}/* \
                 ${exec_prefix}/lib/sysctl.d \
                 ${exec_prefix}/lib/sysusers.d \
                 ${localstatedir} \
-                /lib/udev/rules.d/70-uaccess.rules \
-                /lib/udev/rules.d/71-seat.rules \
-                /lib/udev/rules.d/73-seat-late.rules \
-                /lib/udev/rules.d/99-systemd.rules \
+                ${nonarch_base_libdir}/udev/rules.d/70-uaccess.rules \
+                ${nonarch_base_libdir}/udev/rules.d/71-seat.rules \
+                ${nonarch_base_libdir}/udev/rules.d/73-seat-late.rules \
+                ${nonarch_base_libdir}/udev/rules.d/99-systemd.rules \
                 ${@bb.utils.contains('DISTRO_FEATURES', 'pam', '${sysconfdir}/pam.d', '', d)} \
                "
 
@@ -281,7 +281,7 @@ RRECOMMENDS_${PN} += "systemd-serialgetty systemd-compat-units udev-hwdb\
 
 PACKAGES =+ "udev-dbg udev udev-hwdb"
 
-FILES_udev-dbg += "/lib/udev/.debug"
+FILES_udev-dbg += "${nonarch_base_libdir}/udev/.debug"
 
 RPROVIDES_udev = "hotplug"
 
