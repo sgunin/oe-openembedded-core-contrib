@@ -10,7 +10,8 @@ PROVIDES += "virtual/update-alternatives"
 SRCREV = "762d9dadce548108d4204c2113461a7dd6f57e60"
 PV = "0.1.8+git${SRCPV}"
 
-SRC_URI = "git://git.yoctoproject.org/opkg-utils"
+SRC_URI = "git://git.yoctoproject.org/opkg-utils \
+           file://0001-update-alternatives-avoid-double-slashes.patch"
 
 S = "${WORKDIR}/git"
 

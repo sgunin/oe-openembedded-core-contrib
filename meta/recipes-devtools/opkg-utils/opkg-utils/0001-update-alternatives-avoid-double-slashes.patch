@@ -1,0 +1,25 @@
+Upstream-Status: Pending
+
+Subject: update-alternatives: avoid double slashes
+
+Signed-off-by: Chen Qi <Qi.Chen@windriver.com>
+---
+ update-alternatives |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/update-alternatives b/update-alternatives
+index 8916cbd..ca01d5d 100644
+--- a/update-alternatives
++++ b/update-alternatives
+@@ -97,7 +97,7 @@ find_best_alt() {
+ 	[ $# -lt 1 ] && return 1
+ 	[ ! -f $ad/$name ] && return 0
+ 
+-	link=$OPKG_OFFLINE_ROOT/`head -n 1 $ad/$name`
++	link=$OPKG_OFFLINE_ROOT`head -n 1 $ad/$name`
+ 
+ 	prio=`sed -ne "1!p" $ad/$name | sed -e "s/\(.*\) \(.*\)/\2 \1/g" | sort -nr | head -n 1 | sed 's/ [^ ]*$//'`
+ 	if [ -z "$prio" ]; then
+-- 
+1.7.9.5
+
