@@ -124,7 +124,7 @@ diff -urN bind-9.3.1.orig/conf/db.root bind-9.3.1/conf/db.root
 diff -urN bind-9.3.1.orig/conf/named.conf bind-9.3.1/conf/named.conf
 --- bind-9.3.1.orig/conf/named.conf	1970-01-01 01:00:00.000000000 +0100
 +++ bind-9.3.1/conf/named.conf	2005-07-10 22:33:46.000000000 +0200
-@@ -0,0 +1,49 @@
+@@ -0,0 +1,44 @@
 +// This is the primary configuration file for the BIND DNS server named.
 +//
 +// If you are just adding zones, please do that in /etc/bind/named.conf.local
@@ -153,11 +153,6 @@ diff -urN bind-9.3.1.orig/conf/named.conf bind-9.3.1/conf/named.conf
 +zone "0.in-addr.arpa" {
 +	type master;
 +	file "/etc/bind/db.0";
-+};
-+
-+zone "255.in-addr.arpa" {
-+	type master;
-+	file "/etc/bind/db.255";
 +};
 +
 +// zone "com" { type delegation-only; };
