@@ -105,6 +105,7 @@ do_patch_append() {
 
 TUNE_CCARGS_mips := "${@oe_filter_out('-march=mips32', '${TUNE_CCARGS}', d)}"
 TUNE_CCARGS_mipsel := "${@oe_filter_out('-march=mips32', '${TUNE_CCARGS}', d)}"
+TUNE_CCARGS_x86-64 := "${@oe_filter_out('-mfpmath=sse', '${TUNE_CCARGS}', d)}"
 
 do_fix_readlib_c () {
 	sed -i -e 's#OECORE_KNOWN_INTERPRETER_NAMES#${EGLIBC_KNOWN_INTERPRETER_NAMES}#' ${S}/elf/readlib.c
