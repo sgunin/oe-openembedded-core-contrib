@@ -12,16 +12,11 @@ LIC_FILES_CHKSUM = "file://COPYING;md5=b46486e4c4a416602693a711bb5bfa39 \
 
 SRC_URI = "${SOURCEFORGE_MIRROR}/rpcbind/rpcbind-${PV}.tar.bz2 \
            file://init.d \
-           ${UCLIBCPATCHES} \
+           file://0001-configure.ac-Check-for-rpcsvc-mount.h.patch \
            file://rpcbind.conf \
            file://rpcbind.socket \
            file://rpcbind.service \
           "
-
-UCLIBCPATCHES_libc-uclibc = "file://0001-uclibc-nss.patch \
-                             file://0002-uclibc-rpcsvc-defines.patch \
-                            "
-UCLIBCPATCHES ?= ""
 
 SRC_URI[md5sum] = "8acf839bfef2364a05fbd6be5f8edf9a"
 SRC_URI[sha256sum] = "13dbc8c796dbe0ce8df873007bea0490c8460b56202d918c9eb6fa0358a08f29"

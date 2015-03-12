@@ -1,0 +1,64 @@
+From 8c5e97b9ff5699a5eafad6c4348bbb0b84ec30e0 Mon Sep 17 00:00:00 2001
+From: Bernhard Reutner-Fischer <rep.dot.nop@gmail.com>
+Date: Tue, 3 Mar 2015 01:59:50 +0100
+Subject: [PATCH,rpcbind 2/4] configure.ac: Check for rpcsvc/mount.h
+To: Steve Dickson <SteveD@redhat.com>
+Cc: libtirpc-devel@lists.sourceforge.net
+
+The function check_callit() attempts to reference a number of defines
+from files that might not be available for everything but glibc.
+
+For simplicity assume that if there is no rpcsvc/mount.h all the other
+includes do not exist either.
+
+Upstream-Status: Submitted
+
+Signed-off-by: Bernhard Reutner-Fischer <rep.dot.nop@gmail.com>
+---
+ configure.ac   |  2 +-
+ src/security.c | 17 +++++++++++++++++
+ 2 files changed, 18 insertions(+), 1 deletion(-)
+
+diff -rdup rpcbind-0.2.2.orig/configure.ac rpcbind-0.2.2/configure.ac
+--- rpcbind-0.2.2.orig/configure.ac	2014-11-25 21:34:48.000000000 +0100
++++ rpcbind-0.2.2/configure.ac	2015-03-12 10:47:12.613608115 +0100
+@@ -55,4 +55,6 @@ AS_IF([test x$enable_libwrap = xyes], [
+ 
+ AC_SEARCH_LIBS([pthread_create], [pthread])
+ 
++AC_CHECK_HEADERS([nss.h rpcsvc/mount.h])
++
+ AC_OUTPUT([Makefile])
+diff -rdup rpcbind-0.2.2.orig/src/security.c rpcbind-0.2.2/src/security.c
+--- rpcbind-0.2.2.orig/src/security.c	2014-11-25 21:34:48.000000000 +0100
++++ rpcbind-0.2.2/src/security.c	2015-03-12 10:45:40.580434845 +0100
+@@ -20,12 +20,29 @@
+ /*
+  * XXX for special case checks in check_callit.
+  */
++#ifdef HAVE_RPCSVC_MOUNT_H
+ #include <rpcsvc/mount.h>
+ #include <rpcsvc/rquota.h>
+ #include <rpcsvc/nfs_prot.h>
+ #include <rpcsvc/yp.h>
+ #include <rpcsvc/ypclnt.h>
+ #include <rpcsvc/yppasswd.h>
++#else
++# define MOUNTPROC_MNT	1
++# define MOUNTPROC_UMNT	3
++# define NFS_PROGRAM	100003
++# define YPPROG		100004
++# define MOUNTPROG	100005
++# define YPBINDPROG	100007
++# define YPPASSWDPROG	100009
++# define RQUOTAPROG	100011
++
++# define YPBINDPROC_SETDOM	2
++# define YPPROC_MATCH	3
++# define YPPROC_FIRST	4
++# define YPPROC_NEXT	5
++# define YPPROC_ALL	8
++#endif
+ 
+ #include "rpcbind.h"
+ 
