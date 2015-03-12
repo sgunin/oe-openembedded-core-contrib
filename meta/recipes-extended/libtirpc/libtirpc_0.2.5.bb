@@ -13,9 +13,12 @@ PROVIDES = "virtual/librpc"
 SRC_URI = "${SOURCEFORGE_MIRROR}/${BPN}/${BP}.tar.bz2;name=libtirpc \
            ${GENTOO_MIRROR}/${BPN}-glibc-nfs.tar.xz;name=glibc-nfs \
            file://libtirpc-0.2.1-fortify.patch \
+           file://0001-configure.ac-Allow-for-disabling-NIS.patch \
+           file://0002-configure.ac-Allow-for-disabling-auth-DES.patch \
+           file://0003-debug.h-Include-stdarg.patch \
           "
 
-SRC_URI_append_libc-uclibc = " file://remove-des-uclibc.patch"
+EXTRA_OECONF_append_libc-uclibc = " --disable-nis --disable-authdes"
 
 SRC_URI[libtirpc.md5sum] = "8cd41a5ef5a9b50d0fb6abb98af15368"
 SRC_URI[libtirpc.sha256sum] = "62f9de7c2c8686c568757730e1fef66502a0e00d6cacf33546d0267984e002db"

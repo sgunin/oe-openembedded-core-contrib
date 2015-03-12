@@ -1,0 +1,20 @@
+Subject: [PATCH] debug.h: add missing include
+
+Upstream-Status: Pending
+
+In file included from src/clnt_bcast.c:67:0:
+src/debug.h:39:47: error: unknown type name 'va_list'
+ vlibtirpc_log_dbg(int level, const char *fmt, va_list args)
+
+
+diff -rdup libtirpc-0.2.5.oorig/src/debug.h libtirpc-0.2.5/src/debug.h
+--- libtirpc-0.2.5.oorig/src/debug.h	2014-08-08 18:24:34.000000000 +0200
++++ libtirpc-0.2.5/src/debug.h	2015-03-11 20:55:29.141397172 +0100
+@@ -21,6 +21,7 @@
+ 
+ #ifndef _DEBUG_H
+ #define _DEBUG_H
++#include <stdarg.h>
+ #include <syslog.h>
+ 
+ extern int libtirpc_debug_level;
