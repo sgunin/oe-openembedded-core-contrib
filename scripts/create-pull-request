@@ -26,7 +26,7 @@
 #
 
 ODIR=pull-$$
-RELATIVE_TO="master"
+RELATIVE_TO="origin/master"
 COMMIT_ID="HEAD"
 PREFIX="PATCH"
 RFC=0
@@ -42,7 +42,7 @@ Usage: $CMD [-h] [-o output_dir] [-m msg_body_file] [-s subject] [-r relative_to
   -m msg_body_file    The file containing a blurb to be inserted into the summary email
   -o output_dir       Specify the output directory for the messages (default: pull-PID)
   -p prefix           Use [prefix N/M] instead of [PATCH N/M] as the subject prefix
-  -r relative_to      Starting commit (default: master)
+  -r relative_to      Starting commit (default: origin/master)
   -s subject          The subject to be inserted into the summary email
   -u remote           The git remote where the branch is located
 
