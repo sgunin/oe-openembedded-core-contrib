@@ -2,7 +2,7 @@
 #
 # Create a "bank" of tap network devices that can be used by the
 # runqemu script. This script needs to be run as root, and will
-# use the tunctl binary from the build system sysroot. Note: many Linux 
+# use the tunctl binary from the build system sysroot. Note: many Linux
 # distros these days still use an older version of tunctl which does not
 # support the group permissions option, hence the need to use the build
 # system provided version.
@@ -24,7 +24,7 @@
 
 usage() {
 	echo "Usage: sudo $0 <uid> <gid> <num> <native-sysroot-basedir>"
-        echo "Where <uid> is the numeric user id the tap devices will be owned by"
+	echo "Where <uid> is the numeric user id the tap devices will be owned by"
 	echo "Where <gid> is the numeric group id the tap devices will be owned by"
 	echo "<num> is the number of tap devices to create (0 to remove all)"
 	echo "<native-sysroot-basedir> is the path to the build system's native sysroot"
@@ -64,8 +64,8 @@ if [ -z "$IFCONFIG" ]; then
 	IFCONFIG=/sbin/ip
 fi
 if [ ! -x "$IFCONFIG" ]; then
-       echo "$IFCONFIG cannot be executed"
-       exit 1
+	echo "$IFCONFIG cannot be executed"
+	exit 1
 fi
 
 # Ensure we start with a clean slate
