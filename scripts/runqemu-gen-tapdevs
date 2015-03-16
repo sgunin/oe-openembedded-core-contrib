@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 #
 # Create a "bank" of tap network devices that can be used by the
 # runqemu script. This script needs to be run as root, and will
@@ -31,35 +31,34 @@ usage() {
 	exit 1
 }
 
-if [ $EUID -ne 0 ]; then
+if [ ${EUID-"$(id -u)"} -ne 0 ]; then
 	echo "Error: This script must be run with root privileges"
 	exit
 fi
 
-if [ $# -ne 4 ]; then
+TUID=${1}
+GID=${2}
+COUNT=${3}
+SYSROOT=${4}
+if [ -z "${TUID}" -o -z "${GID}" -o -z "${COUNT}" -o -z "${SYSROOT}" ]; then
 	echo "Error: Incorrect number of arguments"
 	usage
 fi
 
-TUID=$1
-GID=$2
-COUNT=$3
-SYSROOT=$4
-
 TUNCTL=$SYSROOT/usr/bin/tunctl
-if [[ ! -x "$TUNCTL" || -d "$TUNCTL" ]]; then
+if [ ! -x "$TUNCTL" -o -d "$TUNCTL" ]; then
 	echo "Error: $TUNCTL is not an executable"
 	usage
 fi
 
-SCRIPT_DIR=`dirname $0`
+SCRIPT_DIR=$(dirname $0)
 RUNQEMU_IFUP="$SCRIPT_DIR/runqemu-ifup"
 if [ ! -x "$RUNQEMU_IFUP" ]; then
 	echo "Error: Unable to find the runqemu-ifup script in $SCRIPT_DIR"
 	exit 1
 fi
 
-IFCONFIG=`which ip 2> /dev/null`
+IFCONFIG=$(which ip 2> /dev/null)
 if [ -z "$IFCONFIG" ]; then
 	# Is it ever anywhere else?
 	IFCONFIG=/sbin/ip
@@ -70,15 +69,15 @@ if [ ! -x "$IFCONFIG" ]; then
 fi
 
 # Ensure we start with a clean slate
-for tap in `$IFCONFIG link | grep tap | awk '{ print \$2 }' | sed s/://`; do
+for tap in $($IFCONFIG link | awk '/tap/{gsub(":$","",$2);print $2}'); do
 	echo "Note: Destroying pre-existing tap interface $tap..."
-	$TUNCTL -d $tap
+	${TUNCTL} -d $tap
 done
 
 echo "Creating $COUNT tap devices for UID: $TUID GID: $GID..."
-for ((index=0; index < $COUNT; index++)); do
+for index in $(seq 0 $COUNT); do
 	echo "Creating tap$index"
-	ifup=`$RUNQEMU_IFUP $TUID $GID $SYSROOT 2>&1`
+	ifup=$(${RUNQEMU_IFUP} $TUID $GID ${SYSROOT} 2>&1)
 	if [ $? -ne 0 ]; then
 		echo "Error running tunctl: $ifup"
 		exit 1
