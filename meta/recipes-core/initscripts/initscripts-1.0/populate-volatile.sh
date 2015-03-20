@@ -204,9 +204,25 @@ do
 done
 exec 9>&-
 
-if test -e ${ROOT_DIR}/etc/volatile.cache -a "$VOLATILE_ENABLE_CACHE" = "yes" -a "x$1" != "xupdate" -a "x$clearcache" = "x0"
+# Check whether configuration files have changed, if so, the cache needs to be removed
+# and generated again
+CACHE_MATCH="no"
+CACHE_DATA="${ROOT_DIR}/etc/.volatile.cache.data"
+CACHE_TMP="${ROOT_DIR}/etc/.volatile.cache.tmp"
+VOLATILE_CONFFILES="${ROOT_DIR}/etc/default/volatiles/*"
+if [ "$VOLATILE_ENABLE_CACHE" = "yes" ]; then
+	stat -c '%s %Y %n' $VOLATILE_CONFFILES | awk -F/ '{print $1 " " $NF;}' > $CACHE_TMP
+	if [ -e $CACHE_DATA ]; then
+		if cmp $CACHE_DATA $CACHE_TMP > /dev/null; then
+			CACHE_MATCH="yes"
+		fi
+	fi
+fi
+
+if test -e ${ROOT_DIR}/etc/volatile.cache -a "$VOLATILE_ENABLE_CACHE" = "yes" -a "x$1" != "xupdate" -a "x$clearcache" = "x0" -a "$CACHE_MATCH" = "yes"
 then
 	sh ${ROOT_DIR}/etc/volatile.cache
+	[ -e $CACHE_TMP ] && rm $CACHE_TMP
 else
 	rm -f ${ROOT_DIR}/etc/volatile.cache ${ROOT_DIR}/etc/volatile.cache.build
 	for file in `ls -1 "${CFGDIR}" | sort`; do
@@ -214,6 +230,7 @@ else
 	done
 
 	[ -e ${ROOT_DIR}/etc/volatile.cache.build ] && sync && mv ${ROOT_DIR}/etc/volatile.cache.build ${ROOT_DIR}/etc/volatile.cache
+	[ -e $CACHE_TMP ] && mv $CACHE_TMP $CACHE_DATA
 fi
 
 if [ -z "${ROOT_DIR}" ] && [ -f /etc/ld.so.cache ] && [ ! -f /var/run/ld.so.cache ]
