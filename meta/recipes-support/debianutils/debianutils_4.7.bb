@@ -46,3 +46,5 @@ ALTERNATIVE_LINK_NAME[run-parts]="${base_bindir}/run-parts"
 ALTERNATIVE_LINK_NAME[savelog]="${bindir}/savelog"
 ALTERNATIVE_LINK_NAME[tempfile]="${base_bindir}/tempfile"
 ALTERNATIVE_LINK_NAME[which]="${bindir}/which"
+
+BBCLASSEXTEND = "native"
