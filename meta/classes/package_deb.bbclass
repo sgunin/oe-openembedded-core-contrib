@@ -289,7 +289,7 @@ python do_package_deb () {
             conffiles.close()
 
         os.chdir(basedir)
-        subprocess.check_output("PATH=\"%s\" dpkg-deb -b %s %s" % (localdata.getVar("PATH"), root, pkgoutdir), shell=True)
+        subprocess.check_output("PATH=\"%s\" dpkg-deb --uniform-compression -b %s %s" % (localdata.getVar("PATH"), root, pkgoutdir), shell=True)
 
         cleanupcontrol(root)
         bb.utils.unlockfile(lf)
