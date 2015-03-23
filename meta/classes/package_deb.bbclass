@@ -271,7 +271,7 @@ def deb_write_pkg(pkg, d):
             conffiles.close()
 
         os.chdir(basedir)
-        subprocess.check_output("PATH=\"%s\" %s -b %s %s" % (localdata.getVar("PATH"), localdata.getVar("DPKG_BUILDCMD"),
+        subprocess.check_output("PATH=\"%s\" %s --uniform-compression -b %s %s" % (localdata.getVar("PATH"), localdata.getVar("DPKG_BUILDCMD"),
                                                              root, pkgoutdir),
                                 stderr=subprocess.STDOUT,
                                 shell=True)
