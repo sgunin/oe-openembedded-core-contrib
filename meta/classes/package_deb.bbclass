@@ -312,7 +312,7 @@ python do_package_deb () {
             conffiles.close()
 
         os.chdir(basedir)
-        ret = subprocess.call("PATH=\"%s\" dpkg-deb -b %s %s" % (localdata.getVar("PATH", True), root, pkgoutdir), shell=True)
+        ret = subprocess.call("PATH=\"%s\" dpkg-deb --uniform-compression -b %s %s" % (localdata.getVar("PATH", True), root, pkgoutdir), shell=True)
         if ret != 0:
             bb.utils.unlockfile(lf)
             raise bb.build.FuncFailed("dpkg-deb execution failed")
