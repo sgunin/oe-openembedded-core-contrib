@@ -123,6 +123,7 @@ do_configure_prepend() {
 	export AR="${HOST_PREFIX}gcc-ar"
 	export RANLIB="${HOST_PREFIX}gcc-ranlib"
 	export KMOD="${base_bindir}/kmod"
+	export SULOGIN="${base_sbindir}/sulogin"
 	if [ -d ${S}/units.pre_sed ] ; then
 		cp -r ${S}/units.pre_sed ${S}/units
 	else
