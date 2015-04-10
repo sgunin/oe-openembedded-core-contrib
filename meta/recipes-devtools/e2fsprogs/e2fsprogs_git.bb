@@ -37,6 +37,9 @@ do_install () {
 	rm -f ${D}${base_sbindir}/blkid
 	rm -f ${D}${base_sbindir}/fsck
 	rm -f ${D}${base_sbindir}/findfs
+	rm -f ${D}${base_sbindir}/mkfs.ext*
+	rm -f ${D}${base_sbindir}/fsck.ext*
+	rm -f ${D}${base_sbindir}/e2label
 
 	# e2initrd_helper and the pkgconfig files belong in libdir
 	if [ ! ${D}${libdir} -ef ${D}${base_libdir} ]; then
@@ -44,6 +47,11 @@ do_install () {
 		mv ${D}${base_libdir}/e2initrd_helper ${D}${libdir}
 		mv ${D}${base_libdir}/pkgconfig ${D}${libdir}
 	fi
+	for ext in ext2 ext3 ext4 ext4dev; do
+		ln -sf mke2fs ${D}${base_sbindir}/mkfs.${ext}
+		ln -sf e2fsck ${D}${base_sbindir}/fsck.${ext}
+	done
+	ln -sf tune2fs ${D}${base_sbindir}/e2label
 
 	oe_multilib_header ext2fs/ext2_types.h
 	install -d ${D}${base_bindir}
