@@ -90,7 +90,7 @@ fi
 
 if [ -e "$target_sdk_dir/environment-setup-@REAL_MULTIMACH_TARGET_SYS@" ]; then
 	echo "The directory \"$target_sdk_dir\" already contains a SDK for this architecture."
-	printf "If you continue, existing files will be overwritten! Proceed[y/N]?"
+	printf "If you continue, existing files will be overridden! Proceed[y/N]?"
 
 	default_answer="n"
 else
