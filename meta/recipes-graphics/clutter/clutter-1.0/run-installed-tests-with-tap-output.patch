@@ -4,17 +4,17 @@ Upstream-status: Pending
 
 Signed-off-by: Tim Orling <TicoTimo@gmail.com>
 
-Index: clutter-1.20.0/build/autotools/glib-tap.mk
+Index: clutter-1.22.0/build/autotools/glib-tap.mk
 ===================================================================
---- clutter-1.20.0.orig/build/autotools/glib-tap.mk
-+++ clutter-1.20.0/build/autotools/glib-tap.mk
-@@ -128,7 +128,8 @@ installed_test_meta_DATA = $(installed_t
+--- clutter-1.22.0.orig/build/autotools/glib-tap.mk
++++ clutter-1.22.0/build/autotools/glib-tap.mk
+@@ -127,7 +127,8 @@ installed_test_meta_DATA = $(installed_t
+ %.test: %$(EXEEXT) Makefile
  	$(AM_V_GEN) (echo '[Test]' > $@.tmp; \
  	echo 'Type=session' >> $@.tmp; \
- 	echo 'TestEnvironment=G_ENABLE_DIAGNOSTIC=0;CLUTTER_ENABLE_DIAGNOSTIC=0;' >> $@.tmp; \
--	echo 'Exec=$(installed_testdir)/$<' >> $@.tmp; \
-+	echo 'Exec=$(installed_testdir)/$< --tap' >> $@.tmp; \
-+	echo 'Output=TAP' >> $@.tmp; \
+-	echo 'Exec=env G_ENABLE_DIAGNOSTIC=0 CLUTTER_ENABLE_DIAGNOSTIC=0 $(installed_testdir)/$<' >> $@.tmp; \
++	echo 'Exec=env G_ENABLE_DIAGNOSTIC=0 CLUTTER_ENABLE_DIAGNOSTIC=0 $(installed_testdir)/$< --tap' >> $@.tmp; \
++       echo 'Output=TAP' >> $0.tmp; \
  	mv $@.tmp $@)
  
  CLEANFILES += $(installed_test_meta_DATA)
