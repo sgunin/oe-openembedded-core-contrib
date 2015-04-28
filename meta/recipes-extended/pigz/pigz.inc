@@ -15,6 +15,7 @@ DEPENDS = "zlib"
 
 inherit update-alternatives
 
+# do_install for target
 do_install_class-target() {
 	# Install files into /bin (FHS), which is typical place for gzip
 	install -d ${D}${base_bindir}
@@ -23,6 +24,7 @@ do_install_class-target() {
 	ln -nsf pigz ${D}${base_bindir}/pigzcat
 }
 
+# do_install for native and nativesdk package
 do_install() {
 	install -d ${D}${bindir}
 	install ${B}/pigz ${D}${bindir}/gzip
@@ -32,6 +34,7 @@ do_install() {
 
 ALTERNATIVE_PRIORITY = "80"
 ALTERNATIVE_${PN} = "gunzip gzip zcat"
+ALTERNATIVE_${PN}_class-nativesdk = ""
 ALTERNATIVE_LINK_NAME[gunzip] = "${base_bindir}/gunzip"
 ALTERNATIVE_LINK_NAME[gzip] = "${base_bindir}/gzip"
 ALTERNATIVE_LINK_NAME[zcat] = "${base_bindir}/zcat"
