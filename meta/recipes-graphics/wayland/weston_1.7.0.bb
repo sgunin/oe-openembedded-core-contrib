@@ -3,7 +3,7 @@ DESCRIPTION = "Weston is the reference implementation of a Wayland compositor"
 HOMEPAGE = "http://wayland.freedesktop.org"
 LICENSE = "MIT"
 LIC_FILES_CHKSUM = "file://COPYING;md5=275efac2559a224527bd4fd593d38466 \
-                    file://src/compositor.c;endline=23;md5=aa98a8db03480fe7d500d0b1f4b8850c"
+                    file://src/compositor.c;endline=23;md5=c8d8ba7a8075699516544389a3cad682"
 
 SRC_URI = "http://wayland.freedesktop.org/releases/${BPN}-${PV}.tar.xz \
            file://weston.png \
@@ -12,13 +12,14 @@ SRC_URI = "http://wayland.freedesktop.org/releases/${BPN}-${PV}.tar.xz \
            file://make-lcms-explicitly-configurable.patch \
            file://make-libwebp-explicitly-configurable.patch \
 "
-SRC_URI[md5sum] = "c60ce9dde99a089db0539d8f6b557827"
-SRC_URI[sha256sum] = "dc3ea5d13bbf025fabc006216c5ddc0d80d5f4ebe778912b8c4d1d4acaaa614d"
+
+SRC_URI[md5sum] = "1fde8a44f48cd177438522850d6ba4be"
+SRC_URI[sha256sum] = "1c4511945f3f476c24af712e82a7b500ae91a99cbc0fe2e381da1449125166cd"
 
 inherit autotools pkgconfig useradd
 
 DEPENDS = "libxkbcommon gdk-pixbuf pixman cairo glib-2.0 jpeg"
-DEPENDS += "wayland virtual/egl pango"
+DEPENDS += "wayland virtual/egl pango libinput"
 
 EXTRA_OECONF = "--enable-setuid-install \
                 --disable-xwayland \
@@ -60,8 +61,6 @@ PACKAGECONFIG[cairo-glesv2] = "--with-cairo-glesv2,--with-cairo=image,cairo"
 PACKAGECONFIG[lcms] = "--enable-lcms,--disable-lcms,lcms"
 # Weston with webp support
 PACKAGECONFIG[webp] = "--enable-webp,--disable-webp,libwebp"
-# Weston with libinput backend
-PACKAGECONFIG[libinput] = "--enable-libinput-backend,--disable-libinput-backend,libinput"
 
 do_install_append() {
 	# Weston doesn't need the .la files to load modules, so wipe them
