@@ -16,6 +16,7 @@ SDK_RDEPENDS_append_task-populate-sdk-ext = " ${SDK_TARGETS}"
 SDK_RELOCATE_AFTER_INSTALL_task-populate-sdk-ext = "0"
 
 SDK_META_CONF_WHITELIST ?= "MACHINE DISTRO PACKAGE_CLASSES"
+SDK_META_CONF_BLACKLIST ?= "TMPDIR DL_DIR SSTATE_DIR STAMPS_DIR BASE_WORKDIR DEPLOY_DIR"
 
 SDK_TARGETS ?= "${PN}"
 OE_INIT_ENV_SCRIPT ?= "oe-init-build-env"
@@ -114,6 +115,28 @@ python copy_buildsystem () {
         f.write('# this configuration provides, it is strongly suggested that you set\n')
         f.write('# up a proper instance of the full build system and use that instead.\n\n')
 
+        # Copy configurations from the current local.conf
+        builddir = d.getVar('TOPDIR', True)
+        with open(builddir + '/conf/local.conf', 'r') as lf:
+            varblacklist = d.getVar('SDK_META_CONF_BLACKLIST', True).split()
+            skip = False
+            for line in lf:
+                line = line.lstrip()
+                if line.startswith('#'):
+                    continue
+                # avoid host path bleeding into SDK configuration
+                if line.find('"/') != -1:
+                    continue
+                for varname in varblacklist:
+                    if line.startswith(varname):
+                        skip = True
+                        break
+                if not skip:
+                    f.write(line)
+                skip = False
+        f.write('\n')
+
+        # Configurations in local.conf which are specific for extensible SDK
         f.write('INHERIT += "%s"\n\n' % 'uninative')
         f.write('CONF_VERSION = "%s"\n\n' % d.getVar('CONF_VERSION'))
 
