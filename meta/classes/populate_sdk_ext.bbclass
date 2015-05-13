@@ -141,8 +141,18 @@ python copy_buildsystem () {
     sigfile = d.getVar('WORKDIR', True) + '/locked-sigs.inc'
     oe.copy_buildsystem.generate_locked_sigs(sigfile, d)
 
+    # Mark tasks to be 'noexec' for the SDK as we only need the sysroot part
+    base_class_path = os.path.join(baseoutpath, core_meta_subdir, 'classes', 'base.bbclass')
+    if os.path.exists(base_class_path):
+        with open(base_class_path, 'a') as f:
+            noexec_tasks = ['do_package', 'do_packagedata', 'do_package_qa', 'do_package_write_rpm',
+                            'do_package_write_ipk', 'do_package_write_deb', 'do_deploy', 'do_populate_lic',
+                            'do_rootfs']
+            for t in noexec_tasks:
+                f.write('%s[noexec] = "1"\n' % t)
+
     # Filter the locked signatures file to just the sstate tasks we are interested in
-    allowed_tasks = ['do_populate_lic', 'do_populate_sysroot', 'do_packagedata', 'do_package_write_ipk', 'do_package_write_rpm', 'do_package_write_deb', 'do_package_qa', 'do_deploy']
+    allowed_tasks = ['do_populate_sysroot']
     excluded_targets = d.getVar('SDK_TARGETS', True)
     lockedsigs_pruned = baseoutpath + '/conf/locked-sigs.inc'
     oe.copy_buildsystem.prune_lockedsigs(allowed_tasks,
