@@ -32,7 +32,7 @@ answer=""
 relocate=1
 savescripts=0
 verbose=0
-while getopts ":yd:DRS" OPT; do
+while getopts ":yd:nDRS" OPT; do
 	case $OPT in
 	y)
 		answer="Y"
@@ -40,6 +40,9 @@ while getopts ":yd:DRS" OPT; do
 		;;
 	d)
 		target_sdk_dir=$OPTARG
+		;;
+	n)
+		prepare_buildsystem="no"
 		;;
 	D)
 		verbose=1
@@ -55,6 +58,8 @@ while getopts ":yd:DRS" OPT; do
 		echo "Usage: $(basename $0) [-y] [-d <dir>]"
 		echo "  -y         Automatic yes to all prompts"
 		echo "  -d <dir>   Install the SDK to <dir>"
+		echo "======== Extensible SDK only options ============"
+		echo "  -n         Do not prepare the build system"
 		echo "======== Advanced DEBUGGING ONLY OPTIONS ========"
 		echo "  -S         Save relocation scripts"
 		echo "  -R         Do not relocate executables"
