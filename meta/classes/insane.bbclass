@@ -30,7 +30,7 @@ WARN_QA ?= "ldflags useless-rpaths rpaths staticdev libdir xorg-driver-abi \
             textrel already-stripped incompatible-license files-invalid \
             installed-vs-shipped compile-host-path install-host-path \
             pn-overrides infodir build-deps file-rdeps \
-            unknown-configure-option symlink-to-sysroot multilib \
+            unknown-configure-option symlink-to-sysroot multilib invalid-ac-cv \
             "
 ERROR_QA ?= "dev-so debug-deps dev-deps debug-files arch pkgconfig la \
             perms dep-cmp pkgvarcheck perm-config perm-line perm-link \
@@ -1139,6 +1139,23 @@ Missing inherit gettext?""" % (gt, config))
                 package_qa_handle_error("unknown-configure-option", error_msg, d)
         except subprocess.CalledProcessError:
             pass
+
+        # Check invalid cached configure vars (ac_cv_xxx).
+        # The ac_cv_xxx maybe in CACHED_CONFIGUREVARS, CONFIGUREOPTS and
+        # EXTRA_OECONF.
+        tocheck = "%s %s %s" % (d.getVar('CACHED_CONFIGUREVARS', True) or "", \
+                    d.getVar('CONFIGUREOPTS', True) or "", \
+                    d.getVar('EXTRA_OECONF', True) or "" )
+        for var in tocheck.split():
+            if var.startswith('ac_cv_'):
+                varname = var.split('=')[0]
+                cfgscript=d.expand("${S}/configure")
+                if os.path.exists(cfgscript):
+                    statement = "grep -q -F %s  %s > /dev/null" % (varname, cfgscript)
+                    if subprocess.call(statement, shell=True) != 0:
+                        pn = d.getVar('PN', True)
+                        error_msg = "%s: Invalid cached configure var: %s" % (pn, varname)
+                        package_qa_handle_error("invalid-ac-cv", error_msg, d)
 }
 # The Staging Func, to check all staging
 #addtask qa_staging after do_populate_sysroot before do_build
