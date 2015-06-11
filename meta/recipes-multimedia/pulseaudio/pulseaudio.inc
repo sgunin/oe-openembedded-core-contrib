@@ -29,7 +29,6 @@ EXTRA_OECONF = "\
 		--without-fftw \
 		--without-zsh-completion-dir \
 		--with-udev-rules-dir=`pkg-config --variable=udevdir udev`/rules.d \
-                ac_cv_header_valgrind_memcheck_h=no \
 "
 
 PACKAGECONFIG ??= "${@bb.utils.contains('DISTRO_FEATURES', 'bluetooth', '${BLUEZ}', '', d)} \
