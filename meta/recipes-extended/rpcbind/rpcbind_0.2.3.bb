@@ -18,7 +18,6 @@ SRC_URI = "${SOURCEFORGE_MIRROR}/rpcbind/rpcbind-${PV}.tar.bz2 \
            ${UCLIBCPATCHES} \
            ${MUSLPATCHES} \
            file://rpcbind.conf \
-           file://rpcbind.socket \
            file://rpcbind.service \
            file://cve-2015-7236.patch \
           "
@@ -65,7 +64,6 @@ do_install_append () {
 
 	install -m 0755 ${WORKDIR}/rpcbind.conf ${D}${sysconfdir}
 	install -d ${D}${systemd_unitdir}/system
-	install -m 0644 ${WORKDIR}/rpcbind.socket ${D}${systemd_unitdir}/system
 	install -m 0644 ${WORKDIR}/rpcbind.service ${D}${systemd_unitdir}/system
 	sed -i -e 's,@SBINDIR@,${sbindir},g' \
 		-e 's,@SYSCONFDIR@,${sysconfdir},g' \
