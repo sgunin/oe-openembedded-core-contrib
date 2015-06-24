@@ -70,6 +70,8 @@ SCRIPT_KERNEL_OPT=""
 SERIALSTDIO=""
 KVM_ENABLED="no"
 KVM_ACTIVE="no"
+GRAPHIC="yes"
+PUBLICVNC="no"
 
 # Determine whether the file is a kernel or QEMU image, and set the
 # appropriate variables
@@ -142,8 +144,7 @@ while true; do
 	    ISOFS=true
 	    ;;
         "nographic")
-            SCRIPT_QEMU_OPT="$SCRIPT_QEMU_OPT -nographic"
-            SCRIPT_KERNEL_OPT="$SCRIPT_KERNEL_OPT console=ttyS0"
+            GRAPHIC="no"
             ;;
         "serial")
             SCRIPT_QEMU_OPT="$SCRIPT_QEMU_OPT -serial stdio"
@@ -187,6 +188,7 @@ while true; do
             ;;
         "publicvnc")
             SCRIPT_QEMU_OPT="$SCRIPT_QEMU_OPT -vnc 0.0.0.0:0"
+            PUBLICVNC="yes"
             ;;
         "") break ;;
         *)
@@ -289,6 +291,13 @@ if [ "x$KVM_ENABLED" = "xyes" ]; then
             exit 1;
 	fi
     fi
+fi
+
+# Disable graphic when no DISPLAY or -nographic is specified.
+if [ "$GRAPHIC" = "no" ] || [ -z "$DISPLAY" -a "$PUBLICVNC" = "no" ] ; then
+    echo "Disabling graphic."
+    SCRIPT_QEMU_OPT="$SCRIPT_QEMU_OPT -nographic"
+    SCRIPT_KERNEL_OPT="$SCRIPT_KERNEL_OPT console=ttyS0"
 fi
 
 machine2=`echo $MACHINE | tr 'a-z' 'A-Z' | sed 's/-/_/'`
