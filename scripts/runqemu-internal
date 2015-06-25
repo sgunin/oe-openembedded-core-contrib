@@ -217,6 +217,19 @@ else
                 sudo $QEMUIFUP $USERID $GROUPID $OECORE_NATIVE_SYSROOT
                 return 1
             fi
+
+            # Enale kvm when possible since sudo works well, if
+            # /usr/include/linux/kvm.h exists, qemu-native is built with kvm
+            # support.
+            if [ "$KVM_ENABLED" = "maybe" -a -n "$KVM_CAPABLE" -a \
+                -e /dev/kvm -a -e /dev/vhost-net -a -f /usr/include/linux/kvm.h ] && \
+               [ "$MACHINE" = "qemux86" -o "$MACHINE" = "qemux86-64" ]; then
+                    echo "Enabling KVM automatically, can be disabled by nokvm option"
+                    SCRIPT_QEMU_OPT="$SCRIPT_QEMU_OPT -enable-kvm"
+                    KVM_ACTIVE="yes"
+                    KVM_SUDO="sudo"
+            fi
+
             LOCKFILE="$LOCKDIR/$tap"
             echo "Acquiring lockfile for $tap..."
             acquire_lock $LOCKFILE
@@ -685,6 +698,7 @@ if [ "x$SERIALSTDIO" = "x1" ]; then
 fi
 
 echo "Running $QEMU..."
+[ -n "$KVM_SUDO" ] && QEMUBIN="$KVM_SUDO $QEMUBIN"
 # -no-reboot is a mandatory option - see bug #100
 if [ "$FSTYPE" = "vmdk" ]; then
     echo $QEMUBIN $VM $QEMUOPTIONS $SERIALOPTS -no-reboot $SCRIPT_QEMU_OPT $SCRIPT_QEMU_EXTRA_OPT
