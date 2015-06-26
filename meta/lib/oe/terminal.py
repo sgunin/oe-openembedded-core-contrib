@@ -218,11 +218,12 @@ def spawn(name, sh_cmd, title=None, env=None, d=None):
 
 def check_tmux_pane_size(tmux):
     import subprocess as sub
+    import re
     try:
-        p = sub.Popen('%s list-panes -F "#{?pane_active,#{pane_height},}"' % tmux,
+        p = sub.Popen('%s list-panes -F "#{pane_height} #{pane_active}"' % tmux,
                 shell=True,stdout=sub.PIPE,stderr=sub.PIPE)
         out, err = p.communicate()
-        size = int(out.strip())
+        size = int(re.sub(r'.*?(?P<height>\d+) 1.*',r'\g<height>', out, flags = re.DOTALL))
     except OSError as exc:
         import errno
         if exc.errno == errno.ENOENT:
