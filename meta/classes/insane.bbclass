@@ -566,8 +566,14 @@ def package_qa_check_buildpaths(path, name, d, elf, messages):
     """
     Check for build paths inside target files and error if not found in the whitelist
     """
-    # Ignore .debug files, not interesting
-    if path.find(".debug") != -1:
+
+    # Ignore staticdev and debug files since symbols and .a usually
+    # contain buildpath.
+    if name.endswith("-dbg") or name.endswith("-staticdev"):
+        return
+
+    # Ignore elf and .a files
+    if elf or path.endswith('.a'):
         return
 
     # Ignore symlinks
@@ -578,7 +584,7 @@ def package_qa_check_buildpaths(path, name, d, elf, messages):
     with open(path) as f:
         file_content = f.read()
         if tmpdir in file_content:
-            messages["buildpaths"] = "File %s in package contained reference to tmpdir" % package_qa_clean_path(path,d)
+            messages["buildpaths"] = "File %s in package contained reference to tmpdir" % path
 
 
 QAPATHTEST[xorg-driver-abi] = "package_qa_check_xorg_driver_abi"
