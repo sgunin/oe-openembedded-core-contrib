@@ -17,9 +17,10 @@ inherit autotools gettext pkgconfig
 #
 # Both Samba (smb) and sftp require package delivered from meta-openembedded
 #
-PACKAGECONFIG ??= ""
+PACKAGECONFIG ??= "util-linux"
 PACKAGECONFIG[smb] = "--enable-vfs-smb,--disable-vfs-smb,samba,"
 PACKAGECONFIG[sftp] = "--enable-vfs-sftp,--disable-vfs-sftp,libssh2,"
+PACKAGECONFIG[util-linux] = "ac_cv_lib_mount_mnt_new_table_from_file=yes,ac_cv_lib_mount_mnt_new_table_from_file=no,util-linux,"
 
 EXTRA_OECONF = "--with-screen=ncurses --without-gpm-mouse --without-x"
 
