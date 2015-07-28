@@ -9,7 +9,7 @@ LIC_FILES_CHKSUM = "file://COPYRIGHT;md5=8ad8615198542444f84d28a6cf226dd8"
 DEPENDS = ""
 PR = "r2"
 
-SRC_URI = "git://github.com/xinetd-org/xinetd.git;protocol=https \
+SRC_URI = "${GITHUB_GIT}/xinetd-org/xinetd.git;protocol=https \
       file://xinetd.init \
       file://xinetd.conf \
       file://xinetd.default \

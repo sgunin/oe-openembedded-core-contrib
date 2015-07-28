@@ -10,7 +10,7 @@ DEPENDS = "attr zlib xz lzo lz4"
 
 PV = "4.3+gitr${SRCPV}"
 SRCREV = "9c1db6d13a51a2e009f0027ef336ce03624eac0d"
-SRC_URI = "git://github.com/plougher/squashfs-tools.git;protocol=https \
+SRC_URI = "${GITHUB_GIT}/plougher/squashfs-tools.git;protocol=https \
            http://downloads.sourceforge.net/sevenzip/lzma465.tar.bz2;name=lzma \
 "
 SRC_URI[lzma.md5sum] = "29d5ffd03a5a3e51aef6a74e9eafb759"

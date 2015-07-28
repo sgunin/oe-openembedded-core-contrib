@@ -4,7 +4,7 @@ SECTION = "libs"
 LICENSE = "GPLv2+"
 LIC_FILES_CHKSUM = "file://COPYING;md5=18810669f13b87348459e611d31ab760"
 
-SRC_URI = "git://github.com/gitpan/SGMLSpm \
+SRC_URI = "${GITHUB_GIT}/gitpan/SGMLSpm \
           "
 
 SRCREV = "71595b9b5e36bfc00046995e058926bd27793fef"

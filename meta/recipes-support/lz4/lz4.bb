@@ -8,7 +8,7 @@ SRCREV = "5780864c0ce08622238a267c46fb489d7066cad4"
 
 PV = "128+git${SRCPV}"
 
-SRC_URI = "git://github.com/Cyan4973/lz4.git;protocol=http"
+SRC_URI = "${GITHUB_GIT}/Cyan4973/lz4.git;protocol=http"
 
 S = "${WORKDIR}/git"
 

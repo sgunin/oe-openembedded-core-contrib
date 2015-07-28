@@ -6,7 +6,7 @@ execution in a comprehensible way, and a debugger."
 HOMEPAGE = "http://bashdb.sourceforge.net/remake/"
 SECTION = "devel"
 
-SRC_URI = "git://github.com/rocky/remake.git"
+SRC_URI = "${GITHUB_GIT}/rocky/remake.git"
 
 inherit autotools gettext update-alternatives
 

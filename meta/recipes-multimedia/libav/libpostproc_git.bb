@@ -11,7 +11,7 @@ LICENSE_FLAGS = "commercial"
 PV = "52.3.0+git${SRCPV}"
 
 SRCREV = "811db3b957dfde24aef2d0f82e297e5bf552d873"
-SRC_URI = "git://github.com/lu-zero/postproc;protocol=https"
+SRC_URI = "${GITHUB_GIT}/lu-zero/postproc;protocol=https"
 
 S = "${WORKDIR}/git"
 

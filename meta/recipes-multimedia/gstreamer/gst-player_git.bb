@@ -5,7 +5,7 @@ LIC_FILES_CHKSUM = "file://lib/gst/player/gstplayer.c;beginline=1;endline=19;md5
 
 DEPENDS = "glib-2.0 gstreamer1.0 gstreamer1.0-plugins-base gtk+"
 
-SRC_URI = "git://github.com/sdroege/gst-player.git \
+SRC_URI = "${GITHUB_GIT}/sdroege/gst-player.git \
            file://filechooser.patch \
            file://gtk2.patch \
            file://Fix-pause-play.patch \

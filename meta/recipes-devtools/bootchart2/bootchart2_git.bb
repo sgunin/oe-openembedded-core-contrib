@@ -91,7 +91,7 @@ LIC_FILES_CHKSUM = "file://COPYING;md5=44ac4678311254db62edf8fd39cb8124"
 # one commit beyond 1.14.6 for a systemd-related bugfix
 PV = "0.14.6+git${SRCPV}"
 
-SRC_URI = "git://github.com/mmeeks/bootchart.git \
+SRC_URI = "${GITHUB_GIT}/mmeeks/bootchart.git \
            file://bootchartd_stop.sh \
            file://bootchartd-no-bashism.patch \
           "

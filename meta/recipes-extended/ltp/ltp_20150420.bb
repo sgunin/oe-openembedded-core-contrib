@@ -22,7 +22,7 @@ LIC_FILES_CHKSUM = "\
 DEPENDS = "attr libaio libcap acl openssl zip-native"
 SRCREV = "77d0b7fd0148ce657c5a25060667e978c07662a0"
 
-SRC_URI = "git://github.com/linux-test-project/ltp.git \
+SRC_URI = "${GITHUB_GIT}/linux-test-project/ltp.git \
     file://0001-Rename-runtests_noltp.sh-script-so-have-unique-name.patch \
     file://ltp-Do-not-link-against-libfl.patch \
     file://make-setregid02-work.patch \
