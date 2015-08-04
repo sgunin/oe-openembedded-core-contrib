@@ -7,7 +7,24 @@ inherit populate_sdk_base
 
 TOOLCHAIN_HOST_TASK_task-populate-sdk-ext = " \
     meta-environment-extsdk-${MACHINE} \
+    nativesdk-python-core \
+    nativesdk-python-modules \
+    nativesdk-python-misc \
+    nativesdk-python-git \
+    nativesdk-python-pexpect \
+    nativesdk-ncurses-terminfo-base \
+    nativesdk-chrpath \
+    nativesdk-tar \
+    nativesdk-buildtools-perl-dummy \
+    nativesdk-git \
+    nativesdk-git-perltools \
+    nativesdk-pigz \
+    nativesdk-make \
+    nativesdk-wget \
+    nativesdk-ca-certificates \
     "
+
+SDK_PACKAGE_ARCHS =+ "buildtools-dummy-${SDKPKGSUFFIX}"
 
 TOOLCHAIN_TARGET_TASK_task-populate-sdk-ext = ""
 
@@ -183,8 +200,6 @@ install_tools() {
 	lnr ${SDK_OUTPUT}/${SDKPATH}/${scriptrelpath}/recipetool ${SDK_OUTPUT}/${SDKPATHNATIVE}${bindir_nativesdk}/recipetool
 	touch ${SDK_OUTPUT}/${SDKPATH}/.devtoolbase
 
-	install ${SDK_DEPLOY}/${DISTRO}-${TCLIBC}-${SDK_ARCH}-buildtools-tarball-${TUNE_PKGARCH}-buildtools-nativesdk-standalone-${DISTRO_VERSION}.sh ${SDK_OUTPUT}/${SDKPATH}
-
 	install ${SDK_DEPLOY}/${BUILD_ARCH}-nativesdk-libc.tar.bz2 ${SDK_OUTPUT}/${SDKPATH}
 }
 
@@ -201,13 +216,7 @@ SDK_PRE_INSTALL_COMMAND_task-populate-sdk-ext = "${sdk_ext_preinst}"
 
 # FIXME this preparation should be done as part of the SDK construction
 sdk_ext_postinst() {
-	printf "\nExtracting buildtools...\n"
 	cd $target_sdk_dir
-	printf "buildtools\ny" | ./*buildtools-tarball* > /dev/null
-
-	# Make sure when the user sets up the environment, they also get
-	# the buildtools-tarball tools in their path.
-	echo ". $target_sdk_dir/buildtools/environment-setup*" >> $target_sdk_dir/environment-setup*
 
 	# Allow bitbake environment setup to be ran as part of this sdk.
 	echo "export OE_SKIP_SDK_CHECK=1" >> $target_sdk_dir/environment-setup*
@@ -224,7 +233,7 @@ sdk_ext_postinst() {
 	    # dash which is /bin/sh on Ubuntu will not preserve the
 	    # current working directory when first ran, nor will it set $1 when
 	    # sourcing a script. That is why this has to look so ugly.
-	    sh -c ". buildtools/environment-setup* > preparing_build_system.log && cd $target_sdk_dir/`dirname ${oe_init_build_env_path}` && set $target_sdk_dir && . $target_sdk_dir/${oe_init_build_env_path} $target_sdk_dir >> preparing_build_system.log && bitbake ${SDK_TARGETS} >> preparing_build_system.log" || { echo "SDK preparation failed: see `pwd`/preparing_build_system.log" ; exit 1 ; }
+	    sh -c "cd $target_sdk_dir/`dirname ${oe_init_build_env_path}` && set $target_sdk_dir && . $target_sdk_dir/${oe_init_build_env_path} $target_sdk_dir >> preparing_build_system.log && bitbake ${SDK_TARGETS} >> preparing_build_system.log" || { echo "SDK preparation failed: see `pwd`/preparing_build_system.log" ; exit 1 ; }
 	fi
 	echo done
 }
@@ -249,7 +258,7 @@ do_populate_sdk_ext[rdepends] = "${@get_sdk_ext_rdepends(d)}"
 do_populate_sdk_ext[recrdeptask] += "${@d.getVarFlag('do_populate_sdk', 'recrdeptask', False)}"
 
 
-do_populate_sdk_ext[depends] += "buildtools-tarball:do_populate_sdk uninative-tarball:do_populate_sdk"
+do_populate_sdk_ext[depends] += "uninative-tarball:do_populate_sdk"
 
 do_populate_sdk_ext[rdepends] += "${@' '.join([x + ':do_build' for x in d.getVar('SDK_TARGETS', True).split()])}"
 do_populate_sdk_ext[recrdeptask] += "do_populate_lic do_package_qa do_populate_sysroot do_deploy"
