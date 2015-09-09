@@ -19,6 +19,7 @@ SRC_URI = "ftp://ftp.isc.org/isc/bind9/${PV}/${BPN}-${PV}.tar.gz \
            file://bind-confgen-build-unix.o-once.patch \
            file://0001-build-use-pkg-config-to-find-libxml2.patch \
            file://bind-ensure-searching-for-json-headers-searches-sysr.patch \
+           file://0001-gen.c-extend-DIRNAMESIZE-from-256-to-512.patch \
            "
 
 SRC_URI[md5sum] = "a810d5d65fbdcf28dcda80d646913c3a"
