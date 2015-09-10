@@ -615,9 +615,10 @@ def pstaging_fetch(sstatefetch, sstatepkg, d):
 
     # Try a fetch from the sstate mirror, if it fails just return and
     # we will build the package
-    for srcuri in ['file://{0}'.format(sstatefetch),
-                   'file://{0}.siginfo'.format(sstatefetch),
-                   'file://{0}.sig'.format(sstatefetch)]:
+    srcuris = ['file://{0}'.format(sstatefetch), 'file://{0}.siginfo'.format(sstatefetch)]
+    if d.getVar("SSTATE_SIG_KEY", True):
+        srcuris.append('file://{0}.sig'.format(sstatefetch))
+    for srcuri in srcuris:
         localdata.setVar('SRC_URI', srcuri)
         try:
             fetcher = bb.fetch2.Fetch([srcuri], localdata, cache=False)
