@@ -20,6 +20,6 @@ EXTRA_OECONF = "--with-extra-only --with-gtk=no"
 
 PR = "r1"
 
-inherit autotools pkgconfig gtk-doc
+inherit autotools pkgconfig gtk-doc gettext
 
 do_configure[dirs] =+ "${S}/m4"

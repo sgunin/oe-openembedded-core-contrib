@@ -31,7 +31,7 @@ CFLAGS_prepend = "-DHAVE_ANIMATION "
 
 RDEPENDS_${PN}-dev = ""
 
-inherit gnomebase
+inherit gnomebase gettext
 GNOME_COMPRESS_TYPE="bz2"
 
 python populate_packages_prepend() {

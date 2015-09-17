@@ -25,7 +25,7 @@ SRC_URI_append_poky = " file://oh-puzzles-owl-menu.patch;striplevel=0 "
 
 S = "${WORKDIR}/git"
 
-inherit autotools pkgconfig distro_features_check
+inherit autotools pkgconfig distro_features_check gettext
 
 bindir = "/usr/games"
 

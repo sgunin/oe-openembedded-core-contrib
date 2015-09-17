@@ -19,7 +19,7 @@ SRC_URI = "git://github.com/connectivity/connman-gnome.git \
 
 S = "${WORKDIR}/git"
 
-inherit autotools-brokensep gtk-icon-cache pkgconfig
+inherit autotools-brokensep gtk-icon-cache pkgconfig gettext
 
 RDEPENDS_${PN} = "connman"
 

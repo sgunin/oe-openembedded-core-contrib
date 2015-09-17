@@ -2,7 +2,7 @@ SUMMARY = "libsecret is a library for storing and retrieving passwords and other
 LICENSE = "LGPLv2.1"
 LIC_FILES_CHKSUM = "file://COPYING;md5=23c2a5e0106b99d75238986559bb5fc6"
 
-inherit gnomebase gtk-doc
+inherit gnomebase gtk-doc gettext
 
 DEPENDS = "glib-2.0 libgcrypt"
 

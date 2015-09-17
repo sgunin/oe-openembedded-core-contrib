@@ -19,7 +19,7 @@ PR = "r2"
 
 SRC_URI_append_poky = " file://owl-menu.patch;apply=yes "
 
-inherit autotools pkgconfig distro_features_check
+inherit autotools pkgconfig distro_features_check gettext
 
 EXTRA_OECONF = " --enable-chooser --disable-emacs --disable-print"
 
