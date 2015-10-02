@@ -749,8 +749,15 @@ def package_qa_check_staged(path,d):
 
     return sane
 
+# Merge src dict's content into dest
+def package_qa_merge_dict(dest, src):
+    if len(dest) == len(src) and dest != src:
+        for w in src:
+            if dest[w] != src[w]:
+                dest[w] = src[w] + '\n' + dest[w]
+
 # Walk over all files in a directory and call func
-def package_qa_walk(path, warnfuncs, errorfuncs, skip, package, d):
+def package_qa_walk(warnfuncs, errorfuncs, skip, package, d):
     import oe.qa
 
     #if this will throw an exception, then fix the dict above
@@ -766,9 +773,17 @@ def package_qa_walk(path, warnfuncs, errorfuncs, skip, package, d):
             except:
                 elf = None
             for func in warnfuncs:
+                warnings_orig = warnings.copy()
                 func(path, package, d, elf, warnings)
+                # warnings[foo] = "foo1" might be overrided by
+                # warnings [foo] = "foo2", check and merge.
+                package_qa_merge_dict(warnings, warnings_orig)
             for func in errorfuncs:
+                errors_orig = errors.copy()
                 func(path, package, d, elf, errors)
+                # errors[foo] = "foo1" might be overrided by
+                # errors [foo] = "foo2", check and merge.
+                package_qa_merge_dict(errors, errors_orig)
 
     for w in warnings:
         package_qa_handle_error(w, warnings[w], d)
@@ -1094,8 +1109,7 @@ python do_package_qa () {
             package_qa_handle_error("pkgname",
                     "%s doesn't match the [a-z0-9.+-]+ regex" % package, d)
 
-        path = "%s/%s" % (pkgdest, package)
-        if not package_qa_walk(path, warnchecks, errorchecks, skip, package, d):
+        if not package_qa_walk(warnchecks, errorchecks, skip, package, d):
             walk_sane  = False
         if not package_qa_check_rdepends(package, pkgdest, skip, taskdeps, packages, d):
             rdepends_sane = False
