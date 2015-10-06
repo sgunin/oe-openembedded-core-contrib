@@ -572,8 +572,11 @@ def package_qa_check_buildpaths(path, name, d, elf, messages):
     """
     Check for build paths inside target files and error if not found in the whitelist
     """
-    # Ignore .debug files, not interesting
-    if path.find(".debug") != -1:
+    # Ignore:
+    # - .debug files
+    # - which sets INHIBIT_PACKAGE_STRIP
+    if path.find(".debug") != -1 or \
+        d.getVar('INHIBIT_PACKAGE_STRIP', True) == "1":
         return
 
     # Ignore .pyc files, not interesting
