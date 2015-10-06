@@ -576,6 +576,10 @@ def package_qa_check_buildpaths(path, name, d, elf, messages):
     if path.find(".debug") != -1:
         return
 
+    # Ignore .pyc files, not interesting
+    if path.endswith(".pyc"):
+        return
+
     # Ignore symlinks
     if os.path.islink(path):
         return
