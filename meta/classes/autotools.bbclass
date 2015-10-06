@@ -79,7 +79,9 @@ CONFIGUREOPT_DEPTRACK ?= "--disable-dependency-tracking"
 
 
 oe_runconf () {
-	cfgscript="${S}/configure"
+	# Use relative path for S to avoid buildpaths in files
+	relative_s=`python -c "import os; print os.path.relpath('${S}', '.')"`
+	cfgscript="$relative_s/configure"
 	if [ -x "$cfgscript" ] ; then
 		bbnote "Running $cfgscript ${CONFIGUREOPTS} ${EXTRA_OECONF} $@"
 		set +e
