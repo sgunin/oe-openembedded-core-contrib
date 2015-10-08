@@ -208,7 +208,6 @@ pkg_postinst_nscd () {
 		fi
 	fi
 }
-CONFFILES_nscd="${sysconfdir}/nscd.conf"
 
 SYSTEMD_PACKAGES = "nscd"
 SYSTEMD_SERVICE_nscd = "nscd.service"

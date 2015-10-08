@@ -38,5 +38,3 @@ do_install_append () {
 }
 
 BBCLASSEXTEND = "native nativesdk"
-
-CONFFILES_${PN} += "${sysconfdir}/inputrc"

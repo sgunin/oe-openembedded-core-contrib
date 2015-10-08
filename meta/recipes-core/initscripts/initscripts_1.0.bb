@@ -178,5 +178,3 @@ pkg_postinst_${PN} () {
         rm -f "/etc/volatile.cache"
     fi
 }
-
-CONFFILES_${PN} += "${sysconfdir}/init.d/checkroot.sh"
