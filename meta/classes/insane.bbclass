@@ -575,7 +575,7 @@ def package_qa_check_buildpaths(path, name, d, elf, messages):
     # Ignore:
     # - .debug files
     # - which sets INHIBIT_PACKAGE_STRIP
-    if path.find(".debug") != -1 or \
+    if path.find(".debug") != -1 or path.find("/src/debug/") != -1 or \
         d.getVar('INHIBIT_PACKAGE_STRIP', True) == "1":
         return
 
