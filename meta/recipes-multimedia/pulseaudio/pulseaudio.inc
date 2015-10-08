@@ -124,14 +124,6 @@ FILES_${PN}-misc = "${bindir}/* ${libdir}/pulseaudio/libpulsedsp.so"
 # Allow the pulseaudio package to be created empty as a placeholder (-dbg and -dev depend on it)
 ALLOW_EMPTY_${PN} = "1"
 
-CONFFILES_libpulse = "${sysconfdir}/pulse/client.conf"
-
-CONFFILES_pulseaudio-server = "\ 
-  ${sysconfdir}/pulse/default.pa \
-  ${sysconfdir}/pulse/daemon.conf \
-  ${sysconfdir}/pulse/system.pa \
-  "
-
 pkg_postinst_${PN}-server() {
         if [ -z "$D" ] && [ -e ${sysconfdir}/init.d/populate-volatile.sh ] ; then
             ${sysconfdir}/init.d/populate-volatile.sh update

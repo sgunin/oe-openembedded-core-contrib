@@ -14,4 +14,3 @@ do_install() {
 }
 
 FILES_${PN} = "${sysconfdir}/pulse/client.conf.d/50-sato.conf"
-CONFFILES_${PN} = "${sysconfdir}/pulse/client.conf.d/50-sato.conf"

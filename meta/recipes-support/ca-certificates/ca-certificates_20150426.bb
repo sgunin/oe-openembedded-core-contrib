@@ -65,10 +65,6 @@ pkg_postinst_${PN} () {
     SYSROOT="$D" update-ca-certificates
 }
 
-CONFFILES_${PN} += "${sysconfdir}/ca-certificates.conf"
-
-# Postinsts don't seem to be run for nativesdk packages when populating SDKs.
-CONFFILES_${PN}_append_class-nativesdk = " ${sysconfdir}/ssl/certs/ca-certificates.crt"
 do_install_append_class-nativesdk () {
     SYSROOT="${D}${SDKPATHNATIVE}" update-ca-certificates
 }
