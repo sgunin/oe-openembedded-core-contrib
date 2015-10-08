@@ -19,8 +19,6 @@ inherit autotools
 PACKAGECONFIG ??= ""
 PACKAGECONFIG[zlib] = "--enable-zlib,--disable-zlib,zlib"
 
-CONFFILES_${PN} = "${sysconfdir}/sudoers"
-
 EXTRA_OECONF = "--with-editor=/bin/vi --with-env-editor"
 
 EXTRA_OECONF_append_libc-musl = " --disable-hardening "

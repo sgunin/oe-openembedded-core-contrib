@@ -22,7 +22,6 @@ SRC_URI = "http://www.infodrom.org/projects/sysklogd/download/sysklogd-${PV}.tar
 SRC_URI_append_e500v2 = " file://no-vectorization.patch"
 
 INITSCRIPT_NAME = "syslog"
-CONFFILES_${PN} = "${sysconfdir}/syslog.conf.${BPN}"
 
 CFLAGS_append = " -DSYSV"
 
