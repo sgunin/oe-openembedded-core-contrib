@@ -28,5 +28,3 @@ EXTRA_OEMAKE = "-e 'STRIP=echo' 'LIB_OBJS=-lc -lsysfs' 'LEX=flex'"
 do_install () {
 	oe_runmake 'DESTDIR=${D}' install
 }
-
-CONFFILES_${PN} += "${sysconfdir}/pcmcia/config.opts"
