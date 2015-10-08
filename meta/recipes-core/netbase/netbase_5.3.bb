@@ -20,5 +20,3 @@ do_install () {
 	install -m 0644 etc-protocols ${D}${sysconfdir}/protocols
 	install -m 0644 etc-services ${D}${sysconfdir}/services
 }
-
-CONFFILES_${PN} = "${sysconfdir}/hosts"

@@ -33,7 +33,6 @@ do_install() {
 
 FILES_${PN} = "${sysconfdir}/udev"
 RDEPENDS_${PN} = "udev"
-CONFFILES_${PN} = "${sysconfdir}/udev/mount.blacklist"
 
 # to replace udev-extra-rules from meta-oe
 RPROVIDES_${PN} = "udev-extra-rules"

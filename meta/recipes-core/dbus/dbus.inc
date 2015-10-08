@@ -35,8 +35,6 @@ USERADD_PARAM_${PN} = "--system --home ${localstatedir}/lib/dbus \
                        --no-create-home --shell /bin/false \
                        --user-group messagebus"
 
-CONFFILES_${PN} = "${sysconfdir}/dbus-1/system.conf ${sysconfdir}/dbus-1/session.conf"
-
 DEBIANNAME_${PN} = "dbus-1"
 
 PACKAGES =+ "${PN}-lib"

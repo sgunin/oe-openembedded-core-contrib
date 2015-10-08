@@ -38,4 +38,3 @@ PACKAGE_ARCH_qemuall = "${MACHINE_ARCH}"
 RDEPENDS_${PN} = "netbase"
 RCONFLICTS_${PN} = "netbase (< 1:5.0)"
 
-CONFFILES_${PN} = "${sysconfdir}/network/interfaces"
