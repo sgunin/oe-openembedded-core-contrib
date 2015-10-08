@@ -67,8 +67,6 @@ do_install_append() {
 
 FILES_${PN} += "${sysconfdir} /www"
 
-CONFFILES_${PN} = "${sysconfdir}/lighttpd.conf"
-
 PACKAGES_DYNAMIC += "^lighttpd-module-.*"
 
 python populate_packages_prepend () {

@@ -78,4 +78,3 @@ do_install_append () {
 }
 
 FILES_${PN} += "${sysconfdir}/cron*"
-CONFFILES_${PN} += "${sysconfdir}/crontab"

@@ -64,5 +64,3 @@ do_install() {
 	       -e 's,@SBINDIR@,${sbindir},g' \
 	       ${D}${systemd_unitdir}/system/xinetd.service
 }
-
-CONFFILES_${PN} = "${sysconfdir}/xinetd.conf"
