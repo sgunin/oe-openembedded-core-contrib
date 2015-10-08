@@ -52,7 +52,6 @@ RRECOMMENDS_alsa-state = "alsa-states"
 
 RDEPENDS_${PN} = "alsa-utils-alsactl"
 FILES_${PN} = "${sysconfdir}/init.d ${sysconfdir}/asound.conf"
-CONFFILES_${PN} = "${sysconfdir}/asound.conf"
 
 FILES_alsa-states = "${localstatedir}/lib/alsa/*.state"
 
