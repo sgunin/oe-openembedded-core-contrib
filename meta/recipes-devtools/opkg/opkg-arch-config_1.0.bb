@@ -28,8 +28,6 @@ do_install () {
 
 FILES_${PN} = "${sysconfdir}/opkg/ "
 
-CONFFILES_${PN} += "${sysconfdir}/opkg/arch.conf"
-
 RREPLACES_${PN} = "opkg-config-base"
 RCONFLICTS_${PN} = "opkg-config-base"
 RPROVIDES_${PN} = "opkg-config-base"
