@@ -93,14 +93,3 @@ do_install_append() {
 	install -m 0644 ${WORKDIR}/bind9 ${D}${sysconfdir}/default
 }
 
-CONFFILES_${PN} = " \
-	${sysconfdir}/bind/named.conf \
-	${sysconfdir}/bind/named.conf.local \
-	${sysconfdir}/bind/named.conf.options \
-	${sysconfdir}/bind/db.0 \
-	${sysconfdir}/bind/db.127 \
-	${sysconfdir}/bind/db.empty \
-	${sysconfdir}/bind/db.local \
-	${sysconfdir}/bind/db.root \
-	"
-

@@ -113,8 +113,6 @@ RRECOMMENDS_avahi-dev_append_libc-glibc = " gettext-dev"
 
 RRECOMMENDS_avahi-dev[nodeprrecs] = "1"
 
-CONFFILES_avahi-daemon = "${sysconfdir}/avahi/avahi-daemon.conf"
-
 INITSCRIPT_PACKAGES = "avahi-daemon avahi-dnsconfd"
 INITSCRIPT_NAME_avahi-daemon = "avahi-daemon"
 INITSCRIPT_PARAMS_avahi-daemon = "defaults 21 19"
