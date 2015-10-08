@@ -11,7 +11,7 @@ TOOLCHAIN_OPTIONS = " --sysroot=${STAGING_DIR_TCBOOTSTRAP}"
 do_configure () {
 	(cd ${S} && gnu-configize) || die "failure in running gnu-configize"
 	find ${S} -name "configure" | xargs touch
-	${S}/configure --host=${TARGET_SYS} --build=${BUILD_SYS} \
+	../git/configure --host=${TARGET_SYS} --build=${BUILD_SYS} \
 		--prefix=/usr \
 		--without-cvs --disable-sanity-checks \
 		--with-headers=${STAGING_DIR_TARGET}${includedir} \
