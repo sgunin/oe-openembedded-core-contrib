@@ -72,4 +72,3 @@ FILES_${PN} += "${systemd_unitdir}/system/"
 
 BBCLASSEXTEND = "native nativesdk"
 
-CONFFILES_${PN} = "${sysconfdir}/opkg/opkg.conf"
