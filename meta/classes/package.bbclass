@@ -870,12 +870,25 @@ python split_and_strip_files () {
         return type
 
 
+    def isArchive(path):
+        ret, result = oe.utils.getstatusoutput("file \"%s\"" % path.replace("\"", "\\\""))
+        if ret:
+            msg = "split_and_strip_files: 'file %s' failed" % path
+            package_qa_handle_error("split-strip", msg, d)
+            return False
+
+        if "current ar archive" in result:
+            return True
+        else:
+            return False
+
     #
     # First lets figure out all of the files we may have to process ... do this only once!
     #
     elffiles = {}
     symlinks = {}
     kernmods = []
+    archives = []
     inodes = {}
     libdir = os.path.abspath(dvar + os.sep + d.getVar("libdir", True))
     baselibdir = os.path.abspath(dvar + os.sep + d.getVar("base_libdir", True))
@@ -885,6 +898,9 @@ python split_and_strip_files () {
                 file = os.path.join(root, f)
                 if file.endswith(".ko") and file.find("/lib/modules/") != -1:
                     kernmods.append(file)
+                    continue
+                if file.endswith('.a') and isArchive(file):
+                    archives.append(file)
                     continue
 
                 # Skip debug files
@@ -1019,7 +1035,7 @@ python split_and_strip_files () {
             elf_file = int(elffiles[file])
             #bb.note("Strip %s" % file)
             sfiles.append((file, elf_file, strip))
-        for f in kernmods:
+        for f in kernmods + archives:
             sfiles.append((f, 16, strip))
 
         oe.utils.multiprocess_exec(sfiles, oe.package.runstrip)
