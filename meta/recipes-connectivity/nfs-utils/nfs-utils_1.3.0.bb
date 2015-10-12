@@ -57,7 +57,7 @@ SYSTEMD_SERVICE_${PN} = "nfs-server.service nfs-mountd.service"
 SYSTEMD_SERVICE_${PN}-client = "nfs-statd.service"
 
 # --enable-uuid is need for cross-compiling
-EXTRA_OECONF = "--with-statduser=rpcuser \
+EXTRA_OECONF = "--with-statduser=nobody \
                 --enable-mountconfig \
                 --enable-libmount-mount \
                 --disable-nfsv41 \
@@ -100,9 +100,8 @@ do_compile_prepend() {
 }
 
 do_install_append () {
-	chown -R rpcuser:rpcuser ${D}${localstatedir}/lib/nfs/statd
-
 	install -d ${D}${sysconfdir}/init.d
+	install -d ${D}${localstatedir}/lib/nfs/statd
 	install -m 0755 ${WORKDIR}/nfsserver ${D}${sysconfdir}/init.d/nfsserver
 	install -m 0755 ${WORKDIR}/nfscommon ${D}${sysconfdir}/init.d/nfscommon
 
