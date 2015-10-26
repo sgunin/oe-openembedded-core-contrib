@@ -8,7 +8,7 @@ LICENSE = "MIT & GPLv2+ & BSD"
 LIC_FILES_CHKSUM = "file://COPYING;md5=95f3a93a5c3c7888de623b46ea085a84"
 
 # util-linux for libblkid
-DEPENDS = "libcap libnfsidmap libevent util-linux sqlite3 libtirpc"
+DEPENDS = "libcap libnfsidmap libevent util-linux sqlite3"
 RDEPENDS_${PN} = "${PN}-client bash"
 RRECOMMENDS_${PN} = "kernel-module-nfsd"
 
@@ -63,10 +63,11 @@ EXTRA_OECONF = "--with-statduser=rpcuser \
                 --with-statdpath=/var/lib/nfs/statd \
                "
 
-PACKAGECONFIG ??= "tcp-wrappers"
+PACKAGECONFIG ??= "tcp-wrappers ${@bb.utils.contains('DISTRO_FEATURES', 'ipv6', 'tirpc', '', d)}"
 PACKAGECONFIG_remove_libc-musl = "tcp-wrappers"
 PACKAGECONFIG[tcp-wrappers] = "--with-tcp-wrappers,--without-tcp-wrappers,tcp-wrappers"
 PACKAGECONFIG[nfsidmap] = "--enable-nfsidmap,--disable-nfsidmap,keyutils"
+PACKAGECONFIG[tirpc] = "--enable-tirpc,--disable-tirpc,libtirpc"
 
 INHIBIT_AUTO_STAGE = "1"
 
