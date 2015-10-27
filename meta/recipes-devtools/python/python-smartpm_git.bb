@@ -26,6 +26,8 @@ SRC_URI = "\
           file://smart-cache.py-getPackages-matches-name-version.patch \
          "
 
+SRC_URI_append_class-native = "file://smart-prefer-same-arch.patch"
+
 SRCREV = "407a7eca766431257dcd1da15175cc36a1bb22d0"
 PV = "1.5+git${SRCPV}"
 
