@@ -11,7 +11,8 @@ LIC_FILES_CHKSUM = "file://COPYING;md5=d32239bcb673463ab874e80d47fae504"
 DEPENDS = "popt"
 
 SRC_URI = "http://rsync.samba.org/ftp/rsync/src/rsync-${PV}.tar.gz \
-           file://rsyncd.conf"
+           file://rsyncd.conf \
+           file://0001-rsync-use-usleep-for-msleep-when-possible.patch"
 
 inherit autotools
 

@@ -1,0 +1,55 @@
+Upstream-Status: Pending
+
+Subject: rsync: use usleep() for msleep() when possible
+
+This patch refers to https://git.samba.org/?p=rsync.git;a=commitdiff;h=5546dab32970955e77ef7a5886bcd8fb765a25b
+
+Signed-off-by: Hu Yadi <Yadi.Hu@windriver.com>
+Signed-off-by: Chen Qi <Qi.Chen@windriver.com>
+---
+ configure.ac | 2 +-
+ util2.c      | 7 ++++++-
+ 2 files changed, 7 insertions(+), 2 deletions(-)
+
+diff --git a/configure.ac b/configure.ac
+index cf588ce..12e0dba 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -602,7 +602,7 @@ AC_CHECK_FUNCS(waitpid wait4 getcwd strdup chown chmod lchmod mknod mkfifo \
+     setlocale setmode open64 lseek64 mkstemp64 mtrace va_copy __va_copy \
+     seteuid strerror putenv iconv_open locale_charset nl_langinfo getxattr \
+     extattr_get_link sigaction sigprocmask setattrlist getgrouplist \
+-    initgroups utimensat posix_fallocate attropen setvbuf)
++    initgroups utimensat posix_fallocate attropen setvbuf usleep)
+ 
+ dnl cygwin iconv.h defines iconv_open as libiconv_open
+ if test x"$ac_cv_func_iconv_open" != x"yes"; then
+diff --git a/util2.c b/util2.c
+index 6ffbcec..73cb736 100644
+--- a/util2.c
++++ b/util2.c
+@@ -35,6 +35,9 @@ extern int checksum_len;
+  **/
+ int msleep(int t)
+ {
++#ifdef HAVE_USLEEP
++	usleep(t*1000);
++#else
+ 	int tdiff = 0;
+ 	struct timeval tval, t1, t2;
+ 
+@@ -52,8 +55,10 @@ int msleep(int t)
+ 			t1 = t2; /* Time went backwards, so start over. */
+ 		tdiff = (t2.tv_sec - t1.tv_sec)*1000 +
+ 			(t2.tv_usec - t1.tv_usec)/1000;
++		if (tdiff < 0)
++			t1 = t2; /* Time went backwards, so start over. */
+ 	}
+-
++#endif
+ 	return True;
+ }
+ 
+-- 
+1.9.1
+
