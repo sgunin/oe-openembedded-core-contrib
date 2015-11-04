@@ -18,6 +18,7 @@ PACKAGE_ARCH = "${SDK_ARCH}-${SDKPKGSUFFIX}"
 CANADIANEXTRAOS = "linux-uclibc linux-musl"
 CANADIANEXTRAVENDOR = ""
 MODIFYTOS ??= "1"
+GNUEABI_SUFFIX = ""
 python () {
     archs = d.getVar('PACKAGE_ARCHS', True).split()
     sdkarchs = []
@@ -69,6 +70,7 @@ python () {
         d.appendVar("CANADIANEXTRAOS", " linux-gnun32 linux-uclibcn32 linux-musln32")
     if tarch == "arm" or tarch == "armeb":
         d.setVar("TARGET_OS", "linux-gnueabi")
+        d.setVar("GNUEABI_SUFFIX", "-gnueabi")
     else:
         d.setVar("TARGET_OS", "linux")
 
@@ -167,6 +169,7 @@ SHLIBSWORKDIR = "${PKGDATA_DIR}/nativesdk-shlibs2"
 cross_canadian_bindirlinks () {
 	for i in linux ${CANADIANEXTRAOS}
 	do
+		i="$i${GNUEABI_SUFFIX}"
 		for v in ${CANADIANEXTRAVENDOR}
 		do
 			d=${D}${bindir}/../${TARGET_ARCH}$v-$i
