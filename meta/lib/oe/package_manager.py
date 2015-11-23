@@ -954,12 +954,11 @@ class RpmPM(PackageManager):
                 bb.fatal("Invalid RPM_PREFER_ELF_ARCH: %s, it should be one of:\n"
                         "\t1: ELF32 wins\n"
                         "\t2: ELF64 wins\n"
-                        "\t4: ELF64 N32 wins (mips64 or mips64el only)" %
+                        "\t4: ELF64 N32 wins (mips only)" %
                         prefer_color)
-            if prefer_color == "4" and self.d.getVar("TUNE_ARCH", True) not in \
-                                    ['mips64', 'mips64el']:
-                bb.fatal("RPM_PREFER_ELF_ARCH = \"4\" is for mips64 or mips64el "
-                         "only.")
+            if prefer_color == "4" and not \
+                    self.d.getVar("TUNE_ARCH", True).startswith('mips'):
+                bb.fatal("RPM_PREFER_ELF_ARCH = \"4\" is for mips only.")
             self._invoke_smart('config --set rpm-extra-macros._prefer_color=%s'
                         % prefer_color)
 
