@@ -1,0 +1,33 @@
+From e864ec768ad0736bddcd951b2db8fe12c7b30e4e Mon Sep 17 00:00:00 2001
+From: Robert Yang <liezhi.yang@windriver.com>
+Date: Thu, 26 Nov 2015 01:36:40 -0800
+Subject: [PATCH] lib/rpmfc.c: fix for N32 MIPS64
+
+Older versions of 'file' reported it as N32 MIPS32, newer versions are
+reporting it as N32 MIPS64. So we should check for both.
+
+$ file image/usr/bin/getent
+getent: ELF 32-bit MSB executable, MIPS, N32 MIPS64 [snip]
+
+Upstream-Status: Pending
+
+Signed-off-by: Robert Yang <liezhi.yang@windriver.com>
+---
+ lib/rpmfc.c |    1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/lib/rpmfc.c b/lib/rpmfc.c
+index fde00c7..c9c82bf 100644
+--- a/lib/rpmfc.c
++++ b/lib/rpmfc.c
+@@ -575,6 +575,7 @@ static struct rpmfcTokens_s rpmfcTokens[] = {
+   { " not stripped",		RPMFC_NOTSTRIPPED },
+   { " archive",			RPMFC_ARCHIVE },
+ 
++  { "MIPS, N32 MIPS64",		RPMFC_ELFMIPSN32|RPMFC_INCLUDE },
+   { "MIPS, N32 MIPS32",		RPMFC_ELFMIPSN32|RPMFC_INCLUDE },
+   { "ELF 32-bit",		RPMFC_ELF32|RPMFC_INCLUDE },
+   { "ELF 64-bit",		RPMFC_ELF64|RPMFC_INCLUDE },
+-- 
+1.7.9.5
+
