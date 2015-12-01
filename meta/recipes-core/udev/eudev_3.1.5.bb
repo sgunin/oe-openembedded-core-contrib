@@ -23,7 +23,27 @@ UPSTREAM_CHECK_URI = "https://github.com/gentoo/eudev/releases"
 SRC_URI[md5sum] = "e130f892d8744e292cb855db79935f68"
 SRC_URI[sha256sum] = "ce9d5fa91e3a42c7eb95512ca0fa2a631e89833053066bb6cdf42046b2a88553"
 
-inherit autotools update-rc.d qemu
+inherit autotools update-rc.d qemu kernel-check
+
+# All the required options from the udev README
+# (except for CONFIG_HOTPLUG which is always on in
+# 3.11 and later kernels.)
+REQUIRED_KERNEL_OPTIONS = "\
+                           CONFIG_DEVTMPFS \
+                           CONFIG_CGROUPS \
+                           CONFIG_INOTIFY_USER \
+                           CONFIG_SIGNALFD \
+                           CONFIG_TIMERFD \
+                           CONFIG_EPOLL \
+                           CONFIG_NET \
+                           CONFIG_SYSFS \
+                           CONFIG_SYSFS_DEPRECATED=n \
+                           CONFIG_SYSFS_DEPRECATED_V2=n \
+                           CONFIG_PROC_FS \
+                           CONFIG_FHANDLE \
+                           CONFIG_UEVENT_HELPER_PATH='' \
+                           CONFIG_FW_LOADER_USER_HELPER=n \
+                           "
 
 EXTRA_OECONF = " \
     --sbindir=${base_sbindir} \
