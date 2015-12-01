@@ -22,7 +22,7 @@ DEPENDS = "kmod docbook-sgml-dtd-4.1-native intltool-native gperf-native acl rea
 
 SECTION = "base/shell"
 
-inherit useradd pkgconfig autotools perlnative update-rc.d update-alternatives qemu systemd ptest gettext bash-completion
+inherit useradd pkgconfig autotools perlnative update-rc.d update-alternatives qemu systemd ptest gettext bash-completion kernel-check
 
 SRCREV = "714c62b46379abb7558c544665522aca91691e10"
 
@@ -191,6 +191,23 @@ CFLAGS .= "${@bb.utils.contains('PACKAGECONFIG', 'valgrind', ' -DVALGRIND=1', ''
 
 # disable problematic GCC 5.2 optimizations [YOCTO #8291]
 FULL_OPTIMIZATION_append_arm = " -fno-schedule-insns -fno-schedule-insns2"
+
+# All the required options from the systemd README
+REQUIRED_KERNEL_OPTIONS = "\
+                           CONFIG_DEVTMPFS \
+                           CONFIG_CGROUPS \
+                           CONFIG_INOTIFY_USER \
+                           CONFIG_SIGNALFD \
+                           CONFIG_TIMERFD \
+                           CONFIG_EPOLL \
+                           CONFIG_NET \
+                           CONFIG_SYSFS \
+                           CONFIG_PROC_FS \
+                           CONFIG_FHANDLE \
+                           CONFIG_SYSFS_DEPRECATED=n \
+                           CONFIG_UEVENT_HELPER_PATH='' \
+                           CONFIG_FW_LOADER_USER_HELPER=n \
+                           "
 
 do_configure_prepend() {
 	export NM="${HOST_PREFIX}gcc-nm"
