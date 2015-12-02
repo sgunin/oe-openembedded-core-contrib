@@ -238,8 +238,31 @@ do_rootfs[cleandirs] += "${S}"
 do_rootfs[umask] = "022"
 addtask rootfs before do_build
 
+inherit kernel-check
+
+def check_image_fstypes_kernel(d):
+    """
+    Check that the kernel we have built has the appropriate config options enabled
+    to support the image formats specified in IMAGE_FSTYPES
+    """
+    fstypes = (d.getVar('IMAGE_FSTYPES', True) or '').split()
+    ctypes = (d.getVar('COMPRESSIONTYPES', True) or '').split()
+    for fstype in fstypes:
+        kernconfig = (d.getVar('IMAGE_TYPE_KERNEL_OPTIONS_' + fstype, True) or '').split()
+        for ctype in ctypes:
+            if fstype.endswith("." + ctype):
+                basetype = fstype[:-len("." + ctype)]
+                kernconfig.extend((d.getVar('IMAGE_TYPE_KERNEL_OPTIONS_' + basetype, True) or '').split())
+        kernconfig = list(set(kernconfig))
+        if kernconfig:
+            missing, diffvalue = check_kernel_config_options(kernconfig, d)
+            if missing or diffvalue:
+                bb.warn('IMAGE_FSTYPES contains %s, but the following required kernel configuration items are not present in the kernel configuration:\n  %s' % (fstype, '\n  '.join(missing + ['%s=%s (actual value %s)' % item for item in diffvalue])))
+
 fakeroot python do_image () {
     from oe.utils import execute_pre_post_process
+
+    check_image_fstypes_kernel(d)
 
     pre_process_cmds = d.getVar("IMAGE_PREPROCESS_COMMAND", True)
 
