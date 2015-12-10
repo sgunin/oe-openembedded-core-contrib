@@ -86,8 +86,17 @@ python __anonymous () {
 
     if bb.data.inherits_class('image', d):
         clsextend.map_depends_variable("PACKAGE_INSTALL")
+
+        # Need all non-multilib and multilib of LINGUAS_INSTALL
+        linguasinstall =  (d.getVar("LINGUAS_INSTALL", True) or "").split()
         clsextend.map_depends_variable("LINGUAS_INSTALL")
+        for lang in linguasinstall:
+            if lang not in (d.getVar("LINGUAS_INSTALL", True) or "").split():
+                d.appendVar("LINGUAS_INSTALL", " " + lang)
         clsextend.map_depends_variable("RDEPENDS")
+        for lang in linguasinstall:
+            if lang not in (d.getVar("RDEPENDS", True) or "").split():
+                d.appendVar("RDEPENDS", " " + lang)
         pinstall = d.getVar("LINGUAS_INSTALL", True) + " " + d.getVar("PACKAGE_INSTALL", True)
         d.setVar("PACKAGE_INSTALL", pinstall)
         d.setVar("LINGUAS_INSTALL", "")

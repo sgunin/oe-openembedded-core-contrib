@@ -183,7 +183,25 @@ IMAGE_POSTPROCESS_COMMAND ?= ""
 # some default locales
 IMAGE_LINGUAS ?= "de-de fr-fr en-gb"
 
-LINGUAS_INSTALL ?= "${@" ".join(map(lambda s: "locale-base-%s" % s, d.getVar('IMAGE_LINGUAS', True).split()))}"
+# Need all non-multilib and multilib of LINGUAS_INSTALL
+LINGUAS_INSTALL ?= "${@locale_base_packages(d)}"
+def locale_base_packages(d):
+    pkgs = []
+    imagelinguas = (d.getVar('IMAGE_LINGUAS', True) or "").split()
+    mlvars = (d.getVar("MULTILIB_VARIANTS", True) or "").split()
+    for lang in imagelinguas:
+        # Add non-multilib packages
+        pkg = "locale-base-%s" % lang
+        if pkg not in pkgs:
+            pkgs.append(pkg)
+
+        for prefix in mlvars:
+            # Add multilib packages
+            mlpkg = "%s-%s" % (prefix, pkg)
+            if mlpkg not in pkgs:
+                pkgs.append(mlpkg)
+
+    return ' '.join(pkgs)
 
 # Prefer image, but use the fallback files for lookups if the image ones
 # aren't yet available.
