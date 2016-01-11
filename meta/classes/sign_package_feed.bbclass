@@ -24,7 +24,10 @@ PACKAGE_FEED_GPG_BACKEND ?= 'local'
 
 python () {
     # Check sanity of configuration
-    for var in ('PACKAGE_FEED_GPG_NAME', 'PACKAGE_FEED_GPG_PASSPHRASE_FILE'):
+    required = ['PACKAGE_FEED_GPG_NAME']
+    if d.getVar('PACKAGE_FEED_GPG_BACKEND', True) != 'obssign':
+        required.append('PACKAGE_FEED_GPG_PASSPHRASE_FILE')
+    for var in required:
         if not d.getVar(var, True):
             raise_sanity_error("You need to define %s in the config" % var, d)
 

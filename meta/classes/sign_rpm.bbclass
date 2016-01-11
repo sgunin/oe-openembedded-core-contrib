@@ -23,7 +23,10 @@ RPM_GPG_BACKEND ?= 'local'
 
 python () {
     # Check configuration
-    for var in ('RPM_GPG_NAME', 'RPM_GPG_PASSPHRASE_FILE'):
+    required = ['RPM_GPG_NAME']
+    if d.getVar('RPM_GPG_BACKEND', True) != 'obssign':
+        required.append('RPM_GPG_PASSPHRASE_FILE')
+    for var in required:
         if not d.getVar(var, True):
             raise_sanity_error("You need to define %s in the config" % var, d)
 

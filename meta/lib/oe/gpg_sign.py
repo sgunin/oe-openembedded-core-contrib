@@ -66,11 +66,59 @@ class LocalSigner(object):
                                       (input_file, output))
 
 
+class ObsSigner(object):
+    """Class for handling signing with obs-signd"""
+    def __init__(self, keyid):
+        self.keyid = keyid
+        self.rpm_bin = bb.utils.which(os.getenv('PATH'), "rpm")
+
+    def export_pubkey(self, output_file):
+        """Export GPG public key to a file"""
+        cmd = "sign -u '%s' -p" % self.keyid
+        status, output = oe.utils.getstatusoutput(cmd)
+        if status:
+            raise bb.build.FuncFailed('Failed to export gpg public key (%s): %s' %
+                                      (self.keyid, output))
+        with open(output_file, 'w') as fobj:
+            fobj.write(output)
+            fobj.write('\n')
+
+    def sign_rpms(self, files):
+        """Sign RPM files"""
+        import pexpect
+
+        # Remove existing signatures
+        cmd = "%s --delsign %s" % (self.rpm_bin, ' '.join(files))
+        status, output = oe.utils.getstatusoutput(cmd)
+        if status:
+            raise bb.build.FuncFailed("Failed to remove RPM signatures: %s" %
+                                      output)
+        # Sign packages
+        cmd = "sign -u '%s' -r %s" % (self.keyid, ' '.join(files))
+        status, output = oe.utils.getstatusoutput(cmd)
+        if status:
+            raise bb.build.FuncFailed("Failed to sign RPM packages: %s" %
+                                      output)
+
+    def detach_sign(self, input_file):
+        """Create a detached signature of a file"""
+        cmd = "sign -u '%s' -d %s" % (self.keyid, input_file)
+        status, output = oe.utils.getstatusoutput(cmd)
+        if status:
+            raise bb.build.FuncFailed("Failed to create signature for '%s': %s" %
+                                      (input_file, output))
+
+
 def get_signer(d, backend, keyid, passphrase_file):
     """Get signer object for the specified backend"""
     # Use local signing by default
     if backend == 'local':
         return LocalSigner(d, keyid, passphrase_file)
+    elif backend == 'obssign':
+        if passphrase_file:
+            bb.note("GPG passphrase file setting not used when 'obssign' "
+                    "backend is used.")
+        return ObsSigner(keyid)
     else:
         bb.fatal("Unsupported signing backend '%s'" % backend)
 
