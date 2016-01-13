@@ -15,6 +15,10 @@
 #           signing.
 # GPG_PATH
 #           Optional variable for specifying the gnupg "home" directory:
+# OBSSIGN_DELSIGN
+#           Optional variable, effective only when 'obssign' backend is enabled.
+#           Set to "1" to remove existing signatures from the RPM packages
+#           before signing with obs-sign.
 #
 inherit sanity
 

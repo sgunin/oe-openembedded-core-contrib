@@ -68,9 +68,10 @@ class LocalSigner(object):
 
 class ObsSigner(object):
     """Class for handling signing with obs-signd"""
-    def __init__(self, keyid):
+    def __init__(self, d, keyid):
         self.keyid = keyid
         self.rpm_bin = bb.utils.which(os.getenv('PATH'), "rpm")
+        self.del_old_sign = d.getVar('OBSSIGN_DELSIGN', True) == "1"
 
     def export_pubkey(self, output_file):
         """Export GPG public key to a file"""
@@ -87,16 +88,19 @@ class ObsSigner(object):
         """Sign RPM files"""
         import pexpect
 
-        # Remove existing signatures
-        cmd = "%s --delsign %s" % (self.rpm_bin, ' '.join(files))
-        status, output = oe.utils.getstatusoutput(cmd)
-        if status:
-            raise bb.build.FuncFailed("Failed to remove RPM signatures: %s" %
-                                      output)
+        # Remove existing signatures. This is a workaround for a limitation
+        # of obs-signd: sign is not able to add additional signatures and fails
+        # if existing signatures are found in the RPM package.
+        if self.del_old_sign:
+            cmd = "%s --delsign %s" % (self.rpm_bin, ' '.join(files))
+            status, output = oe.utils.getstatusoutput(cmd)
+            if status:
+                raise bb.build.FuncFailed("Failed to remove RPM signatures: %s" %
+                                          output)
         # Sign packages
         cmd = "sign -u '%s' -r %s" % (self.keyid, ' '.join(files))
         status, output = oe.utils.getstatusoutput(cmd)
-        if status:
+        if status or [line for line in output.splitlines() if line.endswith('already signed')]:
             raise bb.build.FuncFailed("Failed to sign RPM packages: %s" %
                                       output)
 
@@ -118,7 +122,7 @@ def get_signer(d, backend, keyid, passphrase_file):
         if passphrase_file:
             bb.note("GPG passphrase file setting not used when 'obssign' "
                     "backend is used.")
-        return ObsSigner(keyid)
+        return ObsSigner(d, keyid)
     else:
         bb.fatal("Unsupported signing backend '%s'" % backend)
 
