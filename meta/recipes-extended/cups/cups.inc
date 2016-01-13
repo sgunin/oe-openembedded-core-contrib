@@ -27,7 +27,9 @@ GROUPADD_PARAM_${PN} = "--system lpadmin"
 SYSTEMD_SERVICE_${PN} = "cups.socket cups.path cups.service"
 
 PACKAGECONFIG ??= "${@bb.utils.contains('DISTRO_FEATURES', 'zeroconf', 'avahi', '', d)} \
-                   ${@bb.utils.contains('DISTRO_FEATURES', 'pam', 'pam', '', d)}"
+                   ${@bb.utils.contains('DISTRO_FEATURES', 'pam', 'pam', '', d)} \
+                   ${@bb.utils.contains('DISTRO_FEATURES', 'systemd', 'systemd', '', d)}"
+PACKAGECONFIG[systemd] = "--enable-systemd --with-systemd=${systemd_unitdir}/system/,--disable-systemd,systemd"
 PACKAGECONFIG[avahi] = "--enable-avahi,--disable-avahi,avahi"
 PACKAGECONFIG[acl] = "--enable-acl,--disable-acl,acl"
 PACKAGECONFIG[pam] = "--enable-pam, --disable-pam, libpam"
@@ -80,11 +82,15 @@ do_install () {
 	fi
 
 	# Install systemd unit files
-	install -d ${D}${systemd_unitdir}/system
-	install -m 0644 ${WORKDIR}/cups.socket ${D}${systemd_unitdir}/system
-	install -m 0644 ${WORKDIR}/cups.path ${D}${systemd_unitdir}/system
-	install -m 0644 ${WORKDIR}/cups.service ${D}${systemd_unitdir}/system
-	sed -i -e 's,@SBINDIR@,${sbindir},g' ${D}${systemd_unitdir}/system/cups.service
+	if ${@bb.utils.contains('DISTRO_FEATURES','systemd','true','false',d)}; then
+	    # Use our own unit files
+	    [ -d ${D}${systemd_unitdir}/system ] && rm -rf ${D}${systemd_unitdir}/system
+	    install -d ${D}${systemd_unitdir}/system
+	    install -m 0644 ${WORKDIR}/cups.socket ${D}${systemd_unitdir}/system
+	    install -m 0644 ${WORKDIR}/cups.path ${D}${systemd_unitdir}/system
+	    install -m 0644 ${WORKDIR}/cups.service ${D}${systemd_unitdir}/system
+	    sed -i -e 's,@SBINDIR@,${sbindir},g' ${D}${systemd_unitdir}/system/cups.service
+	fi
 }
 
 python do_package_append() {
