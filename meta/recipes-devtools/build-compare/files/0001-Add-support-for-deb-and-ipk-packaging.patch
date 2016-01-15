@@ -1,4 +1,4 @@
-From 02dbc7e3478e409d6f5e3e1c53daddf8838be999 Mon Sep 17 00:00:00 2001
+From 2e20ecdb7581f6a2048dd432d4aac2743c29b6ca Mon Sep 17 00:00:00 2001
 From: Paul Eggleton <paul.eggleton@linux.intel.com>
 Date: Tue, 1 Sep 2015 12:04:33 +0100
 Subject: [PATCH] Add support for deb and ipk packaging
@@ -12,7 +12,7 @@ Signed-off-by: Paul Eggleton <paul.eggleton@linux.intel.com>
  2 files changed, 21 insertions(+)
 
 diff --git a/functions.sh b/functions.sh
-index 06079df..85c9003 100644
+index c3b1387..7beadfa 100644
 --- a/functions.sh
 +++ b/functions.sh
 @@ -85,6 +85,13 @@ function unpackage()
@@ -41,12 +41,12 @@ index 06079df..85c9003 100644
 +    mv $2/control.fixed $2/control
 +}
 +
- # vim: tw=666 ts=2 et
+ # vim: tw=666 ts=2 shiftwidth=2 et
 diff --git a/pkg-diff.sh b/pkg-diff.sh
-index 0f1fa76..3cf10aa 100644
+index 6990eea..864d0e1 100755
 --- a/pkg-diff.sh
 +++ b/pkg-diff.sh
-@@ -138,6 +138,12 @@ echo "Extracting packages"
+@@ -153,6 +153,12 @@ echo "Extracting packages"
  unpackage $oldpkg $dir/old
  unpackage $newpkg $dir/new
  
@@ -60,5 +60,5 @@ index 0f1fa76..3cf10aa 100644
  # it wasn't an rpm and pick all files for comparison.
  if [ -z $RES ]; then
 -- 
-2.1.0
+2.5.0
 
