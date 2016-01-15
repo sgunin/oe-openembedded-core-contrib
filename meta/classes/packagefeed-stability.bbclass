@@ -49,8 +49,13 @@ python() {
 
             d.appendVarFlag('do_build', 'recrdeptask', ' ' + pkgcomparefunc)
 
-            if d.getVarFlag(pkgwritefunc, 'noexec', True) or (not d.getVarFlag(pkgwritefunc, 'task', True)) or pkgwritefunc in (d.getVar('__BBDELTASKS', True) or []):
+            if d.getVarFlag(pkgwritefunc, 'noexec', True) or (not d.getVarFlag(pkgwritefunc, 'task', True)) or (not d.getVar('PACKAGES', True)) or pkgwritefunc in (d.getVar('__BBDELTASKS', True) or []):
                 # Packaging is disabled for this recipe, we shouldn't do anything
+                continue
+
+            if bb.data.inherits_class('native', d):
+                # Assume we don't care about native, if only to prevent a circular issue with
+                # trying to package_compare build-compare-native
                 continue
 
             if deploydirvarref in sstate_outputdirs:
