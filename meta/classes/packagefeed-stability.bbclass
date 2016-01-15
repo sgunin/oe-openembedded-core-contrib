@@ -60,6 +60,7 @@ python() {
             d.setVar(pkgcomparefunc, d.getVar('do_package_compare', False))
             d.setVarFlags(pkgcomparefunc, d.getVarFlags('do_package_compare', False))
             d.appendVarFlag(pkgcomparefunc, 'depends', ' build-compare-native:do_populate_sysroot')
+            d.setVarFlag(pkgcomparefunc, 'dirs', deploydirvarref + '-prediff')
             bb.build.addtask(pkgcomparefunc, 'do_build', 'do_packagedata ' + pkgwritefunc, d)
 }
 
