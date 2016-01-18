@@ -1,0 +1,37 @@
+From 283b8b9948fd045217157b2182cc499c135ae543 Mon Sep 17 00:00:00 2001
+From: Joshua Lock <joshua.g.lock@intel.com>
+Date: Mon, 18 Jan 2016 13:09:02 +0000
+Subject: [PATCH] Hack to remove dependencies on the versioned package in a
+ control file
+
+The intention is to remove dependencies on the matchingversioned package in
+the control files of -dbg and -dev packages. This hack is rather inelegant
+but useful as a test.
+
+A more elegant solution likely requires reading of the GNU Awk manual:
+http://www.gnu.org/software/gawk/manual/gawk.html
+
+Signed-off-by: Joshua Lock <joshua.g.lock@intel.com>
+---
+ functions.sh | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/functions.sh b/functions.sh
+index 7beadfa..db7bd94 100644
+--- a/functions.sh
++++ b/functions.sh
+@@ -264,8 +264,11 @@ function cmp_spec ()
+ }
+ 
+ function adjust_controlfile () {
++    sed -i "s/$(awk '/^Version: / {print $2;}' $1/control)//" $1/control
+     cat $1/control | sed '/^Version: /d' > $1/control.fixed
+     mv $1/control.fixed $1/control
++
++    sed -i "s/$(awk '/^Version: / {print $2;}' $2/control)//" $2/control
+     cat $2/control | sed '/^Version: /d' > $2/control.fixed
+     mv $2/control.fixed $2/control
+ }
+-- 
+2.5.0
+

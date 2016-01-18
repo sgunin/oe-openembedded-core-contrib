@@ -10,6 +10,7 @@ PV = "2015.07.15+git${SRCPV}"
 SRC_URI = "git://github.com/openSUSE/build-compare.git \
            file://Ignore-DWARF-sections.patch;striplevel=1 \
            file://0001-Add-support-for-deb-and-ipk-packaging.patch \
+           file://0001-Hack-to-remove-dependencies-on-the-versioned-package.patch \
            "
 
 SRCREV = "0b929c8a254b2bdb9392124dcd6836129dc125f9"
