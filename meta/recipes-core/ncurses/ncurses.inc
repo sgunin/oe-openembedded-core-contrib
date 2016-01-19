@@ -7,7 +7,7 @@ SECTION = "libs"
 DEPENDS = "ncurses-native"
 DEPENDS_class-native = ""
 
-BINCONFIG = "${bindir}/ncurses5-config ${bindir}/ncursesw5-config"
+BINCONFIG = "${bindir}/ncurses6-config ${bindir}/ncursesw6-config"
 
 inherit autotools binconfig-disabled multilib_header pkgconfig
 
@@ -205,7 +205,7 @@ do_install() {
                 test -h $f || continue
                 rm -f $f
                 echo '/* GNU ld script */'  >$f
-                echo "INPUT($i.so.5 AS_NEEDED(-ltinfo))" >>$f
+                echo "INPUT($i.so.6 AS_NEEDED(-ltinfo))" >>$f
         done
 
         # Make sure that libcurses is linked so that it gets -ltinfo
@@ -231,7 +231,7 @@ do_install() {
             # Use lnr to ensure this is a relative link despite absolute paths
             # (as we can't know the relationship between base_libdir and libdir).
             # At some point we can rely on coreutils 8.16 which has ln -r.
-            lnr ${D}${base_libdir}/libtinfo.so.5 ${D}${libdir}/libtinfo.so
+            lnr ${D}${base_libdir}/libtinfo.so.6 ${D}${libdir}/libtinfo.so
         fi
         if [ -d "${D}${includedir}/ncurses" ]; then
             for f in `find ${D}${includedir}/ncurses -name "*.h"`
@@ -271,8 +271,8 @@ PACKAGES += " \
 FILES_${PN} = "\
   ${bindir}/tput \
   ${bindir}/tset \
-  ${bindir}/ncurses5-config \
-  ${bindir}/ncursesw5-config \
+  ${bindir}/ncurses6-config \
+  ${bindir}/ncursesw6-config \
   ${datadir}/tabset \
 "
 
