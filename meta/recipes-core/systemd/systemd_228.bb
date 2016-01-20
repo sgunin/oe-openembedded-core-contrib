@@ -133,6 +133,7 @@ EXTRA_OECONF_append_libc-uclibc = " --disable-myhostname --disable-sysusers"
 
 # per the systemd README, define VALGRIND=1 to run under valgrind
 CFLAGS .= "${@bb.utils.contains('PACKAGECONFIG', 'valgrind', ' -DVALGRIND=1', '', d)}"
+CFLAGS_append_qemuarm64 = " -O1"
 
 # disable problematic GCC 5.2 optimizations [YOCTO #8291]
 FULL_OPTIMIZATION_append_arm = " -fno-schedule-insns -fno-schedule-insns2"
