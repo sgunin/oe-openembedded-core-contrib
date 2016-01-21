@@ -1098,6 +1098,7 @@ python do_package_qa () {
 
 do_package_qa[vardepsexclude] = "BB_TASKDEPDATA"
 do_package_qa[rdeptask] = "do_packagedata"
+do_package_qa[vardeps] += "${WARN_QA} ${ERROR_QA}"
 addtask do_package_qa after do_packagedata do_package before do_build
 
 SSTATETASKS += "do_package_qa"
