@@ -1,6 +1,5 @@
 require tar.inc
 
-PACKAGECONFIG ??= ""
 PACKAGECONFIG[acl] = "--with-posix-acls, --without-posix-acls, acl,"
 
 LICENSE = "GPLv3"

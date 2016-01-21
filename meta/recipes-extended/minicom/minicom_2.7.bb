@@ -17,7 +17,6 @@ SRC_URI[sha256sum] = "9ac3a663b82f4f5df64114b4792b9926b536c85f59de0f2d2b321c7626
 
 UPSTREAM_CHECK_URI = "https://alioth.debian.org/frs/?group_id=30018"
 
-PACKAGECONFIG ??= ""
 PACKAGECONFIG[lockdev] = "--enable-lockdev,--disable-lockdev,lockdev"
 
 inherit autotools gettext pkgconfig

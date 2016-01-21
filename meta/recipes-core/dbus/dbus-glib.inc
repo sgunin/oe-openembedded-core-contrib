@@ -19,7 +19,6 @@ inherit autotools pkgconfig gettext
 
 #default disable regression tests, some unit test code in non testing code
 #PACKAGECONFIG_pn-${PN} = "tests" enable regression tests local.conf
-PACKAGECONFIG ??= ""
 PACKAGECONFIG[tests] = "--enable-tests,,,"
 
 EXTRA_OECONF = "--with-introspect-xml=${STAGING_DATADIR_NATIVE}/dbus/dbus-bus-introspect.xml \

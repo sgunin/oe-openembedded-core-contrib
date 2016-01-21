@@ -17,7 +17,6 @@ S = "${WORKDIR}/${SRCNAME}-${PV}"
 
 # There isn't enable/disable option, and lcms is in meta-oe, at least make it explicit when enabled
 # setup.py already has FIXME: add mechanism to explicitly *disable* the use of a library
-PACKAGECONFIG ??= ""
 PACKAGECONFIG[lcms] = ",,lcms"
 
 inherit distutils

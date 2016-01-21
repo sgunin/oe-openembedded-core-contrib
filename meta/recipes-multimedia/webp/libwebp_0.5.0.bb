@@ -29,7 +29,6 @@ EXTRA_OECONF = " \
 
 inherit autotools lib_package
 
-PACKAGECONFIG ??= ""
 
 # libwebpdecoder is a subset of libwebp, don't build it unless requested
 PACKAGECONFIG[decoder] = "--enable-libwebpdecoder,--disable-libwebpdecoder"

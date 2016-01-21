@@ -24,7 +24,6 @@ BOOST_LIBS = "\
 	"
 
 # optional boost-python library
-PACKAGECONFIG ??= ""
 PACKAGECONFIG[python] = ",,python python3"
 BOOST_LIBS += "${@bb.utils.contains('PACKAGECONFIG', 'python', 'python python3', '', d)}"
 inherit python-dir

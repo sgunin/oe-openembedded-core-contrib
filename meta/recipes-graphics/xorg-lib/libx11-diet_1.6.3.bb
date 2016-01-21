@@ -16,4 +16,3 @@ SRC_URI[sha256sum] = "cf31a7c39f2f52e8ebd0db95640384e63451f9b014eed2bb7f5de03e8a
 
 EXTRA_OECONF += "--disable-xlocale"
 
-PACKAGECONFIG ??= ""

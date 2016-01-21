@@ -37,7 +37,6 @@ EXTRA_OECONF = "--without-x"
 
 BBCLASSEXTEND = "native nativesdk"
 
-PACKAGECONFIG ??= ""
 PACKAGECONFIG[libbsd] = "ac_cv_lib_bsd_main=yes,ac_cv_lib_bsd_main=no,libbsd"
 
 do_install_prepend () {

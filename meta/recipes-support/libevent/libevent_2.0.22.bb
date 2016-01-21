@@ -18,7 +18,6 @@ UPSTREAM_CHECK_URI = "http://libevent.org/"
 
 S = "${WORKDIR}/${BPN}-${PV}-stable"
 
-PACKAGECONFIG ??= ""
 PACKAGECONFIG[openssl] = "--enable-openssl,--disable-openssl,openssl"
 
 inherit autotools

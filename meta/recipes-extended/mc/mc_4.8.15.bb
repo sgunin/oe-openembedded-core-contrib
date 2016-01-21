@@ -16,7 +16,6 @@ inherit autotools gettext pkgconfig
 #
 # Both Samba (smb) and sftp require package delivered from meta-openembedded
 #
-PACKAGECONFIG ??= ""
 PACKAGECONFIG[smb] = "--enable-vfs-smb,--disable-vfs-smb,samba,"
 PACKAGECONFIG[sftp] = "--enable-vfs-sftp,--disable-vfs-sftp,libssh2,"
 

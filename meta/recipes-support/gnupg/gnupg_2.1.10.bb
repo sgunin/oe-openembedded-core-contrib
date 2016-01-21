@@ -41,5 +41,4 @@ do_install_append() {
 
 RDEPENDS_${PN} = "gnutls"
 
-PACKAGECONFIG ??= ""
 PACKAGECONFIG[sqlite3] = "--enable-sqlite, --disable-sqlite, sqlite3"

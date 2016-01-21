@@ -23,7 +23,6 @@ EXTRA_OECONF = "--enable-shared --disable-static --enable-debug=yes \
                 --disable-introspection --disable-orbit --with-openldap=no --disable-gtk"
 
 # Disable PolicyKit by default
-PACKAGECONFIG ??= ""
 # We really don't want PolicyKit for native or uclibc
 PACKAGECONFIG_class-native = ""
 PACKAGECONFIG_libc-uclibc = ""

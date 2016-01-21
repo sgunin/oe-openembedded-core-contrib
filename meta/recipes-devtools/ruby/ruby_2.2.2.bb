@@ -8,7 +8,6 @@ SRC_URI[sha256sum] = "5ffc0f317e429e6b29d4a98ac521c3ce65481bfd22a8cf845fa02a7b11
 # 0001-socket-extconf-hardcode-wide-getaddr-info-test-outco.patch
 UNKNOWN_CONFIGURE_WHITELIST += "--enable-wide-getaddrinfo"
 
-PACKAGECONFIG ??= ""
 PACKAGECONFIG += "${@bb.utils.contains('DISTRO_FEATURES', 'ipv6', 'ipv6', '', d)}"
 
 PACKAGECONFIG[valgrind] = "--with-valgrind=yes, --with-valgrind=no, valgrind"

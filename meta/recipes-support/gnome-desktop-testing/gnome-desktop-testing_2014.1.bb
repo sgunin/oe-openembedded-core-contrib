@@ -18,5 +18,4 @@ inherit autotools pkgconfig
 
 PR = "r1"
 
-PACKAGECONFIG ??= ""
 PACKAGECONFIG[journald] = "--with-systemd-journal,--without-systemd-journal,systemd,systemd"

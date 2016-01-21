@@ -32,7 +32,6 @@ SRC_URI[sha256sum] = "fa4049f8aee283de62e283d427f2cfd35d6c369b40f7f45f947dbfd915
 
 inherit autotools texinfo
 
-PACKAGECONFIG ??= ""
 PACKAGECONFIG[utempter] = "ac_cv_header_utempter_h=yes,ac_cv_header_utempter_h=no,libutempter,"
 
 EXTRA_OECONF = "--with-pty-mode=0620 --with-pty-group=5 \

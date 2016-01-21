@@ -20,5 +20,4 @@ RRECOMMENDS_${PN} += "ca-certificates"
 
 BBCLASSEXTEND += "nativesdk"
 
-PACKAGECONFIG ??= ""
 PACKAGECONFIG[libuuid] = "--with-libuuid, --without-libuuid,util-linux"

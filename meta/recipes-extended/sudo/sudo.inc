@@ -16,7 +16,6 @@ LIC_FILES_CHKSUM = "file://doc/LICENSE;md5=c16e542408abda013d672be8eb88d174 \
 
 inherit autotools
 
-PACKAGECONFIG ??= ""
 PACKAGECONFIG[zlib] = "--enable-zlib,--disable-zlib,zlib"
 
 CONFFILES_${PN} = "${sysconfdir}/sudoers"

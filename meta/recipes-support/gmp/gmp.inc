@@ -12,5 +12,4 @@ ARM_INSTRUCTION_SET = "arm"
 
 BBCLASSEXTEND = "native nativesdk"
 
-PACKAGECONFIG ??= ""
 PACKAGECONFIG[readline] = "--with-readline=yes,--with-readline=no,readline"
