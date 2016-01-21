@@ -140,6 +140,8 @@ def package_compare_impl(pkgtype, d):
     copypkgs = []
     manifest, _ = oe.sstatesig.sstate_get_manifest_filename(pkgwritetask, d)
     with open(manifest, 'r') as f:
+        copyall = False
+        uncopied = []
         for line in f:
             if line.startswith(prepath):
                 srcpath = line.rstrip()
@@ -168,6 +170,16 @@ def package_compare_impl(pkgtype, d):
                         bb.warn('Unable to map %s back to package' % pkgbasename)
                         destpathspec = destpath
 
+                    # If we've already copied one package from this recipe's manifest
+                    # we should copy the rest of the recipes packages, regardless of
+                    # whether they differ or not.
+                    if copyall:
+                        files.append((pkgname, pkgbasename, srcpath, oldfile, destpath))
+                        copypkgs.append(pkgname)
+                        for pn in uncopied:
+                            copypkgs.append(pn)
+                        continue
+
                     oldfiles = glob.glob(destpathspec)
                     oldfile = None
                     docopy = True
@@ -180,31 +192,10 @@ def package_compare_impl(pkgtype, d):
                     files.append((pkgname, pkgbasename, srcpath, oldfile, destpath))
                     bb.debug(2, '%s: package %s %s' % (pn, files[-1], docopy))
                     if docopy:
+                        copyall = True
                         copypkgs.append(pkgname)
-
-    # Ensure that dependencies on specific versions (such as -dev on the
-    # main package) are copied in lock-step
-    changed = True
-    while changed:
-        rpkgdict = {x[0]: x[1] for x in rpkglist}
-        changed = False
-        for pkgname, pkgbasename, srcpath, oldfile, destpath in files:
-            rdeps = rdepends.get(pkgname, None)
-            if not rdeps:
-                continue
-            rdepvers = bb.utils.explode_dep_versions2(rdeps)
-            for rdep, versions in rdepvers.iteritems():
-                dep = rpkgdict.get(rdep, None)
-                for version in versions:
-                    if version and version.startswith('= '):
-                        if dep in copypkgs and not pkgname in copypkgs:
-                            bb.debug(2, '%s: copying %s because it has a fixed version dependency on %s and that package is going to be copied' % (pn, pkgname, dep))
-                            changed = True
-                            copypkgs.append(pkgname)
-                        elif pkgname in copypkgs and not dep in copypkgs:
-                            bb.debug(2, '%s: copying %s because %s has a fixed version dependency on it and that package is going to be copied' % (pn, dep, pkgname))
-                            changed = True
-                            copypkgs.append(dep)
+                    else:
+                        uncopied.append(pkgname)
 
     # Read in old manifest so we can delete any packages we aren't going to replace or preserve
     pcmanifest = os.path.join(prepath, d.expand('pkg-compare-manifest-${MULTIMACH_TARGET_SYS}-${PN}'))
