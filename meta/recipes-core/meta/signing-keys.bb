@@ -41,3 +41,11 @@ python do_export_public_keys () {
         signer.export_pubkey(d.getVar('PACKAGE_FEED_GPG_PUBKEY', True))
 }
 addtask do_export_public_keys before do_build
+
+SSTATETASKS += "do_export_public_keys"
+do_export_public_keys[sstate-inputdirs] = ""
+do_export_public_keys[sstate-outputdirs] = ""
+python do_export_public_keys_setscene () {
+    sstate_setscene(d)
+}
+addtask do_export_public_keys_setscene
