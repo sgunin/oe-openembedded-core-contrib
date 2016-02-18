@@ -39,7 +39,6 @@ import bb.process
 import subprocess
 
 __version__ = "2"
-_checksum_cache = bb.checksum.FileChecksumCache()
 
 logger = logging.getLogger("BitBake.Fetcher")
 
@@ -510,17 +509,9 @@ def fetcher_init(d):
     else:
         raise FetchError("Invalid SRCREV cache policy of: %s" % srcrev_policy)
 
-    _checksum_cache.init_cache(d, d.getVar("BB_HASH_CHECKSUM_CACHE_FILE", True))
-
     for m in methods:
         if hasattr(m, "init"):
             m.init(d)
-
-def fetcher_parse_save():
-    _checksum_cache.save_extras()
-
-def fetcher_parse_done():
-    _checksum_cache.save_merge()
 
 def fetcher_compare_revisions():
     """
@@ -1131,15 +1122,6 @@ def get_checksum_file_list(d):
                 filelist.append(f + ":" + str(os.path.exists(f)))
 
     return " ".join(filelist)
-
-def get_file_checksums(filelist, pn):
-    """Get a list of the checksums for a list of local files
-
-    Returns the checksums for a list of local files, caching the results as
-    it proceeds
-
-    """
-    return _checksum_cache.get_checksums(filelist, pn)
 
 
 class FetchData(object):
