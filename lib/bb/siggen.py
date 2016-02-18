@@ -225,7 +225,6 @@ class SignatureGeneratorBasic(SignatureGenerator):
 
         h = hashlib.md5(data).hexdigest()
         self.taskhash[k] = h
-        #d.setVar("BB_TASKHASH_task-%s" % task, taskhash[task])
         return h
 
     def writeout_file_checksum_cache(self):
