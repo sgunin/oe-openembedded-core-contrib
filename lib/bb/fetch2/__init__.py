@@ -510,7 +510,7 @@ def fetcher_init(d):
     else:
         raise FetchError("Invalid SRCREV cache policy of: %s" % srcrev_policy)
 
-    _checksum_cache.init_cache(d)
+    _checksum_cache.init_cache(d, d.getVar("BB_HASH_CHECKSUM_CACHE_FILE", True))
 
     for m in methods:
         if hasattr(m, "init"):

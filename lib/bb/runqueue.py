@@ -897,7 +897,10 @@ class RunQueueData:
                         procdep.append(self.taskData.fn_index[self.runq_fnid[dep]] + "." + self.runq_task[dep])
                     self.runq_hash[task] = bb.parse.siggen.get_taskhash(self.taskData.fn_index[self.runq_fnid[task]], self.runq_task[task], procdep, self.dataCache)
 
-        bb.parse.siggen.writeout_file_checksum_cache()
+        # Write out checksum cache onto disk
+        # This relies on the "knowledge" that siggen uses cache of bb.fetch2
+        bb.fetch2.fetcher_parse_save()
+        bb.fetch2.fetcher_parse_done()
         return len(self.runq_fnid)
 
     def dump_data(self, taskQueue):
