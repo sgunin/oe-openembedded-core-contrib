@@ -129,8 +129,8 @@ class SignatureGeneratorOEBasicHash(bb.siggen.SignatureGeneratorBasicHash):
         self.dump_lockedsigs()
         return super(bb.siggen.SignatureGeneratorBasicHash, self).dump_sigs(dataCache, options)
 
-    def get_taskhash(self, fn, task, deps, dataCache):
-        h = super(bb.siggen.SignatureGeneratorBasicHash, self).get_taskhash(fn, task, deps, dataCache)
+    def get_taskhash(self, fn, task, deps, dataCache, checksum_cache):
+        h = super(bb.siggen.SignatureGeneratorBasicHash, self).get_taskhash(fn, task, deps, dataCache, checksum_cache)
 
         recipename = dataCache.pkg_fn[fn]
         self.lockedpnmap[fn] = recipename
