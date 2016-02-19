@@ -34,6 +34,7 @@ import re
 import bb
 from bb import msg, data, event
 from bb import monitordisk
+from bb.checksum import FileChecksumCache
 import subprocess
 
 try:
@@ -219,6 +220,7 @@ class RunQueueData:
     BitBake Run Queue implementation
     """
     def __init__(self, rq, cooker, cfgData, dataCache, taskData, targets):
+        import inspect
         self.cooker = cooker
         self.dataCache = dataCache
         self.taskData = taskData
@@ -229,6 +231,16 @@ class RunQueueData:
         self.stampwhitelist = cfgData.getVar("BB_STAMP_WHITELIST", True) or ""
         self.multi_provider_whitelist = (cfgData.getVar("MULTI_PROVIDER_WHITELIST", True) or "").split()
 
+        # Check if get_taskhash implements the new API. If so, use our own file
+        # checksum cache
+        self.checksum_cache = None
+        if 'checksum_cache' in inspect.getargspec(bb.parse.siggen.get_taskhash).args:
+            checksum_cache_file = cfgData.getVar("BB_HASH_CHECKSUM_CACHE_FILE", True)
+            self.checksum_cache = FileChecksumCache()
+            self.checksum_cache.init_cache(cfgData, checksum_cache_file)
+        else:
+            logger.warn("%s implements deprecated API of get_taskhash(), "
+                        "missing the 'checksum_cache' argument" % bb.parse.siggen.__class__.__name__)
         self.reset()
 
     def reset(self):
@@ -884,6 +896,7 @@ class RunQueueData:
         if hasattr(bb.parse.siggen, "tasks_resolved"):
             bb.parse.siggen.tasks_resolved(virtmap, virtpnmap, self.dataCache)
 
+
         # Iterate over the task list and call into the siggen code
         dealtwith = set()
         todeal = set(range(len(self.runq_fnid)))
@@ -895,12 +908,19 @@ class RunQueueData:
                     procdep = []
                     for dep in self.runq_depends[task]:
                         procdep.append(self.taskData.fn_index[self.runq_fnid[dep]] + "." + self.runq_task[dep])
-                    self.runq_hash[task] = bb.parse.siggen.get_taskhash(self.taskData.fn_index[self.runq_fnid[task]], self.runq_task[task], procdep, self.dataCache)
-
+                    if self.checksum_cache:
+                        self.runq_hash[task] = bb.parse.siggen.get_taskhash(self.taskData.fn_index[self.runq_fnid[task]], self.runq_task[task], procdep, self.dataCache, self.checksum_cache)
+                    else:
+                        self.runq_hash[task] = bb.parse.siggen.get_taskhash(self.taskData.fn_index[self.runq_fnid[task]], self.runq_task[task], procdep, self.dataCache)
         # Write out checksum cache onto disk
-        # This relies on the "knowledge" that siggen uses cache of bb.fetch2
-        bb.fetch2.fetcher_parse_save()
-        bb.fetch2.fetcher_parse_done()
+        if self.checksum_cache:
+            self.checksum_cache.save_extras()
+            self.checksum_cache.save_merge()
+        else:
+            # This relies on the "knowledge" that siggen uses cache of bb.fetch2
+            bb.fetch2.fetcher_parse_save()
+            bb.fetch2.fetcher_parse_done()
+
         return len(self.runq_fnid)
 
     def dump_data(self, taskQueue):

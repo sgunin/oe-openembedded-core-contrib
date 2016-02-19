@@ -43,7 +43,7 @@ class SignatureGenerator(object):
     def finalise(self, fn, d, varient):
         return
 
-    def get_taskhash(self, fn, task, deps, dataCache):
+    def get_taskhash(self, fn, task, deps, dataCache, checksum_cache=None):
         return "0"
 
     def stampfile(self, stampbase, file_name, taskname, extrainfo):
@@ -173,7 +173,7 @@ class SignatureGeneratorBasic(SignatureGenerator):
             pass
         return taint
 
-    def get_taskhash(self, fn, task, deps, dataCache):
+    def get_taskhash(self, fn, task, deps, dataCache, checksum_cache=None):
         k = fn + "." + task
         data = dataCache.basetaskhash[k]
         self.runtaskdeps[k] = []
@@ -190,7 +190,10 @@ class SignatureGeneratorBasic(SignatureGenerator):
             self.runtaskdeps[k].append(dep)
 
         if task in dataCache.file_checksums[fn]:
-            checksums = bb.fetch2.get_file_checksums(dataCache.file_checksums[fn][task], recipename)
+            if checksum_cache:
+                checksums = checksum_cache.get_checksums(dataCache.file_checksums[fn][task], recipename)
+            else:
+                checksums = bb.fetch2.get_file_checksums(dataCache.file_checksums[fn][task], recipename)
             for (f,cs) in checksums:
                 self.file_checksum_values[k].append((f,cs))
                 if cs:
