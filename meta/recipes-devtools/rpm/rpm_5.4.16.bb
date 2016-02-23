@@ -5,8 +5,6 @@ verifying, querying, and updating software packages. Each software \
 package consists of an archive of files along with information about \
 the package like its version, a description, etc."
 
-RECIPE_NO_UPDATE_REASON = "5.4.15 has a package database issue: http://lists.openembedded.org/pipermail/openembedded-core/2015-August/109187.html"
-
 SUMMARY_${PN}-libs = "Libraries for manipulating RPM packages"
 DESCRIPTION_${PN}-libs = "This package contains the RPM shared libraries."
 
@@ -37,72 +35,100 @@ written in the Perl programming language to use the interface \
 supplied by the RPM Package Manager libraries."
 
 HOMEPAGE = "http://rpm5.org/"
-LICENSE = "LGPLv2.1"
+LICENSE = "LGPLv2.1 & Apache-2.0"
 LIC_FILES_CHKSUM = "file://COPYING.LIB;md5=2d5025d4aa3495befef8f17206a5b0a1"
+LIC_FILES_CHKSUM += "file://rpmio/mongo.c;begin=5;end=18;md5=d8327ba2c71664c059143e6d333b8901"
 
-DEPENDS = "libpcre attr acl popt ossp-uuid file byacc-native"
+# We must have gettext-native, we need gettextize, which may not be provided
+DEPENDS = "libpcre attr acl popt ossp-uuid file byacc-native gettext-native"
 DEPENDS_append_class-native = " file-replacement-native"
 
 # rpm2cpio is a shell script, which is part of the rpm src.rpm.  It is needed
 # in order to extract the distribution SRPM into a format we can extract...
-SRC_URI = "http://www.rpm5.org/files/rpm/rpm-5.4/rpm-5.4.14-0.20131024.src.rpm;extract=rpm-5.4.14.tar.gz \
-	   file://rpm-log-auto-rm.patch \
-	   file://rpm-db-reduce.patch \
+
+# There is no official 5.4.16 release yet, so start w/ 5.4.15 and patch it
+# based on CVS
+S = "${WORKDIR}/rpm-5.4.15"
+
+SRC_URI = "http://www.rpm5.org/files/rpm/rpm-5.4/rpm-5.4.15-0.20140824.src.rpm;extract=rpm-5.4.15.tar.gz \
+	   file://rpm-5.4.15-to-5.4.16.patch.gz \
+	   file://syck-5.4.15-to-5.4.16.patch.gz \
+	   file://beecrypt-5.4.15-to-5.4.16.patch.gz \
+	   file://lua-5.4.15-to-5.4.16.patch.gz \
 	   file://perfile_rpmdeps.sh \
-	   file://rpm-autogen.patch \
-	   file://rpm-libsql-fix.patch \
+	   file://pythondeps.sh \
+"
+
+# Bug fixes
+SRC_URI += " \
 	   file://header-include-fix.patch \
+	   file://rpm-libsql-fix.patch \
 	   file://rpm-platform.patch \
-	   file://rpm-showrc.patch \
+	   file://rpm-platform2.patch \
 	   file://rpm-tools-mtree-LDFLAGS.patch \
-	   file://rpm-fileclass.patch \
 	   file://rpm-canonarch.patch \
 	   file://rpm-no-loopmsg.patch \
-	   file://rpm-scriptletexechelper.patch \
-	   file://pythondeps.sh \
-	   file://rpmdeps-oecore.patch \
 	   file://rpm-resolvedep.patch \
-	   file://rpm-no-perl-urpm.patch \
-	   file://rpm-macros.patch \
-	   file://rpm-lua.patch \
-	   file://rpm-ossp-uuid.patch \
 	   file://rpm-packageorigin.patch \
-	   file://rpm-pkgconfigdeps.patch \
 	   file://uclibc-support.patch \
 	   file://rpmatch.patch \
-	   file://fstack-protector-configure-check.patch \
-	   file://dbconvert.patch \
-	   file://rpm-uuid-include.patch \
 	   file://makefile-am-exec-hook.patch \
-	   file://rpm-db_buffer_small.patch \
-	   file://rpm-py-init.patch \
 	   file://python-rpm-rpmsense.patch \
-	   file://rpm-reloc-macros.patch \
-	   file://rpm-platform2.patch \
-	   file://rpm-remove-sykcparse-decl.patch \
 	   file://debugedit-segv.patch \
 	   file://debugedit-valid-file-to-fix-segment-fault.patch \
 	   file://rpm-platform-file-fix.patch \
 	   file://rpm-lsb-compatibility.patch \
 	   file://rpm-tag-generate-endian-conversion-fix.patch \
-	   file://verify-fix-broken-logic-for-ghost-avoidance-Mark-Hat.patch \
 	   file://rpm-hardlink-segfault-fix.patch \
 	   file://rpm-payload-use-hashed-inode.patch \
 	   file://rpm-fix-logio-cp.patch \
-	   file://rpm-db5-or-db6.patch \
-	   file://rpm-disable-Wno-override-init.patch \
-	   file://rpmqv_cc_b_gone.patch \
-	   file://rpm-realpath.patch \
 	   file://0001-using-poptParseArgvString-to-parse-the-_gpg_check_pa.patch \
-	   file://no-ldflags-in-pkgconfig.patch \
-	   file://rpm-lua-fix-print.patch \
-	   file://rpm-check-rootpath-reasonableness.patch \
-	   file://rpm-macros.in-disable-external-key-server.patch \
 	   file://rpm-opendb-before-verifyscript-to-avoid-null-point.patch \
-	   file://configure.ac-check-for-both-gpg2-and-gpg.patch \
 	   file://0001-define-EM_AARCH64.patch \
 	   file://rpm-rpmfc.c-fix-for-N32-MIPS64.patch \
 	   file://rpm-lib-transaction.c-fix-file-conflicts-for-mips64-N32.patch \
+	   file://rpm-mongodb-sasl.patch \
+	   file://rpm-fix-parseEmbedded.patch \
+	   file://rpm-rpmio-headers.patch \
+	   file://rpm-python-restore-origin.patch \
+	   file://rpm-keccak-sse-intrin.patch \
+	   file://rpm-atomic-ops.patch \
+	   file://rpm-gnu-atomic.patch \
+	   file://rpm-tagname-type.patch \
+	   file://rpm-python-tagname.patch \
+"
+
+# OE specific changes
+SRC_URI += " \
+	   file://rpm-log-auto-rm.patch \
+	   file://rpm-db-reduce.patch \
+	   file://rpm-autogen.patch \
+	   file://rpm-showrc.patch \
+	   file://rpm-fileclass.patch \
+	   file://rpm-scriptletexechelper.patch \
+	   file://rpmdeps-oecore.patch \
+	   file://rpm-no-perl-urpm.patch \
+	   file://rpm-macros.patch \
+	   file://rpm-lua.patch \
+	   file://rpm-ossp-uuid.patch \
+	   file://rpm-uuid-include.patch \
+	   file://rpm-pkgconfigdeps.patch \
+	   file://no-ldflags-in-pkgconfig.patch \
+	   file://dbconvert.patch \
+	   file://rpm-db_buffer_small.patch \
+	   file://rpm-py-init.patch \
+	   file://rpm-reloc-macros.patch \
+	   file://rpm-db5-or-db6.patch \
+	   file://rpm-db60.patch \
+	   file://rpmqv_cc_b_gone.patch \
+	   file://rpm-realpath.patch \
+	   file://rpm-check-rootpath-reasonableness.patch \
+	   file://rpm-macros.in-disable-external-key-server.patch \
+	   file://configure.ac-check-for-both-gpg2-and-gpg.patch \
+	   file://rpm-disable-auto-stack-protector.patch \
+	   file://rpm-syck-fix-gram.patch \
+	   file://rpm-rpmdb-grammar.patch \
+	   file://rpm-disable-blaketest.patch \
 "
 
 SRC_URI_append_libc-musl = "\
@@ -113,8 +139,8 @@ SRC_URI_append_libc-musl = "\
 # to process certain package feeds.
 #SRC_URI += "file://rpm-debug-platform.patch"
 
-SRC_URI[md5sum] = "25093d399a0b5d1342d24900a91b347d"
-SRC_URI[sha256sum] = "676e3ab41f72e3b504e04109cfb565a300742f56a7da084f202013b30eeae467"
+SRC_URI[md5sum] = "d53782842ac11b3100a43fb2958c9bc0"
+SRC_URI[sha256sum] = "d4ae5e9ed5df8ab9931b660f491418d20ab5c4d72eb17ed9055b80b71ef6c4ee"
 
 UPSTREAM_CHECK_REGEX = "rpm-(?P<pver>(\d+[\.\-_]*)+)-.*$"
 
@@ -134,7 +160,7 @@ rpm_macros_class-nativesdk = "%{_usrlibrpm}/macros:%{_usrlibrpm}/${DISTRO}/macro
 
 # Note: perl and sqlite w/o db specified does not currently work.
 #       tcl, augeas, nss, gcrypt, xar and keyutils support is untested.
-PACKAGECONFIG ??= "db bzip2 zlib beecrypt openssl libelf python"
+PACKAGECONFIG ??= "db bzip2 zlib openssl libelf python"
 
 PACKAGECONFIG[bzip2] = "--with-bzip2,--without-bzip2,bzip2,"
 PACKAGECONFIG[xz] = "--with-xz,--without-xz,xz,"
@@ -195,7 +221,7 @@ EXTRA_OECONF += "--verbose \
 		--with-uuid \
 		--with-attr \
 		--with-acl \
-		--with-popt=external \
+		--with-popt=internal \
 		--with-pthreads \
 		--without-cudf \
 		--without-ficl \
@@ -207,6 +233,7 @@ EXTRA_OECONF += "--verbose \
 		--without-gpsee \
 		--without-ruby \
 		--without-squirrel \
+		--without-sasl2 \
 		--with-build-extlibdep \
 		--with-build-maxextlibdep \
 		--without-valgrind \
@@ -351,7 +378,7 @@ RDEPENDS_${PN}_class-native = ""
 RDEPENDS_${PN}_class-nativesdk = ""
 RDEPENDS_${PN}-build = "file bash perl"
 
-RDEPENDS_python-rpm = "${PN}"
+RDEPENDS_python-rpm = "${PN} python"
 
 FILES_python-rpm = "${libdir}/python*/site-packages/rpm"
 PROVIDES += "python-rpm"
@@ -408,6 +435,9 @@ do_configure() {
 }
 
 do_install_append() {
+	# Preserve the previous default of DSA self-signed pkgs
+	sed -i -e 's,%_build_sign.*,%_build_sign DSA,' ${D}/${libdir}/rpm/macros.rpmbuild
+
 	sed -i -e 's,%__scriptlet_requires,#%%__scriptlet_requires,' ${D}/${libdir}/rpm/macros
 	sed -i -e 's,%__perl_provides,#%%__perl_provides,' ${D}/${libdir}/rpm/macros ${D}/${libdir}/rpm/macros.d/*
 	sed -i -e 's,%__perl_requires,#%%__perl_requires,' ${D}/${libdir}/rpm/macros ${D}/${libdir}/rpm/macros.d/*

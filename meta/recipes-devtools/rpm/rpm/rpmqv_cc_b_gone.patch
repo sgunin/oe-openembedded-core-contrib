@@ -12,21 +12,26 @@ Upstream-Status: Inappropriate [other]
 
 Signed-off-by: Joe Slater <joe.slater@windriver.com>
 
---- a/Makefile.am
-+++ b/Makefile.am
-@@ -127,13 +127,13 @@ rpm_SOURCES =		build.c
- rpm_LDFLAGS =		@LDFLAGS_STATIC@ $(LDFLAGS)
+Index: rpm/Makefile.am
+===================================================================
+--- rpm.orig/Makefile.am
++++ rpm/Makefile.am
+@@ -202,14 +202,16 @@ rpm_LDFLAGS =		@LDFLAGS_STATIC@ $(LDFLAG
  rpm_LDADD =		rpm.o $(myLDADD)
  rpm.o:	$(top_srcdir)/rpmqv.c
--	$(COMPILE) -DIAM_RPMBT -DIAM_RPMDB -DIAM_RPMEIU -DIAM_RPMK -DIAM_RPMQV -o $@ -c $(top_srcdir)/rpmqv.cc
-+	$(COMPILE) -DIAM_RPMBT -DIAM_RPMDB -DIAM_RPMEIU -DIAM_RPMK -DIAM_RPMQV -o $@ -c $(top_srcdir)/rpmqv.c
+ 	ln -sf $< rpmqv.cc
++	ln -sf $< rpmqv.c
+-	$(COMPILE) -DIAM_RPMBT -DIAM_RPMDB -DIAM_RPMEIU -DIAM_RPMK -DIAM_RPMQV -o $@ -c rpmqv.cc
++	$(COMPILE) -DIAM_RPMBT -DIAM_RPMDB -DIAM_RPMEIU -DIAM_RPMK -DIAM_RPMQV -o $@ -c rpmqv.c
  
  rpmbuild_SOURCES =	build.c
  rpmbuild_LDFLAGS =	@LDFLAGS_STATIC@ $(LDFLAGS)
  rpmbuild_LDADD =	rpmbuild.o $(myLDADD)
- rpmbuild.o: $(top_srcdir)/rpmqv.c
--	$(COMPILE) -DIAM_RPMBT -o $@ -c $(top_srcdir)/rpmqv.cc
-+	$(COMPILE) -DIAM_RPMBT -o $@ -c $(top_srcdir)/rpmqv.c
+ rpmbuild.o:	$(top_srcdir)/rpmqv.c
+ 	ln -sf $< rpmqv.cc
++	ln -sf $< rpmqv.c
+-	$(COMPILE) -DIAM_RPMBT -o $@ -c rpmqv.cc
++	$(COMPILE) -DIAM_RPMBT -o $@ -c rpmqv.c
  
- .PHONY:	splint
- splint:
+ .syntastic_c_config: Makefile
+ 	@echo $(COMPILE) | tr ' ' '\n' | sed -e '1d' > $@
