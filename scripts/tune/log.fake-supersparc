@@ -1,9 +1,8 @@
-NOTE: Started PRServer with DBfile: /home2/mjansa/build/oe-core/cache/prserv.sqlite3, IP: 127.0.0.1, PORT: 34887, PID: 8203
 ERROR:  OE-core's config sanity checker detected a potential misconfiguration.
     Either fix the cause of this error or at your own risk disable the checker (see sanity.conf).
     Following is the list of potential problems / advisories:
 
-    Error, the PACKAGE_ARCHS variable (all any noarch ${PACKAGE_EXTRA_ARCHS_tune-${DEFAULTTUNE}} fake_supersparc) for DEFAULTTUNE (None) does not contain TUNE_PKGARCH (supersparc).Toolchain tunings invalid:
+    Error, the PACKAGE_ARCHS variable does not contain TUNE_PKGARCH (supersparc).Toolchain tunings invalid:
 No tuning found for default multilib.
 
 

@@ -1,0 +1,7 @@
+ERROR:  OE-core's config sanity checker detected a potential misconfiguration.
+    Either fix the cause of this error or at your own risk disable the checker (see sanity.conf).
+    Following is the list of potential problems / advisories:
+
+    Error, the PACKAGE_ARCHS variable does not contain TUNE_PKGARCH (cortexa8).
+
+Summary: There was 1 ERROR message shown, returning a non-zero exit code.
