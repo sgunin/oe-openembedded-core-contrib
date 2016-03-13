@@ -672,8 +672,11 @@ def buildhistory_get_build_id(d):
 def buildhistory_get_metadata_revs(d):
     # We want an easily machine-readable format here, so get_layers_branch_rev isn't quite what we want
     layers = (d.getVar("BBLAYERS") or "").split()
-    medadata_revs = ["%-17s = %s:%s" % (os.path.relpath(i, d.getVar('BBLAYERS_FETCH_DIR')), \
+    medadata_revs = ["%s\tlayer:  %s\n\tbranch: %s\n\tremote: %s\n\tHEAD:   %s\n" % ( \
+        base_get_metadata_git_remote(i, None), \
+        os.path.relpath(i, d.getVar('BBLAYERS_FETCH_DIR')), \
         base_get_metadata_git_branch(i, None).strip(), \
+        base_get_metadata_git_remote_branch(i, None).strip(), \
         base_get_metadata_git_revision(i, None)) \
             for i in layers]
     return '\n'.join(medadata_revs)
