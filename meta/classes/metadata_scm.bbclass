@@ -72,6 +72,15 @@ def base_get_metadata_git_branch(path, d):
         rev = '<unknown>'
     return rev.strip()
 
+def base_get_metadata_git_remote_branch(path, d):
+    import bb.process
+
+    try:
+        rev, _ = bb.process.run('git rev-parse --abbrev-ref --symbolic-full-name @{u}', cwd=path)
+    except bb.process.ExecutionError:
+        rev = '(HEAD does not point to a remote branch)'
+    return rev.strip()
+
 def base_get_metadata_git_revision(path, d):
     import bb.process
 
@@ -80,3 +89,12 @@ def base_get_metadata_git_revision(path, d):
     except bb.process.ExecutionError:
         rev = '<unknown>'
     return rev.strip()
+
+def base_get_metadata_git_remote(path, d):
+    import bb.process
+
+    try:
+        lines, _ = bb.process.run('git remote -v', cwd=path)
+    except bb.process.ExecutionError:
+        return '<unknown>'
+    return lines
