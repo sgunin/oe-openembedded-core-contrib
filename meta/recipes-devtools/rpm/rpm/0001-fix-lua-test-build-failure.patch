@@ -1,0 +1,76 @@
+Upstream-Status: Backport
+
+Subject: fix lua test build failure
+
+Reference the latest rpm5 codes to fix errors like below.
+
+  gcc: error: lib21.c: No such file or directory
+
+Signed-off-by: Chen Qi <Qi.Chen@windriver.com>
+---
+ lua/tests/libs/Makefile.am | 35 ++++++++++++++++++++---------------
+ 1 file changed, 20 insertions(+), 15 deletions(-)
+
+diff --git a/lua/tests/libs/Makefile.am b/lua/tests/libs/Makefile.am
+index 19d1a0b..8a8f980 100644
+--- a/lua/tests/libs/Makefile.am
++++ b/lua/tests/libs/Makefile.am
+@@ -2,11 +2,11 @@
+ AUTOMAKE_OPTIONS = 1.4 foreign
+ 
+ EXTRA_DIST = \
+-	lib11.c \
+-	lib1.c \
+-	lib21.c \
+-	lib2.c \
+-	P1
++	$(srcdir)/lib11.c \
++	$(srcdir)/lib1.c \
++	$(srcdir)/lib21.c \
++	$(srcdir)/lib2.c \
++	$(srcdir)/P1
+ 
+ #
+ # change this variable to point to the directory with Lua headers
+@@ -21,23 +21,28 @@ CC = gcc
+ # compilation should generate Dynamic-Link Libraries
+ CFLAGS = -Wall -std=gnu99 -O2 $(AM_CPPFLAGS) -fpic -shared
+ 
++P1:
++	@-$(mkdir_p) $@
++
+ # libraries used by the tests
+-all: lib1.so lib11.so lib2.so lib21.so lib2-v2.so
++all: P1 lib1.so lib11.so lib2.so lib21.so lib2-v2.so
+ 
+ clean:
+-	rm -f lib1.so lib11.so lib2.so lib21.so lib2-v2.so
++	rm -f *.so
++
++distclean: clean
+ 
+-lib1.so: lib1.c
+-	$(CC) $(CFLAGS) -o lib1.so lib1.c
++lib1.so: $(srcdir)/lib1.c
++	$(CC) $(CFLAGS) -o lib1.so $<
+ 
+-lib11.so: lib11.c
+-	$(CC) $(CFLAGS) -o lib11.so lib11.c
++lib11.so: $(srcdir)/lib11.c
++	$(CC) $(CFLAGS) -o lib11.so $<
+ 
+-lib2.so: lib2.c
+-	$(CC) $(CFLAGS) -o lib2.so lib2.c
++lib2.so: $(srcdir)/lib2.c
++	$(CC) $(CFLAGS) -o lib2.so $<
+ 
+-lib21.so: lib21.c
+-	$(CC) $(CFLAGS) -o lib21.so lib21.c
++lib21.so: $(srcdir)/lib21.c
++	$(CC) $(CFLAGS) -o lib21.so $<
+ 
+ lib2-v2.so: lib2.so
+ 	mv lib2.so ./lib2-v2.so
+-- 
+1.9.1
+
