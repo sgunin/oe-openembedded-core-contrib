@@ -47,5 +47,7 @@ python sign_rpm () {
                      d.getVar('RPM_GPG_PASSPHRASE_FILE', True))
 }
 
+sign_rpm[vardeps] += " GPG_BIN GPG_PATH"
+
 do_package_index[depends] += "signing-keys:do_deploy"
 do_rootfs[depends] += "signing-keys:do_populate_sysroot"

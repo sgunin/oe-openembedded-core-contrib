@@ -41,3 +41,6 @@ python () {
 
 do_package_index[depends] += "signing-keys:do_deploy"
 do_rootfs[depends] += "signing-keys:do_populate_sysroot"
+
+do_package_index[vardeps] += " GPG_BIN GPG_PATH"
+do_rootfs[vardeps] += " GPG_BIN GPG_PATH"

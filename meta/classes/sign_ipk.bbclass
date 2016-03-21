@@ -50,3 +50,5 @@ def sign_ipk(d, ipk_to_sign):
                        d.getVar('IPK_GPG_NAME', True),
                        d.getVar('IPK_GPG_PASSPHRASE_FILE', True),
                        armor=is_ascii_sig)
+
+sign_ipk[vardeps] += " GPG_BIN GPG_PATH"
