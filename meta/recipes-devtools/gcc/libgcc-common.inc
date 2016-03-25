@@ -111,9 +111,18 @@ fakeroot python do_multilib_install() {
         if not tune_bitness:
             tune_bitness = '32' # /lib => 32bit lib
 
+        suffix = ""
+        localdata = bb.data.createCopy(d)
+        override = ":virtclass-multilib-" + ml
+        localdata.setVar("OVERRIDES", localdata.getVar("OVERRIDES", False) + override)
+        bb.data.update_data(localdata)
+        tarch = localdata.getVar('TARGET_ARCH', True)
+        if tarch == "arm" or tarch == "armeb":
+            suffix = "-gnueabi"
+
         src = '../../../' + tune_baselib + '/' + \
             tune_arch + d.getVar('TARGET_VENDOR', True) + 'ml' + ml + \
-            '-' + d.getVar('TARGET_OS', True) + '/' + binv + '/'
+            '-' + d.getVar('TARGET_OS', True) + suffix + '/' + binv + '/'
 
         dest = d.getVar('D', True) + d.getVar('libdir', True) + '/' + \
             d.getVar('TARGET_SYS', True) + '/' + binv + '/' + tune_bitness
