@@ -1,17 +1,17 @@
-Upstream-Status: Pending
-
-From a9030a79b91197e9e0746f86471ef69a34e1df4a Mon Sep 17 00:00:00 2001
+From 507518eaca7d1abaf00b1a1c8bdb52c74b7fb032 Mon Sep 17 00:00:00 2001
 From: Andreas Oberritter <obi@opendreambox.org>
-Date: Thu, 28 Aug 2014 20:24:16 +0200
+Date: Wed, 6 Apr 2016 00:46:49 +0200
 Subject: [PATCH] apt-opkg: compatibility shim to ease migration from opkg to
  apt-get
+
+Upstream-Status: Pending
 
 Signed-off-by: Andreas Oberritter <obi@opendreambox.org>
 ---
  apt-private/private-cmndline.cc |  18 +++
- cmdline/apt-opkg.cc             | 312 ++++++++++++++++++++++++++++++++++++++++
+ cmdline/apt-opkg.cc             | 310 ++++++++++++++++++++++++++++++++++++++++
  cmdline/makefile                |   7 +
- 3 files changed, 337 insertions(+)
+ 3 files changed, 335 insertions(+)
  create mode 100644 cmdline/apt-opkg.cc
 
 diff --git a/apt-private/private-cmndline.cc b/apt-private/private-cmndline.cc
@@ -52,10 +52,10 @@ index a4490f5..3235f91 100644
  
 diff --git a/cmdline/apt-opkg.cc b/cmdline/apt-opkg.cc
 new file mode 100644
-index 0000000..4c0ccf6
+index 0000000..ccfb846
 --- /dev/null
 +++ b/cmdline/apt-opkg.cc
-@@ -0,0 +1,312 @@
+@@ -0,0 +1,310 @@
 +#include <config.h>
 +
 +#include <apt-pkg/acquire-item.h>
@@ -342,10 +342,8 @@ index 0000000..4c0ccf6
 +	_config->Set("APT::Get::force-yes", true);
 +	_config->Set("quiet", 1);
 +
-+	if (_config->FindB("APT::Opkg::ForceMaintainer")) {
-+		_config->Set("Dpkg::Options::", "--force-confdef");
++	if (_config->FindB("APT::Opkg::ForceMaintainer"))
 +		_config->Set("Dpkg::Options::", "--force-confnew");
-+	}
 +
 +	// see if we are in simulate mode
 +	CheckSimulateMode(CmdL);
