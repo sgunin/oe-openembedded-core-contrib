@@ -70,6 +70,10 @@ do_compile_prepend () {
 }
 
 do_install_append() {
+	if [ "${CLASSOVERRIDE}" = "class-native" ]; then
+		return
+	fi
+
 	for i in df mktemp base64; do mv ${D}${bindir}/$i ${D}${bindir}/$i.${BPN}; done
 
 	install -d ${D}${base_bindir}
