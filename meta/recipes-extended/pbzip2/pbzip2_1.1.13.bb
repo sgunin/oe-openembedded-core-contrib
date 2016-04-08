@@ -22,6 +22,18 @@ do_configure[noexec] = "1"
 
 EXTRA_OEMAKE = "CXX='${CXX} ${CXXFLAGS}' LDFLAGS='${LDFLAGS}'"
 
+do_compile_prepend() {
+    # Update timestamp to fix rebuild
+    src_files="pbzip2.cpp BZ2StreamScanner.cpp ErrorContext.cpp"
+    for f in $src_files; do
+        if [ -f $f ]; then
+            touch $f
+        else
+            bbwarn "Regular file $f not found"
+        fi
+    done
+}
+
 do_install() {
     install -d ${D}${bindir}
     install -m 0755 pbzip2 ${D}${bindir}/
