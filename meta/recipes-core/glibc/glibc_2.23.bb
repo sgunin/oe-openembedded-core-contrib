@@ -36,6 +36,7 @@ SRC_URI = "${GLIBC_GIT_URI};branch=${SRCBRANCH};name=glibc \
            file://0023-eglibc-Install-PIC-archives.patch \
            file://0025-eglibc-Forward-port-cross-locale-generation-support.patch \
            file://0026-When-disabling-SSE-make-sure-fpmath-is-not-set-to-us.patch \
+           file://0027-Suppress-GCC-6-warning-about-ambiguous-else-with-Wpa.patch \
 "
 
 SRC_URI += "\
