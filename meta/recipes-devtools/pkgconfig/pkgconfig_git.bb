@@ -27,6 +27,7 @@ inherit autotools
 EXTRA_OECONF = "--without-internal-glib"
 EXTRA_OECONF_class-native = "--with-internal-glib"
 EXTRA_OECONF_class-nativesdk = "--with-internal-glib"
+CFLAGS_append_class-native = " -Wno-error=format-nonliteral"
 
 acpaths = "-I ."
 
