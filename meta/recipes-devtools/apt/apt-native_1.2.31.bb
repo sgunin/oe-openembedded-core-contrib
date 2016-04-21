@@ -5,11 +5,7 @@ DEPENDS += "dpkg-native gettext-native db-native curl-native xz-native"
 PACKAGES = ""
 USE_NLS = "yes"
 
-SRC_URI += "file://db_linking_hack.patch \
-            file://0001-Revert-always-run-dpkg-configure-a-at-the-end-of-our.patch \
-            file://noconfigure.patch \
-            file://no-curl.patch \
-            file://gcc_4.x_apt-pkg-contrib-strutl.cc-Include-array-header.patch \
+SRC_URI += "file://gcc_4.x_apt-pkg-contrib-strutl.cc-Include-array-header.patch \
             file://gcc_4.x_Revert-avoid-changing-the-global-LC_TIME-for-Release.patch \
             file://gcc_4.x_Revert-use-de-localed-std-put_time-instead-rolling-o.patch \
             file://apt.conf.in \
