@@ -11,33 +11,10 @@ SRC_URI += "file://db_linking_hack.patch \
             file://0001-fix-the-gcc-version-check.patch \
             file://noconfigure.patch \
             file://no-curl.patch \
+            file://apt.conf.in \
 "
 
-python do_install () {
-    bb.build.exec_func('do_install_base', d)
-    bb.build.exec_func('do_install_config', d)
-}
-
-python do_install_config () {
-    indir = os.path.dirname(d.getVar('FILE',1))
-    infile = file(oe.path.join(indir, 'files', 'apt.conf'), 'r')
-    data = infile.read()
-    infile.close()
-
-    data = d.expand(data)
-
-    outdir = oe.path.join(d.getVar('D', True), d.getVar('sysconfdir', True), 'apt')
-    if not os.path.exists(outdir):
-        os.makedirs(outdir)
-
-    outpath = oe.path.join(outdir, 'apt.conf.sample')
-    if not os.path.exists(outpath):
-        outfile = file(outpath, 'w')
-        outfile.write(data)
-        outfile.close()
-}
-
-do_install_base () {
+do_install() {
 	install -d ${D}${bindir}
 	install -m 0755 bin/apt-cdrom ${D}${bindir}/
 	install -m 0755 bin/apt-get ${D}${bindir}/
@@ -69,4 +46,9 @@ do_install_base () {
 	install -d ${D}${localstatedir}/cache/apt/archives/partial
 
 	install -d ${D}${localstatedir}/log/apt/
+
+	sed -e "s,@STAGING_DIR_NATIVE@,${STAGING_DIR_NATIVE},g" \
+	    -e "s,@STAGING_BINDIR_NATIVE@,${STAGING_BINDIR_NATIVE},g" \
+	    -e "s,@STAGING_LIBDIR@,${STAGING_LIBDIR},g" \
+	    < ${WORKDIR}/apt.conf.in > ${D}${sysconfdir}/apt/apt.conf.sample
 }
