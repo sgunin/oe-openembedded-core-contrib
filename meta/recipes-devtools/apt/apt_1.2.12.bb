@@ -5,7 +5,6 @@ require apt.inc
 PACKAGES =+ "${PN}-utils"
 FILES_${PN} += "${libdir}/dpkg ${systemd_system_unitdir}/apt-daily.service"
 FILES_${PN}-utils = "${bindir}/apt-sortpkgs ${bindir}/apt-extracttemplates"
-FILES_${PN}-dev = "${libdir}/libapt*.so ${includedir}"
 
 inherit systemd
 
