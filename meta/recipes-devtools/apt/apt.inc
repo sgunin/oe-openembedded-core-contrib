@@ -13,6 +13,9 @@ SRC_URI = "http://snapshot.debian.org/archive/debian/20160526T162943Z/pool/main/
            file://disable-test.patch \
            file://0001-environment.mak-musl-based-systems-can-generate-shar.patch \
            file://0001-apt-1.2.12-Fix-musl-build.patch \
+           file://0001-remove-Wsuggest-attribute-from-CFLAGS.patch \
+           file://0001-fix-the-gcc-version-check.patch \
+           file://apt.conf.in \
            "
 SRC_URI[md5sum] = "80f6f0ef110a45a7e5af8a9d233fb0e7"
 SRC_URI[sha256sum] = "e820d27cba73476df4abcff27dadd1b5847474bfe85f7e9202a9a07526973ea6"
