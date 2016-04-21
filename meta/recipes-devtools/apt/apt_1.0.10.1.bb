@@ -2,6 +2,8 @@ DEPENDS = "curl db zlib"
 RDEPENDS_${PN} = "dpkg bash debianutils"
 require apt.inc
 
+USE_NLS_class-native = "yes"
+
 PACKAGES =+ "${PN}-utils"
 FILES_${PN} += "${libdir}/dpkg"
 FILES_${PN}-utils = "${bindir}/apt-extracttemplates \
@@ -59,7 +61,16 @@ PACKAGECONFIG ??= "lzma"
 PACKAGECONFIG[lzma] = "ac_cv_lib_lzma_lzma_easy_encoder=yes,ac_cv_lib_lzma_lzma_easy_encoder=no,xz"
 PACKAGECONFIG[bz2] = "ac_cv_lib_bz2_BZ2_bzopen=yes,ac_cv_lib_bz2_BZ2_bzopen=no,bzip2"
 
+do_install_append_class-native() {
+    sed -e "s,@STAGING_DIR_NATIVE@,${STAGING_DIR_NATIVE},g" \
+        -e "s,@STAGING_BINDIR_NATIVE@,${STAGING_BINDIR_NATIVE},g" \
+        -e "s,@STAGING_LIBDIR@,${STAGING_LIBDIR},g" \
+        < ${WORKDIR}/apt.conf.in > ${D}${sysconfdir}/apt/apt.conf.sample
+}
+
 do_install_append_class-target() {
     #Write the correct apt-architecture to apt.conf
     echo 'APT::Architecture "${DPKG_ARCH}";' > ${D}${sysconfdir}/apt/apt.conf
 }
+
+BBCLASSEXTEND = "native"
