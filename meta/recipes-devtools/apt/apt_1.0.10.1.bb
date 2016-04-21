@@ -4,53 +4,62 @@ require apt.inc
 
 PACKAGES =+ "${PN}-utils"
 FILES_${PN} += "${libdir}/dpkg"
-FILES_${PN}-utils = "${bindir}/apt-sortpkgs ${bindir}/apt-extracttemplates"
+FILES_${PN}-utils = "${bindir}/apt-extracttemplates \
+                     ${bindir}/apt-ftparchive \
+                     ${bindir}/apt-sortpkgs"
+
+PROGRAMS = " \
+    apt apt-cache apt-cdrom apt-config apt-extracttemplates \
+    apt-ftparchive apt-get apt-key apt-mark apt-sortpkgs \
+"
 
 do_install () {
-	set -x
 	install -d ${D}${bindir}
-	install -m 0755 bin/apt-key ${D}${bindir}/
-	install -m 0755 bin/apt-cdrom ${D}${bindir}/
-	install -m 0755 bin/apt-get ${D}${bindir}/
-	install -m 0755 bin/apt-config ${D}${bindir}/
-	install -m 0755 bin/apt-cache ${D}${bindir}/
+	for f in ${PROGRAMS}; do
+		install -m 0755 bin/$f ${D}${bindir}
+	done
 
-	install -m 0755 bin/apt-sortpkgs ${D}${bindir}/
-	install -m 0755 bin/apt-extracttemplates ${D}${bindir}/
+	install -d ${D}${docdir}/apt/examples
+	install -m 0644 ${S}/doc/examples/* ${D}${docdir}/apt/examples
 
-	oe_libinstall -so -C bin libapt-pkg ${D}${libdir}
-	oe_libinstall -so -C bin libapt-inst ${D}${libdir}
+	install -d ${D}${includedir}/apt-pkg
+	install -m 0644 include/apt-pkg/*.h ${D}${includedir}/apt-pkg
+
+	install -d ${D}${libdir}
+	for f in inst pkg private; do
+		oe_libinstall -so -C bin libapt-$f ${D}${libdir}
+	done
+
+	install -d ${D}${libdir}/apt
+	install -m 0755 bin/apt-helper ${D}${libdir}/apt
 
 	install -d ${D}${libdir}/apt/methods
-	install -m 0755 bin/methods/* ${D}${libdir}/apt/methods/
+	install -m 0755 bin/methods/* ${D}${libdir}/apt/methods
 
 	install -d ${D}${libdir}/dpkg/methods/apt
-	install -m 0644 ${S}/dselect/desc.apt ${D}${libdir}/dpkg/methods/apt/ 
-	install -m 0644 ${S}/dselect/names ${D}${libdir}/dpkg/methods/apt/ 
-	install -m 0755 ${S}/dselect/install ${D}${libdir}/dpkg/methods/apt/ 
-	install -m 0755 ${S}/dselect/setup ${D}${libdir}/dpkg/methods/apt/ 
-	install -m 0755 ${S}/dselect/update ${D}${libdir}/dpkg/methods/apt/ 
+	for f in desc.apt names; do
+		install -m 0644 ${S}/dselect/$f ${D}${libdir}/dpkg/methods/apt
+	done
+	for f in install setup update; do
+		install -m 0755 ${S}/dselect/$f ${D}${libdir}/dpkg/methods/apt
+	done
 
-	install -d ${D}${sysconfdir}/apt
-	install -d ${D}${sysconfdir}/apt/apt.conf.d
-	install -d ${D}${sysconfdir}/apt/sources.list.d
-	install -d ${D}${sysconfdir}/apt/preferences.d
-	install -d ${D}${localstatedir}/lib/apt/lists/partial
+	for d in apt.conf.d preferences.d sources.list.d trusted.gpg.d; do
+		install -d ${D}${sysconfdir}/apt/$d
+	done
+
 	install -d ${D}${localstatedir}/cache/apt/archives/partial
-	install -d ${D}${docdir}/apt/examples
-	install -m 0644 ${S}/doc/examples/* ${D}${docdir}/apt/examples/
-
-	install -d ${D}${includedir}/apt-pkg/
-	install -m 0644 include/apt-pkg/*.h ${D}${includedir}/apt-pkg/
+	install -d ${D}${localstatedir}/lib/apt/lists/partial
+	install -d ${D}${localstatedir}/lib/apt/mirrors/partial
+	install -d ${D}${localstatedir}/lib/apt/periodic
+	install -d ${D}${localstatedir}/log/apt
 }
 
 PACKAGECONFIG ??= "lzma"
 PACKAGECONFIG[lzma] = "ac_cv_lib_lzma_lzma_easy_encoder=yes,ac_cv_lib_lzma_lzma_easy_encoder=no,xz"
 PACKAGECONFIG[bz2] = "ac_cv_lib_bz2_BZ2_bzopen=yes,ac_cv_lib_bz2_BZ2_bzopen=no,bzip2"
 
-do_install_append() {
+do_install_append_class-target() {
     #Write the correct apt-architecture to apt.conf
-    APT_CONF=${D}/etc/apt/apt.conf
-    echo 'APT::Architecture "${DPKG_ARCH}";' > ${APT_CONF}
-    oe_libinstall -so -C bin libapt-private ${D}${libdir}/
+    echo 'APT::Architecture "${DPKG_ARCH}";' > ${D}${sysconfdir}/apt/apt.conf
 }
