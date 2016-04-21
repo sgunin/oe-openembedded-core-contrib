@@ -2,14 +2,8 @@ DEPENDS = "curl db zlib"
 RDEPENDS_${PN} = "dpkg bash debianutils"
 require apt.inc
 
-PACKAGES += "${PN}-utils"
-FILES_${PN} = "${bindir}/apt-cdrom ${bindir}/apt-get \
-	       ${bindir}/apt-config ${bindir}/apt-cache \
-	       ${libdir}/apt ${libdir}/libapt*.so.* \
-	       ${localstatedir} ${sysconfdir} \
-	       ${libdir}/dpkg \
-	       ${systemd_unitdir}/system \
-           "
+PACKAGES =+ "${PN}-utils"
+FILES_${PN} += "${libdir}/dpkg ${systemd_system_unitdir}/apt-daily.service"
 FILES_${PN}-utils = "${bindir}/apt-sortpkgs ${bindir}/apt-extracttemplates"
 FILES_${PN}-dev = "${libdir}/libapt*.so ${includedir}"
 
@@ -68,8 +62,6 @@ PACKAGECONFIG ??= "lzma"
 PACKAGECONFIG[lzma] = "ac_cv_lib_lzma_lzma_easy_encoder=yes,ac_cv_lib_lzma_lzma_easy_encoder=no,xz"
 PACKAGECONFIG[bz2] = "ac_cv_lib_bz2_BZ2_bzopen=yes,ac_cv_lib_bz2_BZ2_bzopen=no,bzip2"
 PACKAGECONFIG[lz4] = "ac_cv_lib_lz4_LZ4F_createCompressionContext=yes,ac_cv_lib_lz4_LZ4F_createCompressionContext=no,lz4"
-
-FILES_${PN} += "${bindir}/apt-key"
 
 do_install_append() {
     #Write the correct apt-architecture to apt.conf
