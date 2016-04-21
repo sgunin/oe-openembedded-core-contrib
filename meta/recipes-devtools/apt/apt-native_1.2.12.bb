@@ -5,12 +5,8 @@ DEPENDS += "dpkg-native gettext-native db-native curl-native xz-native"
 PACKAGES = ""
 USE_NLS = "yes"
 
-SRC_URI += "file://db_linking_hack.patch \
-            file://0001-Revert-always-run-dpkg-configure-a-at-the-end-of-our.patch \
-            file://0001-remove-Wsuggest-attribute-from-CFLAGS.patch \
+SRC_URI += "file://0001-remove-Wsuggest-attribute-from-CFLAGS.patch \
             file://0001-fix-the-gcc-version-check.patch \
-            file://noconfigure.patch \
-            file://no-curl.patch \
             file://apt.conf.in \
 "
 
