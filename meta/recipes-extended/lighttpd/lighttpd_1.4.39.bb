@@ -6,7 +6,6 @@ LICENSE = "BSD"
 LIC_FILES_CHKSUM = "file://COPYING;md5=e4dac5c6ab169aa212feb5028853a579"
 
 SECTION = "net"
-DEPENDS = "zlib libpcre"
 RDEPENDS_${PN} += " \
                lighttpd-module-access \
                lighttpd-module-accesslog \
@@ -26,19 +25,29 @@ SRC_URI = "http://download.lighttpd.net/lighttpd/releases-1.4.x/lighttpd-${PV}.t
 SRC_URI[md5sum] = "63c7563be1c7a7a9819a51f07f1af8b2"
 SRC_URI[sha256sum] = "7eb9a1853c3d6dd5851682b0733a729ba4158d6bdff80974d5ef5f1f6887365b"
 
-PACKAGECONFIG ??= "openssl"
-PACKAGECONFIG[openssl] = "--with-openssl, --without-openssl, openssl"
-
-EXTRA_OECONF = " \
-             --without-bzip2 \
-             --without-ldap \
-             --without-lua \
-             --without-memcache \
-             --with-pcre \
-             --without-webdav-props \
-             --without-webdav-locks \
-             --disable-static \
-"
+PACKAGECONFIG ??= "openssl pcre zlib \
+                   ${@base_contains('DISTRO_FEATURES', 'ipv6', 'ipv6', '', d)} \
+                   ${@base_contains('DISTRO_FEATURES', 'largefile', 'lfs', '', d)} \
+                   ${@base_contains('DISTRO_FEATURES', 'xattr', 'attr', '', d)}"
+PACKAGECONFIG[lfs] = "--enable-lfs,--disable-lfs"
+PACKAGECONFIG[ipv6] = "--enable-ipv6,--disable-ipv6"
+PACKAGECONFIG[mmap] = "--enable-mmap,--disable-mmap"
+PACKAGECONFIG[libev] = "--with-libev,--without-libev,libev"
+PACKAGECONFIG[mysql] = "--with-mysql,--without-mysql,mariadb"
+PACKAGECONFIG[ldap] = "--with-ldap,--without-ldap,openldap"
+PACKAGECONFIG[attr] = "--with-attr,--without-attr,attr"
+PACKAGECONFIG[valgrind] = "--with-valgrind,--without-valgrind,valgrind"
+PACKAGECONFIG[openssl] = "--with-openssl,--without-openssl,openssl"
+PACKAGECONFIG[kerberos5] = "--with-kerberos5,--without-kerberos5"
+PACKAGECONFIG[pcre] = "--with-pcre,--without-pcre,libpcre"
+PACKAGECONFIG[zlib] = "--with-zlib,--without-zlib,zlib"
+PACKAGECONFIG[bzip2] = "--with-bzip2,--without-bzip2,bzip2"
+PACKAGECONFIG[fam] = "--with-fam,--without-fam,gamin"
+PACKAGECONFIG[webdav-props] = "--with-webdav-props,--without-webdav-props,libxml2 sqlite3"
+PACKAGECONFIG[webdav-locks] = "--with-webdav-locks,--without-webdav-locks,util-linux"
+PACKAGECONFIG[gdbm] = "--with-gdbm,--without-gdbm,gdbm"
+PACKAGECONFIG[memcache] = "--with-memcache,--without-memcache,memcached"
+PACKAGECONFIG[lua] = "--with-lua,--without-lua,lua5.1"
 
 inherit autotools pkgconfig update-rc.d gettext systemd
 
