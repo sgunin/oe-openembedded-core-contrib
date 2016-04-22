@@ -1,8 +1,8 @@
 SUMMARY = "Advanced front-end for dpkg"
 SECTION = "base"
 LICENSE = "GPLv2.0+"
+LIC_FILES_CHKSUM = "file://COPYING.GPL;md5=0636e73ff0215e8d672dc4c32c317bb3"
 DEPENDS = "curl db zlib"
-RDEPENDS_${PN} = "dpkg bash debianutils"
 
 SRC_URI = "http://snapshot.debian.org/archive/debian/20150805T094928Z/pool/main/a/${BPN}/${BPN}_${PV}.tar.xz \
            file://use-host.patch \
@@ -20,7 +20,6 @@ SRC_URI = "http://snapshot.debian.org/archive/debian/20150805T094928Z/pool/main/
            "
 SRC_URI[md5sum] = "6505c4297b338adb2087ce87bbc4a276"
 SRC_URI[sha256sum] = "3fb1de9598363c416591d49e3c285458e095b035e6c06d5b944a54e15fc9b543"
-LIC_FILES_CHKSUM = "file://COPYING.GPL;md5=0636e73ff0215e8d672dc4c32c317bb3"
 
 # the package is taken from snapshots.debian.org; that source is static and goes stale
 # so we check the latest upstream from a directory that does get updated
@@ -30,18 +29,16 @@ inherit autotools gettext
 
 EXTRA_AUTORECONF = "--exclude=autopoint,autoheader"
 
+PACKAGECONFIG ??= "lzma"
+PACKAGECONFIG[lzma] = "ac_cv_lib_lzma_lzma_easy_encoder=yes,ac_cv_lib_lzma_lzma_easy_encoder=no,xz"
+PACKAGECONFIG[bz2] = "ac_cv_lib_bz2_BZ2_bzopen=yes,ac_cv_lib_bz2_BZ2_bzopen=no,bzip2"
+
+USE_NLS_class-native = "yes"
+
 do_configure_prepend() {
     rm -rf ${S}/buildlib/config.sub
     rm -rf ${S}/buildlib/config.guess
 }
-
-USE_NLS_class-native = "yes"
-
-PACKAGES =+ "${PN}-utils"
-FILES_${PN} += "${libdir}/dpkg"
-FILES_${PN}-utils = "${bindir}/apt-extracttemplates \
-                     ${bindir}/apt-ftparchive \
-                     ${bindir}/apt-sortpkgs"
 
 PROGRAMS = " \
     apt apt-cache apt-cdrom apt-config apt-extracttemplates \
@@ -90,10 +87,6 @@ do_install () {
 	install -d ${D}${localstatedir}/log/apt
 }
 
-PACKAGECONFIG ??= "lzma"
-PACKAGECONFIG[lzma] = "ac_cv_lib_lzma_lzma_easy_encoder=yes,ac_cv_lib_lzma_lzma_easy_encoder=no,xz"
-PACKAGECONFIG[bz2] = "ac_cv_lib_bz2_BZ2_bzopen=yes,ac_cv_lib_bz2_BZ2_bzopen=no,bzip2"
-
 do_install_append_class-native() {
     sed -e "s,@STAGING_DIR_NATIVE@,${STAGING_DIR_NATIVE},g" \
         -e "s,@STAGING_BINDIR_NATIVE@,${STAGING_BINDIR_NATIVE},g" \
@@ -105,5 +98,14 @@ do_install_append_class-target() {
     #Write the correct apt-architecture to apt.conf
     echo 'APT::Architecture "${DPKG_ARCH}";' > ${D}${sysconfdir}/apt/apt.conf
 }
+
+PACKAGES =+ "${PN}-utils"
+
+RDEPENDS_${PN} = "dpkg bash debianutils"
+
+FILES_${PN} += "${libdir}/dpkg"
+FILES_${PN}-utils = "${bindir}/apt-extracttemplates \
+                     ${bindir}/apt-ftparchive \
+                     ${bindir}/apt-sortpkgs"
 
 BBCLASSEXTEND = "native"
