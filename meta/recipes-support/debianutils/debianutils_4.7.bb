@@ -32,7 +32,7 @@ do_install_append() {
 PACKAGES =+ "${PN}-run-parts"
 FILES_${PN}-run-parts = "${base_bindir}/run-parts.debianutils"
 
-RDEPENDS_${PN} += "${PN}-run-parts"
+RDEPENDS_${PN}_class-target = "${PN}-run-parts"
 
 
 ALTERNATIVE_PRIORITY="30"
