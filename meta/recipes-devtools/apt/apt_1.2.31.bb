@@ -1,8 +1,8 @@
 SUMMARY = "Advanced front-end for dpkg"
-LICENSE = "GPLv2.0+"
 SECTION = "base"
+LICENSE = "GPLv2.0+"
+LIC_FILES_CHKSUM = "file://COPYING.GPL;md5=b234ee4d69f5fce4486a80fdaf4a4263"
 DEPENDS = "curl db zlib"
-RDEPENDS_${PN} = "dpkg bash debianutils"
 
 SRC_URI = "https://launchpad.net/ubuntu/+archive/primary/+sourcefiles/${BPN}/${PV}/${BPN}_${PV}.tar.xz \
            file://use-host.patch \
@@ -23,7 +23,6 @@ SRC_URI = "https://launchpad.net/ubuntu/+archive/primary/+sourcefiles/${BPN}/${P
            "
 SRC_URI[md5sum] = "d30eed9304e82ea8238c854b5c5a34d9"
 SRC_URI[sha256sum] = "03ded4f5e9b8d43ecec083704b2dcabf20c182ed382db9ac7251da0b0b038059"
-LIC_FILES_CHKSUM = "file://COPYING.GPL;md5=b234ee4d69f5fce4486a80fdaf4a4263"
 
 # the package is taken from snapshots.debian.org; that source is static and goes stale
 # so we check the latest upstream from a directory that does get updated
@@ -33,6 +32,13 @@ inherit autotools gettext useradd
 
 EXTRA_AUTORECONF = "--exclude=autopoint,autoheader"
 
+PACKAGECONFIG ??= "lzma"
+PACKAGECONFIG[lzma] = "ac_cv_lib_lzma_lzma_easy_encoder=yes,ac_cv_lib_lzma_lzma_easy_encoder=no,xz"
+PACKAGECONFIG[bz2] = "ac_cv_lib_bz2_BZ2_bzopen=yes,ac_cv_lib_bz2_BZ2_bzopen=no,bzip2"
+PACKAGECONFIG[lz4] = "ac_cv_lib_lz4_LZ4F_createCompressionContext=yes,ac_cv_lib_lz4_LZ4F_createCompressionContext=no,lz4"
+
+USE_NLS_class-native = "yes"
+
 do_configure_prepend() {
     rm -rf ${S}/buildlib/config.sub
     rm -rf ${S}/buildlib/config.guess
@@ -40,15 +46,6 @@ do_configure_prepend() {
 
 USERADD_PACKAGES = "${PN}"
 USERADD_PARAM_${PN} = "--system --no-create-home --home-dir /nonexistent --shell /bin/false --user-group _apt"
-
-USE_NLS_class-native = "yes"
-
-PACKAGES =+ "${PN}-utils"
-FILES_${PN} += "${libdir}/dpkg ${systemd_system_unitdir}/apt-daily.service"
-RDEPENDS_${PN} += "perl"
-FILES_${PN}-utils = "${bindir}/apt-extracttemplates \
-                     ${bindir}/apt-ftparchive \
-                     ${bindir}/apt-sortpkgs"
 
 PROGRAMS = " \
     apt apt-cache apt-cdrom apt-config apt-extracttemplates \
@@ -110,11 +107,6 @@ do_install () {
 	sed -i 's#/usr/lib/apt/#${libdir}/apt/#g' ${D}${sysconfdir}/cron.daily/apt.apt-compat.cron.daily
 }
 
-PACKAGECONFIG ??= "lzma"
-PACKAGECONFIG[lzma] = "ac_cv_lib_lzma_lzma_easy_encoder=yes,ac_cv_lib_lzma_lzma_easy_encoder=no,xz"
-PACKAGECONFIG[bz2] = "ac_cv_lib_bz2_BZ2_bzopen=yes,ac_cv_lib_bz2_BZ2_bzopen=no,bzip2"
-PACKAGECONFIG[lz4] = "ac_cv_lib_lz4_LZ4F_createCompressionContext=yes,ac_cv_lib_lz4_LZ4F_createCompressionContext=no,lz4"
-
 do_install_append_class-native() {
     sed -e "s,@STAGING_DIR_NATIVE@,${STAGING_DIR_NATIVE},g" \
         -e "s,@STAGING_BINDIR_NATIVE@,${STAGING_BINDIR_NATIVE},g" \
@@ -126,5 +118,14 @@ do_install_append_class-target() {
     #Write the correct apt-architecture to apt.conf
     echo 'APT::Architecture "${DPKG_ARCH}";' > ${D}${sysconfdir}/apt/apt.conf
 }
+
+PACKAGES =+ "${PN}-utils"
+
+RDEPENDS_${PN} = "dpkg bash debianutils perl"
+
+FILES_${PN} += "${libdir}/dpkg ${systemd_system_unitdir}/apt-daily.service"
+FILES_${PN}-utils = "${bindir}/apt-extracttemplates \
+                     ${bindir}/apt-ftparchive \
+                     ${bindir}/apt-sortpkgs"
 
 BBCLASSEXTEND = "native"
