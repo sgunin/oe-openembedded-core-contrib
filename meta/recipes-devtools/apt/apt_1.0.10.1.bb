@@ -99,13 +99,18 @@ do_install_append_class-target() {
     echo 'APT::Architecture "${DPKG_ARCH}";' > ${D}${sysconfdir}/apt/apt.conf
 }
 
-PACKAGES =+ "${PN}-utils"
+PACKAGES =+ "${PN}-dselect ${PN}-transport-https ${PN}-utils lib${PN}-inst lib${PN}-pkg"
 
-RDEPENDS_${PN} = "dpkg bash debianutils"
+RDEPENDS_${PN} = "dpkg debianutils"
+RDEPENDS_${PN}-dselect = "bash"
 
 FILES_${PN} += "${libdir}/dpkg"
+FILES_${PN}-dselect = "${libdir}/dpkg/methods/apt"
+FILES_${PN}-transport-https = "${libdir}/apt/methods/https"
 FILES_${PN}-utils = "${bindir}/apt-extracttemplates \
                      ${bindir}/apt-ftparchive \
                      ${bindir}/apt-sortpkgs"
+FILES_lib${PN}-inst = "${libdir}/libapt-inst${SOLIBS}"
+FILES_lib${PN}-pkg = "${libdir}/libapt-pkg${SOLIBS}"
 
 BBCLASSEXTEND = "native"
