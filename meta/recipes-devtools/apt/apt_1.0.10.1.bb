@@ -104,6 +104,9 @@ PACKAGES =+ "${PN}-dselect ${PN}-transport-https ${PN}-utils lib${PN}-inst lib${
 RDEPENDS_${PN} = "dpkg debianutils"
 RDEPENDS_${PN}-dselect = "bash"
 
+RRECOMMENDS_${PN} = "gnupg"
+RRECOMMENDS_${PN}_class-native = ""
+
 FILES_${PN} += "${libdir}/dpkg"
 FILES_${PN}-dselect = "${libdir}/dpkg/methods/apt"
 FILES_${PN}-transport-https = "${libdir}/apt/methods/https"
