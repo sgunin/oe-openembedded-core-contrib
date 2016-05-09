@@ -13,7 +13,8 @@ LIC_FILES_CHKSUM = "file://COPYING.GPLv2;md5=b234ee4d69f5fce4486a80fdaf4a4263 \
                     file://COPYING.LGPLv2.1;md5=bd7a443320af8c812e4c18d1b79df004 \
                     file://COPYING.LGPLv3;md5=e6a600fd5e1d9cbde2d983680233ad02"
 
-SRC_URI = "https://www.ffmpeg.org/releases/${BP}.tar.xz"
+SRC_URI = "https://www.ffmpeg.org/releases/${BP}.tar.xz \
+           file://0001-configure-build-fix-for-P5600-with-mips-code-restruc.patch"
 
 SRC_URI[md5sum] = "ef9b6634bb7c920efc940b4d55adf7b2"
 SRC_URI[sha256sum] = "12f32cee41c74435f608c30793fd616bdf53467bb513278e273e135a4c58e470"
