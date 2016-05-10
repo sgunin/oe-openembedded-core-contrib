@@ -27,7 +27,10 @@ UPSTREAM_CHECK_URI = "${DEBIAN_MIRROR}/main/a/apt/"
 
 inherit autotools gettext update-alternatives
 
+AUTOTOOLS_AUXDIR = "${S}/buildlib"
+
 EXTRA_AUTORECONF = "--exclude=autopoint,autoheader"
+EXTRA_OECONF = "--disable-rpath"
 EXTRA_OEMAKE = "DOCBOOK2TEXT=cat"
 CACHED_CONFIGUREVARS = " \
     ac_cv_path_DOT= \
