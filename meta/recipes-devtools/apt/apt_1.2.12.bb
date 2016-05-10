@@ -28,7 +28,10 @@ UPSTREAM_CHECK_URI = "${DEBIAN_MIRROR}/main/a/apt/"
 
 inherit autotools gettext useradd
 
+AUTOTOOLS_AUXDIR = "${S}/buildlib"
+
 EXTRA_AUTORECONF = "--exclude=autopoint,autoheader"
+EXTRA_OECONF = "--disable-rpath"
 
 PACKAGECONFIG ??= "lzma"
 PACKAGECONFIG[lzma] = "ac_cv_lib_lzma_lzma_easy_encoder=yes,ac_cv_lib_lzma_lzma_easy_encoder=no,xz"
