@@ -10,7 +10,6 @@ SRC_URI = "http://snapshot.debian.org/archive/debian/20160526T162943Z/pool/main/
            file://no-nls-dpkg.patch \
            file://fix-gcc-4.6-null-not-defined.patch \
            file://truncate-filename.patch \
-           file://nodoc.patch \
            file://disable-configure-in-makefile.patch \
            file://disable-test.patch \
            file://0001-environment.mak-musl-based-systems-can-generate-shar.patch \
@@ -33,12 +32,20 @@ AUTOTOOLS_AUXDIR = "${S}/buildlib"
 
 EXTRA_AUTORECONF = "--exclude=autopoint,autoheader"
 EXTRA_OECONF = "--disable-rpath"
+EXTRA_OEMAKE = "DOCBOOK2TEXT=cat"
+CACHED_CONFIGUREVARS = " \
+    ac_cv_path_DOT= \
+    ac_cv_path_DOXYGEN= \
+    ac_cv_path_PO4A= \
+    ac_cv_path_W3M= \
+"
 
 PACKAGECONFIG ??= "lzma"
 PACKAGECONFIG[lzma] = "ac_cv_lib_lzma_lzma_easy_encoder=yes,ac_cv_lib_lzma_lzma_easy_encoder=no,xz"
 PACKAGECONFIG[bz2] = "ac_cv_lib_bz2_BZ2_bzopen=yes,ac_cv_lib_bz2_BZ2_bzopen=no,bzip2"
 PACKAGECONFIG[lz4] = "ac_cv_lib_lz4_LZ4F_createCompressionContext=yes,ac_cv_lib_lz4_LZ4F_createCompressionContext=no,lz4"
 PACKAGECONFIG[opkg] = ",,,"
+PACKAGECONFIG[manpages] = ",ac_cv_path_XSLTPROC=,libxslt-native"
 
 USE_NLS_class-native = "yes"
 
@@ -90,6 +97,13 @@ do_install () {
 	for f in install setup update; do
 		install -m 0755 ${S}/dselect/$f ${D}${libdir}/dpkg/methods/apt
 	done
+
+	if ${@bb.utils.contains('PACKAGECONFIG', 'manpages', 'true', 'false', d)}; then
+		for i in 1 5 8; do
+			install -d ${D}${mandir}/man${i}
+			install -m 0644 ${S}/doc/en/*.${i} ${D}${mandir}/man${i}
+		done
+	fi
 
 	for d in apt.conf.d preferences.d sources.list.d trusted.gpg.d; do
 		install -d ${D}${sysconfdir}/apt/$d
