@@ -122,7 +122,7 @@ do_install_append_class-target() {
 PACKAGES =+ "${PN}-dselect ${PN}-opkg ${PN}-transport-https ${PN}-utils lib${PN}-inst lib${PN}-pkg"
 
 RDEPENDS_${PN} = "dpkg debianutils"
-RDEPENDS_${PN}-dselect = "bash"
+RDEPENDS_${PN}-dselect = "bash perl"
 
 RRECOMMENDS_${PN} = "gnupg"
 RRECOMMENDS_${PN}_class-native = ""
