@@ -1,0 +1,33 @@
+Upstream-Status: Backport
+
+From b4832606d847c4aaaaafdd4bfbf47a4d25a1b4c4 Mon Sep 17 00:00:00 2001
+From: Vivek Trivedi <t.vivek@samsung.com>
+Date: Fri, 11 Dec 2015 10:58:01 -0500
+Subject: [PATCH] mount.nfs: fix null pointer derefernce in
+ nfs_parse_simple_hostname
+
+In function nfs_parse_simple_hostname, hostname can be NULL,
+dereferncing it while passing it to free(*hostname) may result in
+segfault.
+
+Signed-off-by: Vivek Trivedi <t.vivek@samsung.com>
+Signed-off-by: Steve Dickson <steved@redhat.com>
+(cherry picked from commit 9c3d8687c96b7fe4a7920dc474e91f190b6d8f37)
+---
+ utils/mount/parse_dev.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/utils/mount/parse_dev.c b/utils/mount/parse_dev.c
+index d64b83d..0d3bcb9 100644
+--- a/utils/mount/parse_dev.c
++++ b/utils/mount/parse_dev.c
+@@ -118,7 +118,8 @@ static int nfs_parse_simple_hostname(const char *dev,
+ 	if (pathname) {
+ 		*pathname = strndup(colon, path_len);
+ 		if (*pathname == NULL) {
+-			free(*hostname);
++			if (hostname)
++				free(*hostname);
+ 			return nfs_pdn_nomem_err();
+ 		}
+ 	}

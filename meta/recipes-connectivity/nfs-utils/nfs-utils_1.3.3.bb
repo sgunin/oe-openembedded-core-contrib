@@ -31,6 +31,8 @@ SRC_URI = "${KERNELORG_MIRROR}/linux/utils/nfs-utils/${PV}/nfs-utils-${PV}.tar.x
            file://nfs-utils-Do-not-pass-CFLAGS-to-gcc-while-building.patch \
            file://nfs-utils-debianize-start-statd.patch \
            file://0001-statd-fix-a-segfault-caused-by-improper-usage-of-RPC.patch \
+           file://0002-mount.nfs-fix-null-pointer-derefernce-in-nfs_parse_s.patch \
+           file://0003-Fix-protocol-minor-version-fall-back.patch \
            file://bugfix-adjust-statd-service-name.patch \
 "
 
