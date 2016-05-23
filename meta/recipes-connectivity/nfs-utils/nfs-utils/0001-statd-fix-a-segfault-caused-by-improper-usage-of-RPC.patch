@@ -1,17 +1,23 @@
-Upstream-Status: Pending
+Upstream-Status: Backport
 
-Subject: nfs-utils/statd: fix a segfault caused by improper usage of RPC interface
+From 2fc23d7978e50394599bfd0a881d6081293432b2 Mon Sep 17 00:00:00 2001
+From: Shan Hai <shan.hai@windriver.com>
+Date: Mon, 2 Nov 2015 08:03:24 -0500
+Subject: [PATCH] statd: fix a segfault caused by improper usage of RPC
+ interface
 
 There is a hack which uses the bottom-level RPC improperly as below
-in the current statd implementation:
-insert a socket in the svc_fdset without a corresponding transport handle
-and passes the socket to the svc_getreqset subroutine, this usage causes
-a segfault of statd on a huge amount of sm-notifications.
+in the current statd implementation: insert a socket in the
+svc_fdset without a corresponding transport handle
+and passes the socket to the svc_getreqset subroutine,
+this usage causes a segfault of statd on a huge amount of sm-notifications.
 
-Fix the issue by separating the non-RPC-server sock from RPC dispatcher.
+Fix the issue by separating the non-RPC-server socket from RPC
+dispatcher.
 
 Signed-off-by: Shan Hai <shan.hai@windriver.com>
-Signed-off-by: Chen Qi <Qi.Chen@windriver.com>
+Signed-off-by: Steve Dickson <steved@redhat.com>
+(cherry picked from commit 7f62e37fcd25f09949a547b93c35d9e324211102)
 ---
  utils/statd/rmtcall.c | 1 -
  utils/statd/statd.c   | 5 +++--
@@ -20,10 +26,10 @@ Signed-off-by: Chen Qi <Qi.Chen@windriver.com>
  4 files changed, 10 insertions(+), 6 deletions(-)
 
 diff --git a/utils/statd/rmtcall.c b/utils/statd/rmtcall.c
-index fd576d9..cde091b 100644
+index 45c84f9..c4f6364 100644
 --- a/utils/statd/rmtcall.c
 +++ b/utils/statd/rmtcall.c
-@@ -104,7 +104,6 @@ statd_get_socket(void)
+@@ -113,7 +113,6 @@ statd_get_socket(void)
  	if (sockfd < 0)
  		return -1;
  
@@ -32,7 +38,7 @@ index fd576d9..cde091b 100644
  }
  
 diff --git a/utils/statd/statd.c b/utils/statd/statd.c
-index 51a016e..e21a259 100644
+index 2b7a167..e5b4c98 100644
 --- a/utils/statd/statd.c
 +++ b/utils/statd/statd.c
 @@ -247,6 +247,7 @@ int main (int argc, char **argv)
@@ -41,9 +47,9 @@ index 51a016e..e21a259 100644
  	struct rlimit rlim;
 +	int notify_sockfd;
  
- 	int pipefds[2] = { -1, -1};
- 	char status;
-@@ -473,7 +474,7 @@ int main (int argc, char **argv)
+ 	/* Default: daemon mode, no other options */
+ 	run_mode = 0;
+@@ -437,7 +438,7 @@ int main (int argc, char **argv)
  		}
  
  	/* Make sure we have a privilege port for calling into the kernel */
@@ -52,7 +58,7 @@ index 51a016e..e21a259 100644
  		exit(1);
  
  	/* If sm-notify didn't take all the state files, load
-@@ -528,7 +529,7 @@ int main (int argc, char **argv)
+@@ -484,7 +485,7 @@ int main (int argc, char **argv)
  		 * Handle incoming requests:  SM_NOTIFY socket requests, as
  		 * well as callbacks from lockd.
  		 */
@@ -108,6 +114,3 @@ index d98ecee..28c1ad6 100644
  		}
  	}
  }
--- 
-1.9.1
-
