@@ -3,14 +3,14 @@ do_listtasks[nostamp] = "1"
 python do_listtasks() {
     taskdescs = {}
     maxlen = 0
-    for e in d.keys():
-        if d.getVarFlag(e, 'task', True):
-            maxlen = max(maxlen, len(e))
-            if e.endswith('_setscene'):
-                desc = "%s (setscene version)" % (d.getVarFlag(e[:-9], 'doc', True) or '')
-            else:
-                desc = d.getVarFlag(e, 'doc', True) or ''
-            taskdescs[e] = desc
+    bbtasks = d.getVar('__BBTASKS', True)
+    for task in bbtasks:
+        maxlen = max(maxlen, len(task))
+        if task.endswith('_setscene'):
+            desc = "%s (setscene version)" % (d.getVarFlag(task[:-9], 'doc', True) or '')
+        else:
+            desc = d.getVarFlag(task, 'doc', True) or ''
+        taskdescs[task] = desc
 
     tasks = sorted(taskdescs.keys())
     for taskname in tasks:
