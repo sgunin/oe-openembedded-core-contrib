@@ -7,8 +7,7 @@ SECTION = "console/network"
 LICENSE = "MIT & GPLv2+ & BSD"
 LIC_FILES_CHKSUM = "file://COPYING;md5=95f3a93a5c3c7888de623b46ea085a84"
 
-# util-linux for libblkid
-DEPENDS = "libcap libnfsidmap libevent util-linux sqlite3"
+DEPENDS = "libcap"
 RDEPENDS_${PN} = "${PN}-client bash"
 RRECOMMENDS_${PN} = "kernel-module-nfsd"
 
@@ -57,19 +56,21 @@ SYSTEMD_SERVICE_${PN}-client = "nfs-statd.service"
 # --enable-uuid is need for cross-compiling
 EXTRA_OECONF = "--with-statduser=rpcuser \
                 --enable-mountconfig \
-                --enable-libmount-mount \
-                --disable-nfsv41 \
-                --enable-uuid \
                 --disable-gss \
                 --disable-nfsdcltrack \
                 --with-statdpath=/var/lib/nfs/statd \
                "
 
-PACKAGECONFIG ??= "tcp-wrappers ${@bb.utils.contains('DISTRO_FEATURES', 'ipv6', 'tirpc', '', d)}"
+PACKAGECONFIG ??= "tcp-wrappers ${@bb.utils.contains('DISTRO_FEATURES', 'ipv6', 'ipv6 tirpc', '', d)} blkid libmount nfsv4"
 PACKAGECONFIG_remove_libc-musl = "tcp-wrappers"
 PACKAGECONFIG[tcp-wrappers] = "--with-tcp-wrappers,--without-tcp-wrappers,tcp-wrappers"
 PACKAGECONFIG[nfsidmap] = "--enable-nfsidmap,--disable-nfsidmap,keyutils"
 PACKAGECONFIG[tirpc] = "--enable-tirpc,--disable-tirpc,libtirpc"
+PACKAGECONFIG[blkid] = "--enable-uuid,--disable-uuid,util-linux"
+PACKAGECONFIG[ipv6] = "--enable-ipv6,--disable-ipv6"
+PACKAGECONFIG[libmount] = "--enable-libmount-mount,--disable-libmount-mount,util-linux"
+PACKAGECONFIG[nfsv4] = "--enable-nfsv4,--disable-nfsv4,libevent libnfsidmap keyutils sqlite3"
+PACKAGECONFIG[nfsv41] = "--enable-nfsv41,--disable-nfsv41,lvm2"
 
 INHIBIT_AUTO_STAGE = "1"
 
