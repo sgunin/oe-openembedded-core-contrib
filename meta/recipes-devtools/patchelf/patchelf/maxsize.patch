@@ -16,14 +16,14 @@ RP
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/src/patchelf.cc b/src/patchelf.cc
-index 8566ed9..df75593 100644
+index fe51f77..f7cb648 100644
 --- a/src/patchelf.cc
 +++ b/src/patchelf.cc
-@@ -248,7 +248,7 @@ static void readFile(string fileName, mode_t * fileMode)
+@@ -256,7 +256,7 @@ static void readFile(string fileName)
+     struct stat st;
      if (stat(fileName.c_str(), &st) != 0) error("stat");
      fileSize = st.st_size;
-     *fileMode = st.st_mode;
--    maxSize = fileSize + 8 * 1024 * 1024;
+-    maxSize = fileSize + 32 * 1024 * 1024;
 +    maxSize = fileSize + 64 * 1024 * 1024;
  
      contents = (unsigned char *) malloc(fileSize + maxSize);
