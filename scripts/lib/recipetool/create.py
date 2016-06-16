@@ -504,7 +504,7 @@ def create_recipe(args):
             licenses = [pkg_license]
         else:
             lines_before.append('# NOTE: Original package metadata indicates license is: %s' % pkg_license)
-    lines_before.append('LICENSE = "%s"' % ' '.join(licenses))
+    lines_before.append('LICENSE = "%s"' % ' & '.join(licenses))
     lines_before.append('LIC_FILES_CHKSUM = "%s"' % ' \\\n                    '.join(lic_files_chksum))
     lines_before.append('')
 
