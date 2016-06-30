@@ -24,6 +24,7 @@ TOOLCHAIN_HOST_TASK ?= "\
     nativesdk-ca-certificates \
     nativesdk-texinfo \
     nativesdk-locale-base-en-us \
+    nativesdk-tar \
     "
 
 SDK_PACKAGE_ARCHS += "buildtools-dummy-${SDKPKGSUFFIX}"
