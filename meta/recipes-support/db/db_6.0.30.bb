@@ -117,6 +117,14 @@ do_install_append() {
 	chown -R root:root ${D}
 }
 
+do_install_append_class-native() {
+	chmod -R u+w ${D}
+}
+
+do_install_append_class-nativesdk() {
+	chmod -R u+w ${D}
+}
+
 INSANE_SKIP_${PN} = "dev-so"
 INSANE_SKIP_${PN}-cxx = "dev-so"
 
