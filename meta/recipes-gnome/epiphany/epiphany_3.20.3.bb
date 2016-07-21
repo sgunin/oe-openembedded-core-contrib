@@ -5,7 +5,7 @@ LIC_FILES_CHKSUM = "file://COPYING;md5=751419260aa954499f7abaabaa882bbe"
 DEPENDS = "libsoup-2.4 webkitgtk gtk+3 iso-codes ca-certificates avahi libnotify gcr libwnck3 \
 	   gsettings-desktop-schemas gnome-desktop3 libxml2-native intltool-native"
 
-inherit gnomebase gsettings distro_features_check upstream-version-is-even
+inherit gnomebase gsettings distro_features_check upstream-version-is-even perlnative
 # libwnck3 is x11 only
 REQUIRED_DISTRO_FEATURES = "x11"
 
@@ -22,4 +22,3 @@ do_configure_prepend() {
 FILES_${PN} += "${datadir}/appdata ${datadir}/dbus-1 ${datadir}/gnome-shell/search-providers"
 RDEPENDS_${PN} = "iso-codes adwaita-icon-theme"
 RRECOMMENDS_${PN} = "ca-certificates"
-
