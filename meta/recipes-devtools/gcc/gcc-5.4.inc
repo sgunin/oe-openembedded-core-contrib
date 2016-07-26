@@ -15,7 +15,7 @@ FILESEXTRAPATHS =. "${FILE_DIRNAME}/gcc-5.4:${FILE_DIRNAME}/gcc-5.4/backport:"
 DEPENDS =+ "mpfr gmp libmpc zlib"
 NATIVEDEPS = "mpfr-native gmp-native libmpc-native zlib-native"
 
-LICENSE = "GPL-3.0-with-GCC-exception & GPLv3"
+LICENSE = "GPL-3.0 WITH GCC-exception-3.1"
 
 LIC_FILES_CHKSUM = "\
     file://COPYING;md5=59530bdf33659b29e73d4adb9f9f6552 \

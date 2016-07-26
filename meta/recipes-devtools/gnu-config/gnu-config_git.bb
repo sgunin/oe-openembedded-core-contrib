@@ -1,7 +1,7 @@
 SUMMARY = "gnu-configize"
 DESCRIPTION = "Tool that installs the GNU config.guess / config.sub into a directory tree"
 SECTION = "devel"
-LICENSE = "GPL-3.0-with-autoconf-exception"
+LICENSE = "GPL-3.0 WITH Autoconf-exception-3.0"
 LIC_FILES_CHKSUM = "file://config.guess;beginline=7;endline=27;md5=9bac8b1743c2240ae07cce6e546ac2f2"
 
 DEPENDS_class-native = "hostperl-runtime-native"

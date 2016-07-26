@@ -21,9 +21,9 @@ PACKAGES = "\
 
 # All libgcc source is marked with the exception.
 #
-LICENSE_${PN} = "GPL-3.0-with-GCC-exception"
-LICENSE_${PN}-dev = "GPL-3.0-with-GCC-exception"
-LICENSE_${PN}-dbg = "GPL-3.0-with-GCC-exception"
+LICENSE_${PN} = "GPL-3.0 WITH GCC-exception-3.1"
+LICENSE_${PN}-dev = "GPL-3.0 WITH GCC-exception-3.1"
+LICENSE_${PN}-dbg = "GPL-3.0 WITH GCC-exception-3.1"
 
 
 FILES_${PN}-dev = "\

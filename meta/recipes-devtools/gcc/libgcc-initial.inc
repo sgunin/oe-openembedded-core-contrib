@@ -2,7 +2,7 @@ require libgcc-common.inc
 
 DEPENDS = "virtual/${TARGET_PREFIX}gcc-initial"
 
-LICENSE = "GPL-3.0-with-GCC-exception"
+LICENSE = "GPL-3.0 WITH GCC-exception-3.1"
 
 STAGINGCC = "gcc-cross-initial-${TARGET_ARCH}"
 STAGINGCC_class-nativesdk = "gcc-crosssdk-initial-${SDK_SYS}"
