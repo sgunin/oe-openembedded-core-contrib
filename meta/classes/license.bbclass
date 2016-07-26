@@ -59,6 +59,7 @@ python license_create_manifest() {
 
 def write_license_files(d, license_manifest, pkg_dic):
     import re
+    from oe.license import license_operator
 
     bad_licenses = (d.getVar("INCOMPATIBLE_LICENSE", True) or "").split()
     bad_licenses = map(lambda l: canonical_license(d, l), bad_licenses)
@@ -76,6 +77,7 @@ def write_license_files(d, license_manifest, pkg_dic):
             else:
                 pkg_dic[pkg]["LICENSES"] = re.sub('[|&()*]', ' ', pkg_dic[pkg]["LICENSE"])
                 pkg_dic[pkg]["LICENSES"] = re.sub('  *', ' ', pkg_dic[pkg]["LICENSES"])
+                pkg_dic[pkg]["LICENSES"] = license_operator.sub(r' ', pkg_dic[pkg]["LICENSES"])
                 pkg_dic[pkg]["LICENSES"] = pkg_dic[pkg]["LICENSES"].split()
 
             if not "IMAGE_MANIFEST" in pkg_dic[pkg]:
@@ -647,20 +649,23 @@ def check_license_format(d):
     """
     pn = d.getVar('PN', True)
     licenses = d.getVar('LICENSE', True)
-    from oe.license import license_operator, license_operator_chars, license_pattern
+    from oe.license import license_operator, license_pattern
 
     elements = list(filter(lambda x: x.strip(), license_operator.split(licenses)))
     for pos, element in enumerate(elements):
-        if license_pattern.match(element):
-            if pos > 0 and license_pattern.match(elements[pos - 1]):
+        operator_match = license_operator.match(element)
+        license_match = license_pattern.match(element)
+
+        if license_match and not operator_match:
+            if pos > 0 and license_pattern.match(elements[pos - 1]) and not license_operator.match(elements[pos - 1]):
                 bb.warn('%s: LICENSE value "%s" has an invalid format - license names ' \
-                        'must be separated by the following characters to indicate ' \
+                        'must be separated by the following operators to indicate ' \
                         'the license selection: %s' %
-                        (pn, licenses, license_operator_chars))
-        elif not license_operator.match(element):
+                        (pn, licenses, license_operator.pattern))
+        elif not operator_match:
             bb.warn('%s: LICENSE value "%s" has an invalid separator "%s" that is not ' \
                     'in the valid list of separators (%s)' %
-                    (pn, licenses, element, license_operator_chars))
+                    (pn, licenses, element, license_operator.pattern))
 
 SSTATETASKS += "do_populate_lic"
 do_populate_lic[sstate-inputdirs] = "${LICSSTATEDIR}"

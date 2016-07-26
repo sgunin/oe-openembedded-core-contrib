@@ -40,8 +40,13 @@ class InvalidLicense(LicenseError):
         return "invalid characters in license '%s'" % self.license
 
 license_operator_chars = '&|() '
-license_operator = re.compile('([' + license_operator_chars + '])')
-license_pattern = re.compile('[a-zA-Z0-9.+_\-]+$')
+license_operator = re.compile('([' + license_operator_chars + ']|AND|OR|WITH)')
+license_pattern = re.compile('^(?:DocumentRef-[a-zA-Z0-9.\-]+:)?(?:LicenseRef-)?([a-zA-Z0-9_.+\-]+)$')
+
+license_operator_map = {}
+license_operator_map["OR"] = '|'
+license_operator_map["AND"] = '&'
+license_operator_map["WITH"] = '&'
 
 class LicenseVisitor(ast.NodeVisitor):
     """Get elements based on OpenEmbedded license strings"""
@@ -49,11 +54,17 @@ class LicenseVisitor(ast.NodeVisitor):
         new_elements = []
         elements = list([x for x in license_operator.split(licensestr) if x.strip()])
         for pos, element in enumerate(elements):
-            if license_pattern.match(element):
-                if pos > 0 and license_pattern.match(elements[pos-1]):
+            operator_match = license_operator.match(element)
+            license_match = license_pattern.match(element)
+            if operator_match:
+                if license_operator_map.get(element, None) != None:
+                    element = license_operator_map.get(element)
+            elif license_match:
+                if pos > 0 and license_pattern.match(elements[pos-1]) and not license_operator.match(elements[pos-1]):
                     new_elements.append('&')
+                element = license_match.group(1)
                 element = '"' + element + '"'
-            elif not license_operator.match(element):
+            else:
                 raise InvalidLicense(element)
             new_elements.append(element)
 
