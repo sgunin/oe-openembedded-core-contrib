@@ -20,9 +20,9 @@ RDEPENDS_${PN} = "docbook-xml-dtd4 \
                   util-linux \
                   libxml2 \
                   bash \
+                  libxslt \
 "
 RDEPENDS_${PN}_append_class-target = " \
-                  libxslt-bin \
                   coreutils \
 "
 CACHED_CONFIGUREVARS += "ac_cv_path_TAIL=${bindir}/tail"
