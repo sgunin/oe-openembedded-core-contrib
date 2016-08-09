@@ -15,8 +15,8 @@ SECURITY_STRINGFORMAT ?= "-Wformat -Wformat-security -Werror=format-security"
 SECURITY_CFLAGS ?= "-fstack-protector-strong -pie -fpie ${lcl_maybe_fortify} ${SECURITY_STRINGFORMAT}"
 SECURITY_NO_PIE_CFLAGS ?= "-fstack-protector-strong ${lcl_maybe_fortify} ${SECURITY_STRINGFORMAT}"
 
-SECURITY_LDFLAGS ?= "-fstack-protector-strong -Wl,-z,relro,-z,now"
-SECURITY_X_LDFLAGS ?= "-fstack-protector-strong -Wl,-z,relro"
+SECURITY_LDFLAGS ?= "-Wl,-z,relro,-z,now"
+SECURITY_X_LDFLAGS ?= "-Wl,-z,relro"
 
 # powerpc does not get on with pie for reasons not looked into as yet
 SECURITY_CFLAGS_powerpc = "-fstack-protector-strong ${lcl_maybe_fortify}"
@@ -100,11 +100,6 @@ SECURITY_STRINGFORMAT_pn-oh-puzzles = ""
 TARGET_CFLAGS_append_class-target = " ${SECURITY_CFLAGS}"
 TARGET_LDFLAGS_append_class-target = " ${SECURITY_LDFLAGS}"
 
-SECURITY_LDFLAGS_remove_pn-gcc-runtime = "-fstack-protector-strong"
-SECURITY_LDFLAGS_remove_pn-glibc = "-fstack-protector-strong"
-SECURITY_LDFLAGS_remove_pn-glibc-initial = "-fstack-protector-strong"
-SECURITY_LDFLAGS_remove_pn-uclibc = "-fstack-protector-strong"
-SECURITY_LDFLAGS_remove_pn-uclibc-initial = "-fstack-protector-strong"
 SECURITY_LDFLAGS_pn-xf86-video-fbdev = "${SECURITY_X_LDFLAGS}"
 SECURITY_LDFLAGS_pn-xf86-video-intel = "${SECURITY_X_LDFLAGS}"
 SECURITY_LDFLAGS_pn-xf86-video-omapfb = "${SECURITY_X_LDFLAGS}"
