@@ -24,6 +24,7 @@ SECURITY_CFLAGS ?= "-fstack-protector-strong --param ssp-buffer-size=4 -pie -fpi
 SECURITY_NO_PIE_CFLAGS ?= "-fstack-protector-strong --param ssp-buffer-size=4 ${lcl_maybe_fortify} ${SECURITY_STRINGFORMAT}"
 
 SECURITY_LDFLAGS ?= "-Wl,-z,relro,-z,now${pie_ld}"
+SECURITY_LDFLAGS[vardeps] += "SHARED_OBJECTS"
 SECURITY_X_LDFLAGS ?= "-Wl,-z,relro${pie_ld}"
 
 # powerpc does not get on with pie for reasons not looked into as yet
