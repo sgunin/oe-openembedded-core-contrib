@@ -1,6 +1,9 @@
-# Setup extra CFLAGS and LDFLAGS which have 'security' benefits. These 
-# don't work universally, there are recipes which can't use one, the other
-# or both so a blacklist is maintained here. The idea would be over
+# Setup extra CFLAGS and LDFLAGS which:
+# * add extra compilation checks for known security anti-patterns
+# * generate extra code to protect against various attacks
+# * harden the produced binaries to provide extra protection against attacks.
+# These don't work universally, there are recipes which can't use one, the
+# other or both so a blacklist is maintained here. The idea would be over
 # time to reduce this list to nothing.
 # From a Yocto Project perspective, this file is included and tested
 # in the DISTRO="poky-lsb" configuration.
