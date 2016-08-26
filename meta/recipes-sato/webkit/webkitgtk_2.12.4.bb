@@ -19,11 +19,12 @@ SRC_URI = "\
   file://musl-fixes.patch \
   file://ppc-musl-fix.patch \
   file://0001-Fix-racy-parallel-build-of-WebKit2-4.0.gir.patch \
+  file://0001-Tweak-gtkdoc-settings-so-that-gtkdoc-generation-work.patch \
   "
 SRC_URI[md5sum] = "0331ac714fd1a0587ffea470ef1afb20"
 SRC_URI[sha256sum] = "424d3177599abbc1eb1a1ad7928dd280a62006e992f2fada2e059375a9609a77"
 
-inherit cmake lib_package pkgconfig gobject-introspection perlnative distro_features_check upstream-version-is-even
+inherit cmake lib_package pkgconfig gobject-introspection perlnative distro_features_check upstream-version-is-even gtk-doc
 
 # We cannot inherit pythonnative because that would conflict with inheriting python3native
 # (which is done by gobject-introspection). But webkit only needs the path to native Python 2.x binary
@@ -60,7 +61,7 @@ EXTRA_OECMAKE = " \
 		-DPORT=GTK \
 		-DCMAKE_BUILD_TYPE=Release \
 		${@bb.utils.contains('GI_DATA_ENABLED', 'True', '-DENABLE_INTROSPECTION=ON', '-DENABLE_INTROSPECTION=OFF', d)} \
-		-DENABLE_GTKDOC=OFF \
+		${@bb.utils.contains('GTKDOC_ENABLED', 'True', '-DENABLE_GTKDOC=ON', '-DENABLE_GTKDOC=OFF', d)} \
 		-DENABLE_MINIBROWSER=ON \
 		"
 
