@@ -115,6 +115,10 @@ kib_to_gib () {
 time_cmd () {
     log "timing $*"
     /usr/bin/time -o time.log -f '%e' $@ &>> "$log_file"
+    if [ $? -ne 0 ]; then
+        log "ERROR: command failed, see $log_file for details"
+        return 255
+    fi
     secs=`cut -f1 -d. time.log`
     log "command took $secs seconds (`s_to_hms $secs`)"
     echo $secs
@@ -123,6 +127,10 @@ time_cmd () {
 run_cmd () {
     log "running $*"
     $@ &>> "$log_file"
+    if [ $? -ne 0 ]; then
+        log "ERROR: command failed, see $log_file for details"
+        return 255
+    fi
 }
 
 
@@ -138,7 +146,7 @@ buildtime () {
     echo 3 | sudo -n -k /usr/bin/tee /proc/sys/vm/drop_caches > /dev/null || exit 255
     sleep 2
 
-    result=`time_cmd bitbake $1` || exit 125
+    result=`time_cmd bitbake $1` || exit 125
     result_h=`s_to_hms $result`
 
     log "removing build directory"
@@ -155,9 +163,9 @@ tmpsize () {
     echo 3 | sudo -n -k /usr/bin/tee /proc/sys/vm/drop_caches > /dev/null || exit 255
     sleep 2
 
-    _time=`time_cmd bitbake $1` || exit 125
+    _time=`time_cmd bitbake $1` || exit 125
 
-    result=`du -s tmp* | cut -f1`
+    result=`du -s tmp* | cut -f1` || exit 255
     result_h=`kib_to_gib $result`
 
     log "removing build directory"
@@ -197,7 +205,7 @@ echo CONNECTIVITY_CHECK_URIS = \"\" >> conf/local.conf
 # Do actual build
 log "TESTING REVISION $git_rev (#$git_rev_cnt)"
 log "fetching sources"
-run_cmd bitbake $build_target -c fetchall
+run_cmd bitbake $build_target -c fetchall || exit 125
 
 $test_method $build_target
 
