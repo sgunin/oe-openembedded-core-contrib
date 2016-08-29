@@ -30,8 +30,8 @@ Usage: $script [-h] [-d DL_DIR] [-m TEST_METHOD] [-w WORKDIR] BUILD_TARGET THRES
 Optional arguments:
   -h                show this help and exit.
   -d                DL_DIR to use
-  -m                test method, available options are: buildtime, tmpsize
-                        (default: $test_method)
+  -m                test method, available options are:
+                        buildtime, tmpsize, esdktime (default: $test_method)
   -w                work directory to use
 EOF
 }
@@ -133,6 +133,13 @@ run_cmd () {
     fi
 }
 
+do_sync () {
+    run_cmd sync || exit 255
+    log "dropping kernel caches"
+    echo 3 | sudo -n -k /usr/bin/tee /proc/sys/vm/drop_caches > /dev/null || exit 255
+    sleep 2
+}
+
 
 #
 # TEST METHODS
@@ -142,9 +149,7 @@ buildtime () {
     run_cmd rm -rf bitbake.lock conf/sanity_info cache tmp sstate-cache
 
     log "syncing and dropping caches"
-    run_cmd sync
-    echo 3 | sudo -n -k /usr/bin/tee /proc/sys/vm/drop_caches > /dev/null || exit 255
-    sleep 2
+    do_sync
 
     result=`time_cmd bitbake $1` || exit 125
     result_h=`s_to_hms $result`
@@ -159,9 +164,7 @@ tmpsize () {
     run_cmd rm -rf bitbake.lock conf/sanity_info cache tmp sstate-cache
 
     log "syncing and dropping caches"
-    run_cmd sync
-    echo 3 | sudo -n -k /usr/bin/tee /proc/sys/vm/drop_caches > /dev/null || exit 255
-    sleep 2
+    do_sync
 
     _time=`time_cmd bitbake $1` || exit 125
 
@@ -171,6 +174,24 @@ tmpsize () {
     log "removing build directory"
     cd $workdir
     run_cmd rm -rf $builddir
+}
+
+esdktime () {
+    run_cmd rm -rf esdk-deploy
+    _time=`time_cmd bitbake $1 -c populate_sdk_ext` || exit 125
+
+    esdk_installer=(tmp/deploy/sdk/*-toolchain-ext-*.sh)
+    if [ ${#esdk_installer[@]} -gt 1 ]; then
+        log "Found ${#esdk_installer[@]} eSDK installers"
+    fi
+
+    do_sync
+
+    result=`time_cmd "${esdk_installer[-1]}" -y -d "esdk-deploy"` || exit 125
+    result_h=`s_to_hms $result`
+
+    log "removing deploy directories"
+    run_cmd rm -rf esdk-deploy tmp*
 }
 
 
@@ -188,6 +209,11 @@ case "$test_method" in
     tmpsize)
         threshold=$2
         threshold_h=`kib_to_gib $2`
+        ;;
+    esdktime)
+        threshold=`hms_to_s $2`
+        threshold_h=`s_to_hms $threshold`
+        builddir="$workdir/build"
         ;;
     *)
         echo "Invalid test method $test_method"
