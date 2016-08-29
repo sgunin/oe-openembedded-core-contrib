@@ -21,24 +21,29 @@
 #
 script=`basename $0`
 workdir=`realpath build-perf-bisect`
+test_method="buildtime"
 
 usage () {
 cat << EOF
-Usage: $script [-h] [-d DL_DIR] [-w WORKDIR] BUILD_TARGET THRESHOLD
+Usage: $script [-h] [-d DL_DIR] [-m TEST_METHOD] [-w WORKDIR] BUILD_TARGET THRESHOLD
 
 Optional arguments:
   -h                show this help and exit.
   -d                DL_DIR to use
+  -m                test method, available options are: buildtime, tmpsize
+                        (default: $test_method)
   -w                work directory to use
 EOF
 }
 
-while getopts "hd:w:" opt; do
+while getopts "hd:m:w:" opt; do
     case $opt in
         h)  usage
             exit 0
             ;;
         d)  downloaddir=`realpath "$OPTARG"`
+            ;;
+        m)  test_method="$OPTARG"
             ;;
         w)  workdir=`realpath "$OPTARG"`
             ;;
@@ -103,6 +108,10 @@ s_to_hms () {
     printf "%d:%02d:%02d" $(($1 / 3600)) $((($1 % 3600) / 60)) $(($1 % 60))
 }
 
+kib_to_gib () {
+    echo `echo -e "scale=2\n$1 / 1024^2" | bc -l`G
+}
+
 time_cmd () {
     log "timing $*"
     /usr/bin/time -o time.log -f '%e' $@ &>> "$log_file"
@@ -118,15 +127,69 @@ run_cmd () {
 
 
 #
+# TEST METHODS
+#
+buildtime () {
+    log "cleaning up build directory"
+    run_cmd rm -rf bitbake.lock conf/sanity_info cache tmp sstate-cache
+
+    log "syncing and dropping caches"
+    run_cmd sync
+    echo 3 | sudo -n -k /usr/bin/tee /proc/sys/vm/drop_caches > /dev/null || exit 255
+    sleep 2
+
+    result=`time_cmd bitbake $1` || exit 125
+    result_h=`s_to_hms $result`
+
+    log "removing build directory"
+    cd $workdir
+    run_cmd rm -rf $builddir
+}
+
+tmpsize () {
+    log "cleaning up build directory"
+    run_cmd rm -rf bitbake.lock conf/sanity_info cache tmp sstate-cache
+
+    log "syncing and dropping caches"
+    run_cmd sync
+    echo 3 | sudo -n -k /usr/bin/tee /proc/sys/vm/drop_caches > /dev/null || exit 255
+    sleep 2
+
+    _time=`time_cmd bitbake $1` || exit 125
+
+    result=`du -s tmp* | cut -f1`
+    result_h=`kib_to_gib $result`
+
+    log "removing build directory"
+    cd $workdir
+    run_cmd rm -rf $builddir
+}
+
+
+#
 # MAIN SCRIPT
 #
 build_target=$1
-threshold=`hms_to_s $2`
+
+builddir="$workdir/build-$git_rev-$timestamp"
+case "$test_method" in
+    buildtime)
+        threshold=`hms_to_s $2`
+        threshold_h=`s_to_hms $threshold`
+        ;;
+    tmpsize)
+        threshold=$2
+        threshold_h=`kib_to_gib $2`
+        ;;
+    *)
+        echo "Invalid test method $test_method"
+        exit 255
+esac
+
 
 #Initialize build environment
 mkdir -p $workdir
-. ./oe-init-build-env "$workdir/build-$git_rev-$timestamp" > /dev/null || exit 255
-builddir=`pwd`
+. ./oe-init-build-env "$builddir" > /dev/null || exit 255
 
 echo DL_DIR = \"$downloaddir\" >> conf/local.conf
 echo CONNECTIVITY_CHECK_URIS = \"\" >> conf/local.conf
@@ -136,26 +199,12 @@ log "TESTING REVISION $git_rev (#$git_rev_cnt)"
 log "fetching sources"
 run_cmd bitbake $build_target -c fetchall
 
-log "cleaning up build directory"
-run_cmd rm -rf bitbake.lock conf/sanity_info cache tmp sstate-cache
+$test_method $build_target
 
-log "syncing and dropping caches"
-run_cmd sync
-echo 3 | sudo -n -k /usr/bin/tee /proc/sys/vm/drop_caches > /dev/null || exit 255
-sleep 2
-
-result=`time_cmd bitbake $build_target` || exit 125
-
-log "removing build directory"
-cd $workdir
-run_cmd rm -rf $builddir
-
-result_hms=`s_to_hms $result`
-threshold_hms=`s_to_hms $threshold`
 if [ $result -lt $threshold ]; then
-    log "OK ($git_rev): $result ($result_hms) < $threshold ($threshold_hms)"
+    log "OK ($git_rev): $result ($result_h) < $threshold ($threshold_h)"
     exit 0
 else
-    log "FAIL ($git_rev): $result ($result_hms) >= $threshold ($threshold_hms)"
+    log "FAIL ($git_rev): $result ($result_h) >= $threshold ($threshold_h)"
     exit 1
 fi
