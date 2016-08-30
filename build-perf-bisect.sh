@@ -141,6 +141,15 @@ do_sync () {
     sleep 2
 }
 
+cleanup () {
+    $cleanup_func "$@"
+}
+
+cleanup_default () {
+    cd $workdir
+    run_cmd rm -rf $builddir
+}
+
 
 #
 # TEST METHODS
@@ -154,10 +163,6 @@ buildtime () {
 
     result=`time_cmd bitbake $1` || exit 125
     result_h=`s_to_hms $result`
-
-    log "removing build directory"
-    cd $workdir
-    run_cmd rm -rf $builddir
 }
 
 tmpsize () {
@@ -171,10 +176,6 @@ tmpsize () {
 
     result=`du -s tmp* | cut -f1` || exit 255
     result_h=`kib_to_gib $result`
-
-    log "removing build directory"
-    cd $workdir
-    run_cmd rm -rf $builddir
 }
 
 esdktime () {
@@ -190,8 +191,9 @@ esdktime () {
 
     result=`time_cmd "${esdk_installer[-1]}" -y -d "esdk-deploy"` || exit 125
     result_h=`s_to_hms $result`
+}
 
-    log "removing deploy directories"
+cleanup_esdktime () {
     run_cmd rm -rf esdk-deploy tmp*
 }
 
@@ -203,10 +205,13 @@ parsetime () {
     result_h=`s_to_hms $result`
 }
 
+
 #
 # MAIN SCRIPT
 #
 build_target=$1
+cleanup_func=cleanup_default
+
 
 builddir="$workdir/build-$git_rev-$timestamp"
 case "$test_method" in
@@ -222,6 +227,7 @@ case "$test_method" in
         threshold=`hms_to_s $2`
         threshold_h=`s_to_hms $threshold`
         builddir="$workdir/build"
+        cleanup_func=cleanup_esdktime
         ;;
     parsetime)
         threshold=`hms_to_s $2`
@@ -232,6 +238,8 @@ case "$test_method" in
         echo "Invalid test method $test_method"
         exit 255
 esac
+
+trap cleanup EXIT
 
 
 #Initialize build environment
