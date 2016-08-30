@@ -31,7 +31,8 @@ Optional arguments:
   -h                show this help and exit.
   -d                DL_DIR to use
   -m                test method, available options are:
-                        buildtime, tmpsize, esdktime (default: $test_method)
+                        buildtime, tmpsize, esdktime, parsetime
+                        (default: $test_method)
   -w                work directory to use
 EOF
 }
@@ -194,6 +195,13 @@ esdktime () {
     run_cmd rm -rf esdk-deploy tmp*
 }
 
+parsetime () {
+    run_cmd rm -rf bitbake.lock conf/sanity_info cache tmp sstate-cache
+
+    do_sync
+    result=`time_cmd bitbake -p` || exit 125
+    result_h=`s_to_hms $result`
+}
 
 #
 # MAIN SCRIPT
@@ -215,6 +223,11 @@ case "$test_method" in
         threshold_h=`s_to_hms $threshold`
         builddir="$workdir/build"
         ;;
+    parsetime)
+        threshold=`hms_to_s $2`
+        threshold_h=`s_to_hms $threshold`
+        build_target=""
+        ;;
     *)
         echo "Invalid test method $test_method"
         exit 255
@@ -231,7 +244,9 @@ echo CONNECTIVITY_CHECK_URIS = \"\" >> conf/local.conf
 # Do actual build
 log "TESTING REVISION $git_rev (#$git_rev_cnt)"
 log "fetching sources"
-run_cmd bitbake $build_target -c fetchall || exit 125
+if [ -n "$build_target" ]; then
+    run_cmd bitbake $build_target -c fetchall || exit 125
+fi
 
 $test_method $build_target
 
