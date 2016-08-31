@@ -88,25 +88,26 @@ hms_to_s () {
 
     #>&2 echo "'$_f1' '$_f2' '$_f3'"
     if [ -z "$_f2" ]; then
-        _s=`echo $_f1 | cut -d '.' -f 1`
+        _s=$_f1
     elif [ -z "$_f3" ]; then
-        _ss=`echo $_f2 | cut -d '.' -f 1`
-        _s=$((_f1*60 + $_ss))
+        _s=`echo "$_f1*60 + $_f2" | bc -l`
     else
-        _ss=`echo $_f3 | cut -d '.' -f 1`
-        _s=$(($_f1*3600 + $_f2*60 + $_ss))
+        _s=`echo "$_f1*3600 + $_f2*60 + $_f3" | bc -l`
     fi
 
     echo $_s
 }
 
 s_to_hms () {
-    if echo "$1" | grep -q -e '[^0-9]'; then
-        log "not an integer: '$1'"
+    if echo "$1" | grep -q -e '[^0-9.]'; then
+        log "not a number: '$1'"
         exit 255
     fi
 
-    printf "%d:%02d:%02d" $(($1 / 3600)) $((($1 % 3600) / 60)) $(($1 % 60))
+    _h=`echo -e "scale=0\n$1 / 3600" | bc`
+    _m=`echo -e "scale=0\n($1 % 3600) / 60" | bc`
+    _s=`echo "$1 % 60" | bc`
+    printf "%d:%02d:%05.2f" $_h $_m $_s
 }
 
 kib_to_gib () {
@@ -120,7 +121,7 @@ time_cmd () {
         log "ERROR: command failed, see $log_file for details"
         return 255
     fi
-    secs=`cut -f1 -d. time.log`
+    secs=`cat time.log`
     log "command took $secs seconds (`s_to_hms $secs`)"
     echo $secs
 }
@@ -258,7 +259,7 @@ fi
 
 $test_method $build_target
 
-if [ $result -lt $threshold ]; then
+if [ `echo "$result < $threshold" | bc` -eq 1 ]; then
     log "OK ($git_rev): $result ($result_h) < $threshold ($threshold_h)"
     exit 0
 else
