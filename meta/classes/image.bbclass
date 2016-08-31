@@ -74,7 +74,7 @@ IMAGE_INSTALL[type] = "list"
 export PACKAGE_INSTALL ?= "${IMAGE_INSTALL} ${ROOTFS_BOOTSTRAP_INSTALL} ${FEATURE_INSTALL}"
 PACKAGE_INSTALL_ATTEMPTONLY ?= "${FEATURE_INSTALL_OPTIONAL}"
 
-DEPLOYDIR = "${DEPLOY_DIR_IMAGE}"
+DEPLOYDIR = "${WORKDIR}/deploy-${PN}-image-complete"
 
 # Images are generally built explicitly, do not need to be part of world.
 EXCLUDE_FROM_WORLD = "1"
@@ -264,6 +264,7 @@ fakeroot python do_image () {
 }
 do_image[dirs] = "${TOPDIR}"
 do_image[umask] = "022"
+do_image[cleandirs] = "${DEPLOYDIR}"
 addtask do_image after do_rootfs before do_build
 
 fakeroot python do_image_complete () {
@@ -275,6 +276,11 @@ fakeroot python do_image_complete () {
 }
 do_image_complete[dirs] = "${TOPDIR}"
 do_image_complete[umask] = "022"
+SSTATETASKS += "do_image_complete"
+SSTATE_SKIP_CREATION_task-image-complete = '1'
+do_image_complete[sstate-inputdirs] = "${DEPLOYDIR}"
+do_image_complete[sstate-outputdirs] = "${DEPLOY_DIR_IMAGE}"
+do_image_complete[stamp-extra-info] = "${MACHINE}"
 addtask do_image_complete after do_image before do_build
 
 # Add image-level QA/sanity checks to IMAGE_QA_COMMANDS
