@@ -28,7 +28,7 @@ index 560d69b..b60857f 100755
 +++ b/gtkdoc-check.in
 @@ -1,4 +1,4 @@
 -#!@PERL@ -w
-+#!/usr/bin/env perl -w
++#!/usr/bin/env perl
  # -*- cperl -*-
  #
  # gtk-doc - GTK DocBook documentation generator.
@@ -38,7 +38,7 @@ index 4747396..cfadb78 100644
 +++ b/gtkdoc-common.pl.in
 @@ -1,4 +1,4 @@
 -#!@PERL@ -w
-+#!/usr/bin/env perl -w
++#!/usr/bin/env perl
  # -*- cperl -*-
  #
  # gtk-doc - GTK DocBook documentation generator.
@@ -58,7 +58,7 @@ index 3d9e8d0..d55190b 100755
 +++ b/gtkdoc-fixxref.in
 @@ -1,4 +1,4 @@
 -#!@PERL@ -w
-+#!/usr/bin/env perl -w
++#!/usr/bin/env perl
  # -*- cperl -*-
  #
  # gtk-doc - GTK DocBook documentation generator.
@@ -68,7 +68,7 @@ index 8dd6d5e..d808750 100755
 +++ b/gtkdoc-mkdb.in
 @@ -1,4 +1,4 @@
 -#!@PERL@ -w
-+#!/usr/bin/env perl -w
++#!/usr/bin/env perl
  # -*- cperl -*-
  #
  # gtk-doc - GTK DocBook documentation generator.
@@ -78,7 +78,7 @@ index c64dfd3..2f46c18 100755
 +++ b/gtkdoc-mktmpl.in
 @@ -1,4 +1,4 @@
 -#!@PERL@ -w
-+#!/usr/bin/env perl -w
++#!/usr/bin/env perl
  # -*- cperl -*-
  #
  # gtk-doc - GTK DocBook documentation generator.
@@ -88,7 +88,7 @@ index 375482d..cf05b45 100644
 +++ b/gtkdoc-rebase.in
 @@ -1,4 +1,4 @@
 -#!@PERL@ -w
-+#!/usr/bin/env perl -w
++#!/usr/bin/env perl
  # -*- cperl -*-
  #
  # gtk-doc - GTK DocBook documentation generator.
@@ -98,7 +98,7 @@ index 048e5c9..78c6136 100755
 +++ b/gtkdoc-scan.in
 @@ -1,4 +1,4 @@
 -#!@PERL@ -w
-+#!/usr/bin/env perl -w
++#!/usr/bin/env perl
  # -*- cperl -*-
  #
  # gtk-doc - GTK DocBook documentation generator.
@@ -108,7 +108,7 @@ index fb66b76..67ee8f7 100644
 +++ b/gtkdoc-scangobj.in
 @@ -1,4 +1,4 @@
 -#!@PERL@ -w
-+#!/usr/bin/env perl -w
++#!/usr/bin/env perl
  # -*- cperl -*-
  #
  # gtk-doc - GTK DocBook documentation generator.
