@@ -10,6 +10,9 @@ DEPENDS_append = "libxslt xmlto source-highlight-native"
 EXTRA_OECONF_append = " --with-highlight=source-highlight"
 EXTRA_OECONF_append_class-native = " --with-xml-catalog=${sysconfdir}/xml/catalog.xml"
 
+SRC_URI += "file://0001-Do-not-hardocode-paths-to-perl-python-in-scripts.patch \
+           "
+
 SRC_URI[archive.md5sum] = "0dc6570953112a464a409fb99258ccbc"
 SRC_URI[archive.sha256sum] = "1ea46ed400e6501f975acaafea31479cea8f32f911dca4dff036f59e6464fd42"
 
