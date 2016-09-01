@@ -111,7 +111,11 @@ s_to_hms () {
     _h=`echo -e "scale=0\n$1 / 3600" | bc`
     _m=`echo -e "scale=0\n($1 % 3600) / 60" | bc`
     _s=`echo "$1 % 60" | bc`
-    printf "%d:%02d:%05.2f" $_h $_m $_s
+    if [ $_h -eq 0 ]; then
+        printf "%d:%05.2f" $_m $_s
+    else
+        printf "%d:%02d:%05.2f" $_h $_m $_s
+    fi
 }
 
 kib_to_gib () {
