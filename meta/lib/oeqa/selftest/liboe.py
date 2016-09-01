@@ -50,14 +50,15 @@ class LibOE(oeSelfTest):
 
         # ensure we have setfattr available
         bitbake("attr-native")
-        
+        bindir = get_bb_var('STAGING_BINDIR_NATIVE')
+
         # create a file with xattr and copy it
         open(oe.path.join(src, testfilename), 'w+b').close()
-        runCmd('setfattr -n user.oetest -v "testing liboe" %s' % oe.path.join(src, testfilename))
+        runCmd('%s/setfattr -n user.oetest -v "testing liboe" %s' % (bindir, oe.path.join(src, testfilename)))
         oe.path.copytree(src, dst)
-        
+
         # ensure file in dest has user.oetest xattr
-        result = runCmd('getfattr -n user.oetest %s' % oe.path.join(dst, testfilename))
+        result = runCmd('%s/getfattr -n user.oetest %s' % (bindir, oe.path.join(dst, testfilename)))
         self.assertIn('user.oetest="testing liboe"', result.output, 'Extended attribute not sert in dst')
 
         oe.path.remove(testloc)
