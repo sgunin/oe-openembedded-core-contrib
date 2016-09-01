@@ -22,13 +22,15 @@
 script=`basename $0`
 workdir=`realpath build-perf-bisect`
 test_method="buildtime"
+test_count=1
 
 usage () {
 cat << EOF
-Usage: $script [-h] [-d DL_DIR] [-m TEST_METHOD] [-w WORKDIR] BUILD_TARGET THRESHOLD
+Usage: $script [-h] [-c COUNT] [-d DL_DIR] [-m TEST_METHOD] [-w WORKDIR] BUILD_TARGET THRESHOLD
 
 Optional arguments:
   -h                show this help and exit.
+  -c                average over COUNT test runs (default: $test_count)
   -d                DL_DIR to use
   -m                test method, available options are:
                         buildtime, tmpsize, esdktime, parsetime
@@ -37,10 +39,12 @@ Optional arguments:
 EOF
 }
 
-while getopts "hd:m:w:" opt; do
+while getopts "hc:d:m:w:" opt; do
     case $opt in
         h)  usage
             exit 0
+            ;;
+        c)  test_count=$OPTARG
             ;;
         d)  downloaddir=`realpath "$OPTARG"`
             ;;
@@ -114,6 +118,37 @@ kib_to_gib () {
     echo `echo -e "scale=2\n$1 / 1024^2" | bc -l`G
 }
 
+raw_to_h () {
+    case $quantity in
+        TIME)
+            s_to_hms $1
+            ;;
+        SIZE)
+            kib_to_gib $1
+            ;;
+        *)
+            echo "Invalid quantity '$quantity'!"
+            exit 255
+            ;;
+    esac
+}
+
+h_to_raw () {
+    case $quantity in
+        TIME)
+            hms_to_s $1
+            ;;
+        SIZE)
+            echo "$1"
+            ;;
+        *)
+            echo "Invalid quantity '$quantity'!"
+            exit 255
+            ;;
+    esac
+}
+
+
 time_cmd () {
     log "timing $*"
     /usr/bin/time -o time.log -f '%e' $@ &>> "$log_file"
@@ -162,8 +197,7 @@ buildtime () {
     log "syncing and dropping caches"
     do_sync
 
-    result=`time_cmd bitbake $1` || exit 125
-    result_h=`s_to_hms $result`
+    results+=(`time_cmd bitbake $1`) || exit 125
 }
 
 tmpsize () {
@@ -175,8 +209,7 @@ tmpsize () {
 
     _time=`time_cmd bitbake $1` || exit 125
 
-    result=`du -s tmp* | cut -f1` || exit 255
-    result_h=`kib_to_gib $result`
+    results+=(`du -s tmp* | cut -f1`) || exit 255
 }
 
 esdktime () {
@@ -190,8 +223,7 @@ esdktime () {
 
     do_sync
 
-    result=`time_cmd "${esdk_installer[-1]}" -y -d "esdk-deploy"` || exit 125
-    result_h=`s_to_hms $result`
+    results+=(`time_cmd "${esdk_installer[-1]}" -y -d "esdk-deploy"`) || exit 125
 }
 
 cleanup_esdktime () {
@@ -202,8 +234,7 @@ parsetime () {
     run_cmd rm -rf bitbake.lock conf/sanity_info cache tmp sstate-cache
 
     do_sync
-    result=`time_cmd bitbake -p` || exit 125
-    result_h=`s_to_hms $result`
+    results+=(`time_cmd bitbake -p`) || exit 125
 }
 
 
@@ -212,33 +243,30 @@ parsetime () {
 #
 build_target=$1
 cleanup_func=cleanup_default
+quantity='TIME'
 
 
 builddir="$workdir/build-$git_rev-$timestamp"
 case "$test_method" in
     buildtime)
-        threshold=`hms_to_s $2`
-        threshold_h=`s_to_hms $threshold`
         ;;
     tmpsize)
-        threshold=$2
-        threshold_h=`kib_to_gib $2`
+        quantity="SIZE"
         ;;
     esdktime)
-        threshold=`hms_to_s $2`
-        threshold_h=`s_to_hms $threshold`
         builddir="$workdir/build"
         cleanup_func=cleanup_esdktime
         ;;
     parsetime)
-        threshold=`hms_to_s $2`
-        threshold_h=`s_to_hms $threshold`
         build_target=""
         ;;
     *)
         echo "Invalid test method $test_method"
         exit 255
 esac
+
+threshold=`h_to_raw $2`
+threshold_h=`raw_to_h $threshold`
 
 trap cleanup EXIT
 
@@ -251,13 +279,26 @@ echo DL_DIR = \"$downloaddir\" >> conf/local.conf
 echo CONNECTIVITY_CHECK_URIS = \"\" >> conf/local.conf
 
 # Do actual build
-log "TESTING REVISION $git_rev (#$git_rev_cnt)"
+log "TESTING REVISION $git_rev (#$git_rev_cnt), AVERAGING OVER $test_count TEST RUNS"
 log "fetching sources"
 if [ -n "$build_target" ]; then
     run_cmd bitbake $build_target -c fetchall || exit 125
 fi
 
-$test_method $build_target
+results=()
+i=0
+while [ $i -lt $test_count ]; do
+    log "TEST RUN #$i on $git_rev (#$git_rev_cnt)"
+    $test_method $build_target
+    i=$((i + 1))
+done
+
+# Calculate average over results
+bc_expression="scale=2\n( `printf "%s+" ${results[@]}` 0) / ${#results[@]}"
+result=`echo -e "$bc_expression" | bc`
+result_h=`raw_to_h $result`
+
+log "Raw results: ${results[@]}"
 
 if [ `echo "$result < $threshold" | bc` -eq 1 ]; then
     log "OK ($git_rev): $result ($result_h) < $threshold ($threshold_h)"
