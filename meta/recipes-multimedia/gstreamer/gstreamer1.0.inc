@@ -56,8 +56,10 @@ delete_pkg_m4_file() {
 patch_gtk_doc_makefiles() {
         # Patch the gtk-doc makefiles so that the qemu wrapper is used to run transient binaries
         # instead of libtool wrapper or running them directly
+        # Also substitute a bogus plugin scanner, as trying to run the real one is causing issues during build on x86_64.
         sed -i \
            -e "s|GTKDOC_RUN =.*|GTKDOC_RUN = \$(top_builddir)/gtkdoc-qemuwrapper|" \
+           -e "s|\$(GTKDOC_EXTRA_ENVIRONMENT)|\$(GTKDOC_EXTRA_ENVIRONMENT) GST_PLUGIN_SCANNER_1_0=\$(top_builddir)/libs/gst/helpers/gst-plugin-scanner-dummy|" \
            ${S}/common/gtk-doc*mak
 }
 
