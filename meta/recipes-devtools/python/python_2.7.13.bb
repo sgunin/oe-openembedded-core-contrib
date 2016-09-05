@@ -42,6 +42,17 @@ EXTRA_OECONF += "ac_cv_file__dev_ptmx=yes ac_cv_file__dev_ptc=no"
 STAGING_INCDIR_DEFAULT ?= "${STAGING_INCDIR}"
 STAGING_LIBDIR_DEFAULT ?= "${STAGING_LIBDIR}"
 
+# Automatic profile guided optimization
+PYTHON_MAKE_TARGET ?= "${@'build_all_use_profile' if d.getVar('PYTHON_PROFILE_OPT', True) == '1' else ''}"
+PYTHON_PROFILE_DIR ?= "${@'${TMPDIR}/work-shared/${MACHINE}/python/pgo-data' if d.getVar('PYTHON_PROFILE_OPT', True) == '1' else ''}"
+python () {
+    if (d.getVar('PYTHON_PROFILE_OPT', True) == '1' and
+            d.getVar('PYTHON_MAKE_TARGET', True) == 'build_all_use_profile'):
+        profile_dir = d.getVar('PYTHON_PROFILE_DIR', True)
+        bb.utils.mkdirhier(profile_dir)
+        d.setVarFlag('do_compile', 'file-checksums', '%s:True' % profile_dir)
+}
+
 do_configure_append() {
 	rm -f ${S}/Makefile.orig
         autoreconf -Wcross --verbose --install --force --exclude=autopoint ../Python-${PV}/Modules/_ctypes/libffi
@@ -79,9 +90,15 @@ do_compile() {
 
 	export CROSS_COMPILE="${TARGET_PREFIX}"
 	export PYTHONBUILDDIR="${B}"
-    # This is only used in PGO profiling by python-profile-opt package
     if [ "${PYTHON_MAKE_TARGET}" = "build_all_generate_profile" ]; then
+        # This is only used in PGO profiling by python-profile-opt package
         export EXTRA_CFLAGS="-fprofile-dir=./python-pgo-profiles/"
+    else
+        if [ -n "${PYTHON_PROFILE_DIR}" ]; then
+            export EXTRA_CFLAGS="-fprofile-dir=${PYTHON_PROFILE_DIR}"
+            # Remove non-optimized build artefacts
+            oe_runmake clean
+        fi
     fi
 
 	oe_runmake HOSTPGEN=${STAGING_BINDIR_NATIVE}/python-native/pgen \
@@ -99,6 +116,11 @@ do_install() {
 
 	export CROSS_COMPILE="${TARGET_PREFIX}"
 	export PYTHONBUILDDIR="${B}"
+    # This only has effect if we build with -fprofile-use, e.g. when make
+    # target is build_all_use_profile
+    if [ -n "${PYTHON_PROFILE_DIR}" ]; then
+        export EXTRA_CFLAGS="-fprofile-dir=${PYTHON_PROFILE_DIR}"
+    fi
 
 	# After swizzling the makefile, we need to run the build again.
 	# install can race with the build so we have to run this first, then install
@@ -145,6 +167,7 @@ py_package_preprocess () {
 		${PKGD}/${libdir}/python${PYTHON_MAJMIN}/_sysconfigdata.py
     python -m py_compile ${PKGD}/${libdir}/python${PYTHON_MAJMIN}/_sysconfigdata.py
 }
+
 
 require python-${PYTHON_MAJMIN}-manifest.inc
 
