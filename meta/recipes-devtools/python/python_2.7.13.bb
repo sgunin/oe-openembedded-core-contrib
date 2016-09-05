@@ -37,6 +37,11 @@ CONFIGUREOPTS += " --with-system-ffi "
 
 EXTRA_OECONF += "ac_cv_file__dev_ptmx=yes ac_cv_file__dev_ptc=no"
 
+# These are needed in order to build with modified prefix (python-prorile-opt
+# recipe)
+STAGING_INCDIR_DEFAULT ?= "${STAGING_INCDIR}"
+STAGING_LIBDIR_DEFAULT ?= "${STAGING_LIBDIR}"
+
 do_configure_append() {
 	rm -f ${S}/Makefile.orig
         autoreconf -Wcross --verbose --install --force --exclude=autopoint ../Python-${PV}/Modules/_ctypes/libffi
@@ -45,12 +50,12 @@ do_configure_append() {
 do_compile() {
         # regenerate platform specific files, because they depend on system headers
         cd ${S}/Lib/plat-linux2
-        include=${STAGING_INCDIR} ${STAGING_BINDIR_NATIVE}/python-native/python \
+        include=${STAGING_INCDIR_DEFAULT} ${STAGING_BINDIR_NATIVE}/python-native/python \
                 ${S}/Tools/scripts/h2py.py -i '(u_long)' \
-                ${STAGING_INCDIR}/dlfcn.h \
-                ${STAGING_INCDIR}/linux/cdrom.h \
-                ${STAGING_INCDIR}/netinet/in.h \
-                ${STAGING_INCDIR}/sys/types.h
+                ${STAGING_INCDIR_DEFAULT}/dlfcn.h \
+                ${STAGING_INCDIR_DEFAULT}/linux/cdrom.h \
+                ${STAGING_INCDIR_DEFAULT}/netinet/in.h \
+                ${STAGING_INCDIR_DEFAULT}/sys/types.h
         sed -e 's,${STAGING_DIR_HOST},,g' -i *.py
         cd -
 
@@ -60,7 +65,7 @@ do_compile() {
 	if [ ! -f Makefile.orig ]; then
 		install -m 0644 Makefile Makefile.orig
 	fi
-	sed -i -e 's#^LDFLAGS=.*#LDFLAGS=${LDFLAGS} -L. -L${STAGING_LIBDIR}#g' \
+	sed -i -e 's#^LDFLAGS=.*#LDFLAGS=${LDFLAGS} -L. -L${STAGING_LIBDIR_DEFAULT}#g' \
 		-e 's,libdir=${libdir},libdir=${STAGING_LIBDIR},g' \
 		-e 's,libexecdir=${libexecdir},libexecdir=${STAGING_DIR_HOST}${libexecdir},g' \
 		-e 's,^LIBDIR=.*,LIBDIR=${STAGING_LIBDIR},g' \
@@ -74,13 +79,17 @@ do_compile() {
 
 	export CROSS_COMPILE="${TARGET_PREFIX}"
 	export PYTHONBUILDDIR="${B}"
+    # This is only used in PGO profiling by python-profile-opt package
+    if [ "${PYTHON_MAKE_TARGET}" = "build_all_generate_profile" ]; then
+        export EXTRA_CFLAGS="-fprofile-dir=./python-pgo-profiles/"
+    fi
 
 	oe_runmake HOSTPGEN=${STAGING_BINDIR_NATIVE}/python-native/pgen \
 		HOSTPYTHON=${STAGING_BINDIR_NATIVE}/python-native/python \
 		STAGING_LIBDIR=${STAGING_LIBDIR} \
 		STAGING_INCDIR=${STAGING_INCDIR} \
 		STAGING_BASELIBDIR=${STAGING_BASELIBDIR} \
-		OPT="${CFLAGS}"
+		OPT="${CFLAGS}" ${PYTHON_MAKE_TARGET}
 }
 
 do_install() {
@@ -99,7 +108,8 @@ do_install() {
 		STAGING_LIBDIR=${STAGING_LIBDIR} \
 		STAGING_INCDIR=${STAGING_INCDIR} \
 		STAGING_BASELIBDIR=${STAGING_BASELIBDIR} \
-		DESTDIR=${D} LIBDIR=${libdir}
+		DESTDIR=${D} LIBDIR=${libdir} ${PYTHON_MAKE_TARGET}
+
 	
 	oe_runmake HOSTPGEN=${STAGING_BINDIR_NATIVE}/python-native/pgen \
 		HOSTPYTHON=${STAGING_BINDIR_NATIVE}/python-native/python \
