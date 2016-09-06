@@ -1722,7 +1722,7 @@
                         <filename>${@<replaceable>python_code</replaceable>}</filename>
                         syntax for the variable assignment:
                         <literallayout class='monospaced'>
-     SRC_URI = "ftp://ftp.info-zip.org/pub/infozip/src/zip${@d.getVar('PV',1).replace('.', '')}.tgz
+     SRC_URI = "ftp://ftp.info-zip.org/pub/infozip/src/zip${@d.getVar('PV', True).replace('.', '')}.tgz
                         </literallayout>
                         </para></listitem>
                     <listitem><para><emphasis>Shell Function Syntax:</emphasis>
