@@ -71,6 +71,7 @@ timestamp=`date "+%Y%m%d_%H%M%S"`
 git_rev=`git rev-parse --short HEAD`
 git_rev_cnt=`git rev-list --count HEAD`
 log_file="$workdir/bisect-${git_rev_cnt}_g${git_rev}-${timestamp}.log"
+buildstats_dir="$workdir/buildstats-${git_rev_cnt}_g${git_rev}-${timestamp}"
 
 
 #
@@ -181,6 +182,12 @@ do_sync () {
     sleep 2
 }
 
+save_buildstats () {
+    log "Saving buildstats"
+    mkdir -p "$buildstats_dir"
+    mv tmp*/buildstats/* "$buildstats_dir"
+}
+
 cleanup () {
     $cleanup_func "$@"
 }
@@ -202,6 +209,8 @@ buildtime () {
     do_sync
 
     results+=(`time_cmd bitbake $1`) || exit 125
+
+    save_buildstats
 }
 
 tmpsize () {
