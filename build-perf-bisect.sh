@@ -33,7 +33,7 @@ Optional arguments:
   -c                average over COUNT test runs (default: $test_count)
   -d                DL_DIR to use
   -m                test method, available options are:
-                        buildtime, tmpsize, esdktime, parsetime
+                        buildtime, buildtime2, tmpsize, esdktime, parsetime
                         (default: $test_method)
   -w                work directory to use
 EOF
@@ -213,6 +213,23 @@ buildtime () {
     save_buildstats
 }
 
+buildtime2 () {
+    # Pre-build to get all the deps in place
+    _time=`time_cmd bitbake $1` || exit 125
+    run_cmd bitbake -c cleansstate $1
+    rm -rf tmp*/buildstats/*
+
+    do_sync
+
+    results+=(`time_cmd bitbake $1`) || exit 125
+
+    save_buildstats
+}
+
+cleanup_buildtime2 () {
+    run_cmd rm -rf tmp*
+}
+
 tmpsize () {
     log "cleaning up build directory"
     run_cmd rm -rf bitbake.lock conf/sanity_info cache tmp sstate-cache
@@ -262,6 +279,10 @@ quantity='TIME'
 builddir="$workdir/build-$git_rev-$timestamp"
 case "$test_method" in
     buildtime)
+        ;;
+    buildtime2)
+        builddir="$workdir/build"
+        cleanup_func=cleanup_buildtime2
         ;;
     tmpsize)
         quantity="SIZE"
