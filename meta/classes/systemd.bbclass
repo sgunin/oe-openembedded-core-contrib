@@ -7,6 +7,7 @@ SYSTEMD_PACKAGES_class-nativesdk ?= ""
 
 # Whether to enable or disable the services on installation.
 SYSTEMD_AUTO_ENABLE ??= "enable"
+SYSTEMD_USER_AUTO_ENABLE ??= "enable"
 
 # This class will be included in any recipe that supports systemd init scripts,
 # even if systemd is not in DISTRO_FEATURES.  As such don't make any changes
@@ -29,10 +30,17 @@ if [ -n "$D" ]; then
 fi
 
 if type systemctl >/dev/null 2>/dev/null; then
-	systemctl $OPTS ${SYSTEMD_AUTO_ENABLE} ${SYSTEMD_SERVICE}
-
-	if [ -z "$D" -a "${SYSTEMD_AUTO_ENABLE}" = "enable" ]; then
-		systemctl restart ${SYSTEMD_SERVICE}
+	if [ "${SYSTEMD_SERVICE}" != "" ]; then
+		systemctl $OPTS ${SYSTEMD_AUTO_ENABLE} ${SYSTEMD_SERVICE}
+		if [ -z "$D" -a "${SYSTEMD_AUTO_ENABLE}" = "enable" ]; then
+			systemctl restart ${SYSTEMD_SERVICE}
+		fi
+	fi
+	if [ "${SYSTEMD_USER_SERVICE}" != "" ]; then
+		systemctl $OPTS --global ${SYSTEMD_USER_AUTO_ENABLE} ${SYSTEMD_USER_SERVICE}
+		if [ -z "$D" -a "${SYSTEMD_USER_AUTO_ENABLE}" = "enable" ]; then
+			systemctl --global restart ${SYSTEMD_USER_SERVICE}
+		fi
 	fi
 fi
 }
@@ -45,11 +53,18 @@ if [ -n "$D" ]; then
 fi
 
 if type systemctl >/dev/null 2>/dev/null; then
-	if [ -z "$D" ]; then
-		systemctl stop ${SYSTEMD_SERVICE}
+	if [ "${SYSTEMD_SERVICE}" != "" ]; then
+		if [ -z "$D" ]; then
+			systemctl stop ${SYSTEMD_SERVICE}
+		fi
+		systemctl $OPTS disable ${SYSTEMD_SERVICE}
 	fi
-
-	systemctl $OPTS disable ${SYSTEMD_SERVICE}
+	if [ "${SYSTEMD_USER_SERVICE}" != "" ]; then
+		if [ -z "$D" ]; then
+			systemctl --global stop ${SYSTEMD_USER_SERVICE}
+		fi
+		systemctl $OPTS --global disable ${SYSTEMD_USER_SERVICE}
+	fi
 fi
 }
 
@@ -139,12 +154,14 @@ python systemd_populate_packages() {
     def systemd_check_services():
         searchpaths = [oe.path.join(d.getVar("sysconfdir", True), "systemd", "system"),]
         searchpaths.append(d.getVar("systemd_system_unitdir", True))
+        searchpaths.append(oe.path.join(d.getVar("sysconfdir", True), "systemd", "user"))
+        searchpaths.append(d.getVar("systemd_user_unitdir", True))
         systemd_packages = d.getVar('SYSTEMD_PACKAGES', True)
 
         keys = 'Also'
         # scan for all in SYSTEMD_SERVICE[]
         for pkg_systemd in systemd_packages.split():
-            for service in get_package_var(d, 'SYSTEMD_SERVICE', pkg_systemd).split():
+            for service in (get_package_var(d, 'SYSTEMD_SERVICE', pkg_systemd) + get_package_var(d, 'SYSTEMD_USER_SERVICE', pkg_systemd)).split():
                 path_found = ''
 
                 # Deal with adding, for example, 'ifplugd@eth0.service' from
@@ -165,14 +182,14 @@ python systemd_populate_packages() {
                 if path_found != '':
                     systemd_add_files_and_parse(pkg_systemd, path_found, service, keys)
                 else:
-                    raise bb.build.FuncFailed("SYSTEMD_SERVICE_%s value %s does not exist" % \
-                        (pkg_systemd, service))
+                    raise bb.build.FuncFailed("SYSTEMD_SERVICE_%s or SYSTEMD_USER_SERVICE_%s value %s does not exist" % \
+                        (pkg_systemd, pkg_systemd, service))
 
     # Run all modifications once when creating package
     if os.path.exists(d.getVar("D", True)):
         for pkg in d.getVar('SYSTEMD_PACKAGES', True).split():
             systemd_check_package(pkg)
-            if d.getVar('SYSTEMD_SERVICE_' + pkg, True):
+            if d.getVar('SYSTEMD_SERVICE_' + pkg, True) or d.getVar('SYSTEMD_USER_SERVICE_' + pkg, True):
                 systemd_generate_package_scripts(pkg)
         systemd_check_services()
 }
