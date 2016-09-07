@@ -2,7 +2,8 @@
 echo "Started $0 $*"
 
 ROOT=
-
+USER_SERVICE=no
+location=system
 # parse command line params
 action=
 while [ $# != 0 ]; do
@@ -46,6 +47,11 @@ while [ $# != 0 ]; do
 			cmd_args="0"
 			shift
 			;;
+		--global)
+			USER_SERVICE=yes
+			cmd_args="0"
+			shift
+			;;
 		*)
 			if [ "$cmd_args" = "1" ]; then
 				services="$services $opt" 
@@ -57,8 +63,13 @@ while [ $# != 0 ]; do
 			;;
 	esac
 done
+
+if [ "$USER_SERVICE" = "yes" ]; then
+	location=user
+fi
+
 if [ "$action" = "preset" -a "$service_file" = "" ]; then
-	services=$(for f in `find $ROOT/etc/systemd/system $ROOT/lib/systemd/system $ROOT/usr/lib/systemd/system -type f 2>1`; do basename $f; done)
+	services=$(for f in `find $ROOT/etc/systemd/$location $ROOT/lib/systemd/$location $ROOT/usr/lib/systemd/$location -type f 2>1`; do basename $f; done)
 	services="$services $opt"
 	presetall=1
 fi
@@ -68,10 +79,10 @@ for service in $services; do
 		action="preset"
 	fi
 	if [ "$action" = "mask" ]; then
-		if [ ! -d $ROOT/etc/systemd/system/ ]; then
-			mkdir -p $ROOT/etc/systemd/system/
+		if [ ! -d $ROOT/etc/systemd/$location/ ]; then
+			mkdir -p $ROOT/etc/systemd/$location/
 		fi
-		cmd="ln -s /dev/null $ROOT/etc/systemd/system/$service"
+		cmd="ln -s /dev/null $ROOT/etc/systemd/$location/$service"
 		echo "$cmd"
 		$cmd
 		exit 0
@@ -92,9 +103,9 @@ for service in $services; do
 	fi
 
 	# find service file
-	for p in $ROOT/etc/systemd/system \
-		 $ROOT/lib/systemd/system \
-		 $ROOT/usr/lib/systemd/system; do
+	for p in $ROOT/etc/systemd/$location \
+		 $ROOT/lib/systemd/$location \
+		 $ROOT/usr/lib/systemd/$location; do
 		if [ -e $p/$service_base_file ]; then
 			service_file=$p/$service_base_file
 			service_file=${service_file##$ROOT}
@@ -151,18 +162,18 @@ for service in $services; do
 						enable_service=$(echo $service | sed "s/@/@$(echo $default_instance | sed 's/\\/\\\\/g')/")
 					fi
 				fi
-				mkdir -p $ROOT/etc/systemd/system/$r.$suffix
-				ln -s $service_file $ROOT/etc/systemd/system/$r.$suffix/$enable_service
+				mkdir -p $ROOT/etc/systemd/$location/$r.$suffix
+				ln -s $service_file $ROOT/etc/systemd/$location/$r.$suffix/$enable_service
 				echo "Enabled $enable_service for $r."
 			else
 				if [ "$service_template" = true -a "$instance_specified" = false ]; then
-					disable_service="$ROOT/etc/systemd/system/$r.$suffix/`echo $service | sed 's/@/@*/'`"
+					disable_service="$ROOT/etc/systemd/$location/$r.$suffix/`echo $service | sed 's/@/@*/'`"
 				else
-					disable_service="$ROOT/etc/systemd/system/$r.$suffix/$service"
+					disable_service="$ROOT/etc/systemd/$location/$r.$suffix/$service"
 				fi
 				rm -f $disable_service
-				[ -d $ROOT/etc/systemd/system/$r.$suffix ] && rmdir --ignore-fail-on-non-empty -p $ROOT/etc/systemd/system/$r.$suffix
-				echo "Disabled ${disable_service##$ROOT/etc/systemd/system/$r.$suffix/} for $r."
+				[ -d $ROOT/etc/systemd/$location/$r.$suffix ] && rmdir --ignore-fail-on-non-empty -p $ROOT/etc/systemd/$location/$r.$suffix
+				echo "Disabled ${disable_service##$ROOT/etc/systemd/$location/$r.$suffix/} for $r."
 			fi
 		done
 	done
@@ -174,11 +185,11 @@ for service in $services; do
 
 	for r in $alias; do
 		if [ "$action" = "enable" ]; then
-			mkdir -p $ROOT/etc/systemd/system
-			ln -s $service_file $ROOT/etc/systemd/system/$r
+			mkdir -p $ROOT/etc/systemd/$location
+			ln -s $service_file $ROOT/etc/systemd/$location/$r
 			echo "Enabled $service for $alias."
 		else
-			rm -f $ROOT/etc/systemd/system/$r
+			rm -f $ROOT/etc/systemd/$location/$r
 			echo "Disabled $service for $alias."
 		fi
 	done
