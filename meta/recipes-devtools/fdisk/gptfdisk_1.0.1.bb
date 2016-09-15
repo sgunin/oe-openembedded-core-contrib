@@ -23,4 +23,10 @@ do_install() {
     install -m 0755 fixparts ${D}${sbindir}
 }
 
+PACKAGES =+ "${PN}-sgdisk"
+
+RRECOMMENDS_${PN} = "${PN}-sgdisk"
+
+FILES_${PN}-sgdisk = "${sbindir}/sgdisk"
+
 BBCLASSEXTEND = "native nativesdk"
