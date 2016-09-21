@@ -175,6 +175,17 @@ run_cmd () {
     fi
 }
 
+check_sudo () {
+    # Check that we're able to run the needed commands as superuser
+    output=`echo 0 | sudo -n -k /usr/bin/tee /proc/sys/vm/drop_caches 2>&1`
+    if echo $output | grep -q "a password is required"; then
+        log "ERROR: insufficient sudo permissions. Fix this e.g. by putting <user> ALL = NOPASSWD: /usr/bin/tee /proc/sys/vm/drop_caches into sudoers file"
+        exit 255
+    else
+        log "sudo permissions OK"
+    fi
+}
+
 do_sync () {
     run_cmd sync || exit 255
     log "dropping kernel caches"
@@ -314,6 +325,8 @@ echo CONNECTIVITY_CHECK_URIS = \"\" >> conf/local.conf
 
 # Do actual build
 log "TESTING REVISION $git_rev (#$git_rev_cnt), AVERAGING OVER $test_count TEST RUNS"
+check_sudo
+
 log "fetching sources"
 if [ -n "$build_target" ]; then
     run_cmd bitbake $build_target -c fetchall || exit 125
