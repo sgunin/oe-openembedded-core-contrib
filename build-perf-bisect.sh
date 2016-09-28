@@ -20,16 +20,19 @@
 # PARSE COMMAND LINE ARGUMENTS
 #
 script=`basename $0`
+build_target="core-image-sato"
 workdir=`realpath build-perf-bisect`
 test_method="buildtime"
 test_count=1
 
 usage () {
 cat << EOF
-Usage: $script [-h] [-c COUNT] [-d DL_DIR] [-m TEST_METHOD] [-w WORKDIR] BUILD_TARGET THRESHOLD
+Usage: $script [-h] [-b BUILD_TARGET] [-c COUNT] [-d DL_DIR] [-m TEST_METHOD] [-w WORKDIR] THRESHOLD
 
 Optional arguments:
   -h                show this help and exit.
+  -b                use BUILD_TARGET for tests involving bitbake build
+                        (default: $build_target)
   -c                average over COUNT test runs (default: $test_count)
   -d                DL_DIR to use
   -m                test method, available options are:
@@ -39,10 +42,12 @@ Optional arguments:
 EOF
 }
 
-while getopts "hc:d:m:w:" opt; do
+while getopts "hb:c:d:m:w:" opt; do
     case $opt in
         h)  usage
             exit 0
+            ;;
+        b)  build_target=$OPTARG
             ;;
         c)  test_count=$OPTARG
             ;;
@@ -59,8 +64,8 @@ while getopts "hc:d:m:w:" opt; do
 done
 shift "$((OPTIND - 1))"
 
-if [ $# -ne 2 ]; then
-    echo "Invalid number of positional arguments ($# instead of 2)"
+if [ $# -ne 1 ]; then
+    echo "Invalid number of positional arguments ($# instead of 1)"
     usage
     exit 255
 fi
@@ -282,7 +287,6 @@ parsetime () {
 #
 # MAIN SCRIPT
 #
-build_target=$1
 cleanup_func=cleanup_default
 quantity='TIME'
 
@@ -310,7 +314,7 @@ case "$test_method" in
         exit 255
 esac
 
-threshold=`h_to_raw $2`
+threshold=`h_to_raw $1`
 threshold_h=`raw_to_h $threshold`
 
 trap cleanup EXIT
