@@ -27,7 +27,7 @@ test_count=1
 
 usage () {
 cat << EOF
-Usage: $script [-h] [-b BUILD_TARGET] [-c COUNT] [-d DL_DIR] [-m TEST_METHOD] [-w WORKDIR] THRESHOLD
+Usage: $script [-h] [-b BUILD_TARGET] [-c COUNT] [-d DL_DIR] [-m TEST_METHOD] [-w WORKDIR] [-n | THRESHOLD]
 
 Optional arguments:
   -h                show this help and exit.
@@ -38,11 +38,13 @@ Optional arguments:
   -m                test method, available options are:
                         buildtime, buildtime2, tmpsize, esdktime, parsetime
                         (default: $test_method)
+  -n                no threshold, do not do any comparison, all successful
+                        builds return 0
   -w                work directory to use
 EOF
 }
 
-while getopts "hb:c:d:m:w:" opt; do
+while getopts "hb:c:d:m:nw:" opt; do
     case $opt in
         h)  usage
             exit 0
@@ -55,6 +57,8 @@ while getopts "hb:c:d:m:w:" opt; do
             ;;
         m)  test_method="$OPTARG"
             ;;
+        n)  no_threshold="1"
+            ;;
         w)  workdir=`realpath "$OPTARG"`
             ;;
         *)  usage
@@ -64,8 +68,8 @@ while getopts "hb:c:d:m:w:" opt; do
 done
 shift "$((OPTIND - 1))"
 
-if [ $# -ne 1 ]; then
-    echo "Invalid number of positional arguments ($# instead of 1)"
+if [ -z "$no_threshold" -a $# -ne 1 ]; then
+    echo "Invalid number of positional arguments. You must use -n or give a threshold"
     usage
     exit 255
 fi
@@ -314,8 +318,10 @@ case "$test_method" in
         exit 255
 esac
 
-threshold=`h_to_raw $1`
-threshold_h=`raw_to_h $threshold`
+if [ -z "$no_threshold" ]; then
+    threshold=`h_to_raw $1`
+    threshold_h=`raw_to_h $threshold`
+fi
 
 trap cleanup EXIT
 
@@ -351,10 +357,15 @@ result_h=`raw_to_h $result`
 
 log "Raw results: ${results[@]}"
 
-if [ `echo "$result < $threshold" | bc` -eq 1 ]; then
-    log "OK ($git_rev): $result ($result_h) < $threshold ($threshold_h)"
-    exit 0
+if [ -n "$threshold" ]; then
+    if [ `echo "$result < $threshold" | bc` -eq 1 ]; then
+        log "OK ($git_rev): $result ($result_h) < $threshold ($threshold_h)"
+        exit 0
+    else
+        log "FAIL ($git_rev): $result ($result_h) >= $threshold ($threshold_h)"
+        exit 1
+    fi
 else
-    log "FAIL ($git_rev): $result ($result_h) >= $threshold ($threshold_h)"
-    exit 1
+    log "OK ($git_rev): $result ($result_h)"
+    exit 0
 fi
