@@ -35,6 +35,8 @@ Optional arguments:
                         (default: $build_target)
   -c                average over COUNT test runs (default: $test_count)
   -d                DL_DIR to use
+  -i                invert logic: values above the threshold are OK, below it
+                        FAIL
   -m                test method, available options are:
                         buildtime, buildtime2, tmpsize, esdktime, parsetime
                         (default: $test_method)
@@ -44,7 +46,7 @@ Optional arguments:
 EOF
 }
 
-while getopts "hb:c:d:m:nw:" opt; do
+while getopts "hb:c:d:im:nw:" opt; do
     case $opt in
         h)  usage
             exit 0
@@ -54,6 +56,8 @@ while getopts "hb:c:d:m:nw:" opt; do
         c)  test_count=$OPTARG
             ;;
         d)  downloaddir=`realpath "$OPTARG"`
+            ;;
+        i)  invert_cmp="1"
             ;;
         m)  test_method="$OPTARG"
             ;;
@@ -359,11 +363,21 @@ log "Raw results: ${results[@]}"
 
 if [ -n "$threshold" ]; then
     if [ `echo "$result < $threshold" | bc` -eq 1 ]; then
-        log "OK ($git_rev): $result ($result_h) < $threshold ($threshold_h)"
-        exit 0
+        if [ -z "$invert_cmp" ]; then
+            log "OK ($git_rev): $result ($result_h) < $threshold ($threshold_h)"
+            exit 0
+        else
+            log "FAIL (inv) ($git_rev): $result ($result_h) < $threshold ($threshold_h)"
+            exit 1
+        fi
     else
-        log "FAIL ($git_rev): $result ($result_h) >= $threshold ($threshold_h)"
-        exit 1
+        if [ -z "$invert_cmp" ]; then
+            log "FAIL ($git_rev): $result ($result_h) >= $threshold ($threshold_h)"
+            exit 1
+        else
+            log "OK (inv) ($git_rev): $result ($result_h) >= $threshold ($threshold_h)"
+            exit 0
+        fi
     fi
 else
     log "OK ($git_rev): $result ($result_h)"
