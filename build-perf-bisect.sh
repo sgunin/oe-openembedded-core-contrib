@@ -38,8 +38,8 @@ Optional arguments:
   -i                invert logic: values above the threshold are OK, below it
                         FAIL
   -m                test method, available options are:
-                        buildtime, buildtime2, tmpsize, esdktime, parsetime
-                        (default: $test_method)
+                        buildtime, buildtime2, tmpsize, esdktime, esdksize,
+                        parsetime (default: $test_method)
   -n                no threshold, do not do any comparison, all successful
                         builds return 0
   -w                work directory to use
@@ -266,7 +266,7 @@ tmpsize () {
     results+=(`du -s tmp* | cut -f1`) || exit 255
 }
 
-esdktime () {
+esdk_common () {
     run_cmd rm -rf esdk-deploy
     _time=`time_cmd bitbake $1 -c populate_sdk_ext` || exit 125
 
@@ -277,10 +277,21 @@ esdktime () {
 
     do_sync
 
-    results+=(`time_cmd "${esdk_installer[-1]}" -y -d "esdk-deploy"`) || exit 125
+    _time=`time_cmd "${esdk_installer[-1]}" -y -d "esdk-deploy"` || exit 125
+    _size=`du -s --apparent-size -B1024 esdk-deploy | cut -f1` || exit 255
 }
 
-cleanup_esdktime () {
+esdktime () {
+    esdk_common "$@"
+    results+=($_time)
+}
+
+esdksize () {
+    esdk_common "$@"
+    results+=($_size)
+}
+
+cleanup_esdk () {
     run_cmd rm -rf esdk-deploy tmp*
 }
 
@@ -312,7 +323,12 @@ case "$test_method" in
         ;;
     esdktime)
         builddir="$workdir/build"
-        cleanup_func=cleanup_esdktime
+        cleanup_func=cleanup_esdk
+        ;;
+    esdksize)
+        builddir="$workdir/build"
+        cleanup_func=cleanup_esdk
+        quantity="SIZE"
         ;;
     parsetime)
         build_target=""
