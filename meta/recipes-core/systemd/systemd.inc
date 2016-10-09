@@ -23,3 +23,4 @@ PV = "230+git${SRCPV}"
 S = "${WORKDIR}/git"
 
 LDFLAGS_append_libc-uclibc = " -lrt -lssp_nonshared -lssp "
+CFLAGS_append_mips64 = " -O0"
