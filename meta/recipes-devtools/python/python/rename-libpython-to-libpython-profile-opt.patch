@@ -1,0 +1,94 @@
+From bc4690886248d87c019cf3c955d5349327f6fdfc Mon Sep 17 00:00:00 2001
+From: Markus Lehtonen <markus.lehtonen@linux.intel.com>
+Date: Mon, 17 Oct 2016 15:58:21 +0300
+Subject: [PATCH] rename libpython to libpython-profile-opt
+
+Upstream-Status: Inappropriate [oe-specific]
+
+Signed-off-by: Markus Lehtonen <markus.lehtonen@linux.intel.com>
+---
+ Lib/distutils/command/build_ext.py | 2 +-
+ Makefile.pre.in                    | 2 +-
+ Misc/python-config.in              | 2 +-
+ Misc/python.pc.in                  | 2 +-
+ configure.ac                       | 6 +++---
+ 5 files changed, 7 insertions(+), 7 deletions(-)
+
+diff --git a/Lib/distutils/command/build_ext.py b/Lib/distutils/command/build_ext.py
+index 3a49454..56cabce 100644
+--- a/Lib/distutils/command/build_ext.py
++++ b/Lib/distutils/command/build_ext.py
+@@ -758,7 +758,7 @@ class build_ext (Command):
+         else:
+             from distutils import sysconfig
+             if sysconfig.get_config_var('Py_ENABLE_SHARED'):
+-                template = "python%d.%d"
++                template = "python-profile-opt%d.%d"
+                 pythonlib = (template %
+                              (sys.hexversion >> 24, (sys.hexversion >> 16) & 0xff))
+                 return ext.libraries + [pythonlib]
+diff --git a/Makefile.pre.in b/Makefile.pre.in
+index d4b81dc..43fe5fe 100644
+--- a/Makefile.pre.in
++++ b/Makefile.pre.in
+@@ -562,7 +562,7 @@ $(LIBRARY): $(LIBRARY_OBJS)
+ 	$(AR) $(ARFLAGS) $@ $(MODOBJS)
+ 	$(RANLIB) $@
+ 
+-libpython$(VERSION).so: $(LIBRARY_OBJS)
++libpython-profile-opt$(VERSION).so: $(LIBRARY_OBJS)
+ 	if test $(INSTSONAME) != $(LDLIBRARY); then \
+ 		$(BLDSHARED) -Wl,-h$(INSTSONAME) -o $(INSTSONAME) $(LIBRARY_OBJS) $(MODLIBS) $(SHLIBS) $(LIBC) $(LIBM) $(LDLAST); \
+ 		$(LN) -f $(INSTSONAME) $@; \
+diff --git a/Misc/python-config.in b/Misc/python-config.in
+index 9ee0fdf..9fb149d 100644
+--- a/Misc/python-config.in
++++ b/Misc/python-config.in
+@@ -44,7 +44,7 @@ for opt in opt_flags:
+         print ' '.join(flags)
+ 
+     elif opt in ('--libs', '--ldflags'):
+-        libs = ['-lpython' + pyver]
++        libs = ['-lpython-profile-opt' + pyver]
+         libs += getvar('LIBS').split()
+         libs += getvar('SYSLIBS').split()
+         # add the prefix/lib/pythonX.Y/config dir, but only if there is no
+diff --git a/Misc/python.pc.in b/Misc/python.pc.in
+index 08481a9..0822e54 100644
+--- a/Misc/python.pc.in
++++ b/Misc/python.pc.in
+@@ -8,6 +8,6 @@ Description: Python library
+ Requires: 
+ Version: @VERSION@
+ Libs.private: @LIBS@
+-Libs: -L${libdir} -lpython@VERSION@
++Libs: -L${libdir} -lpython-profile-opt@VERSION@
+ Cflags: -I${includedir}/python@VERSION@ 
+ 
+diff --git a/configure.ac b/configure.ac
+index 353b533..0b8e399 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -765,7 +765,7 @@ AC_SUBST(LIBRARY)
+ AC_MSG_CHECKING(LIBRARY)
+ if test -z "$LIBRARY"
+ then
+-	LIBRARY='libpython$(VERSION).a'
++	LIBRARY='libpython-profile-opt$(VERSION).a'
+ fi
+ AC_MSG_RESULT($LIBRARY)
+ 
+@@ -911,8 +911,8 @@ if test $enable_shared = "yes"; then
+ 	  INSTSONAME="$LDLIBRARY".$SOVERSION
+           ;;
+     Linux*|GNU*|NetBSD*|FreeBSD*|DragonFly*|OpenBSD*)
+-	  LDLIBRARY='libpython$(VERSION).so'
+-	  BLDLIBRARY='-L. -lpython$(VERSION)'
++	  LDLIBRARY='libpython-profile-opt$(VERSION).so'
++	  BLDLIBRARY='-L. -lpython-profile-opt$(VERSION)'
+ 	  RUNSHARED=LD_LIBRARY_PATH=`pwd`${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}
+ 	  case $ac_sys_system in
+ 	      FreeBSD*)
+-- 
+2.6.6
+
