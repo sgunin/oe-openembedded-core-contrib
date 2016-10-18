@@ -714,6 +714,7 @@ python populate_lic_qa_checksum() {
         sane = package_qa_handle_error("license-checksum", pn + ": Recipe file fetches files and does not have license file information (LIC_FILES_CHKSUM)", d)
 
     srcdir = d.getVar('S', True)
+    generic_directory = d.getVar('COMMON_LICENSE_DIR', True)
 
     for url in lic_files.split():
         try:
@@ -727,6 +728,9 @@ python populate_lic_qa_checksum() {
             continue
 
         recipemd5 = parm.get('md5', '')
+        if os.path.dirname(path) == generic_directory:
+            continue
+
         beginline, endline = 0, 0
         if 'beginline' in parm:
             beginline = int(parm['beginline'])

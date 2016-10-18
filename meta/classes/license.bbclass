@@ -478,6 +478,10 @@ def find_license_files(d):
             (type, host, path, user, pswd, parm) = bb.fetch.decodeurl(url)
         except bb.fetch.MalformedUrl:
             bb.fatal("%s: LIC_FILES_CHKSUM contains an invalid URL:  %s" % (d.getVar('PF', True), url))
+
+        if os.path.dirname(path) == generic_directory:
+            lic_chksums[path] = 'none'
+            continue;
         # We want the license filename and path
         chksum = parm['md5'] if 'md5' in parm else parm['sha256']
         lic_chksums[path] = chksum
