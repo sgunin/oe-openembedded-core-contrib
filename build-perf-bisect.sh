@@ -24,10 +24,12 @@ build_target="core-image-sato"
 workdir=`realpath build-perf-bisect`
 test_method="buildtime"
 test_count=1
+parallel_make='${@oe.utils.cpu_count()}'
+bb_number_threads='${@oe.utils.cpu_count()}'
 
 usage () {
 cat << EOF
-Usage: $script [-h] [-b BUILD_TARGET] [-c COUNT] [-d DL_DIR] [-m TEST_METHOD] [-w WORKDIR] [-n | THRESHOLD]
+Usage: $script [-h] [-b BUILD_TARGET] [-c COUNT] [-d DL_DIR] [-j MAKE_JOBS] [-t BB_THREADS] [-m TEST_METHOD] [-w WORKDIR] [-n | THRESHOLD]
 
 Optional arguments:
   -h                show this help and exit.
@@ -37,16 +39,20 @@ Optional arguments:
   -d                DL_DIR to use
   -i                invert logic: values above the threshold are OK, below it
                         FAIL
+  -j                number of make jobs, i.e. PARALLEL_MAKE to use in bitbake
+                        conf (default: $parallel_make)
   -m                test method, available options are:
                         buildtime, buildtime2, tmpsize, esdktime, esdksize,
                         parsetime (default: $test_method)
   -n                no threshold, do not do any comparison, all successful
                         builds return 0
+  -t                number of task threads, i.e. BB_NUMBER_THREADS to use
+                        in bitbake conf (default: $bb_number_threads)
   -w                work directory to use
 EOF
 }
 
-while getopts "hb:c:d:im:nw:" opt; do
+while getopts "hb:c:d:ij:m:nt:w:" opt; do
     case $opt in
         h)  usage
             exit 0
@@ -59,9 +65,13 @@ while getopts "hb:c:d:im:nw:" opt; do
             ;;
         i)  invert_cmp="1"
             ;;
+        j)  parallel_make="$OPTARG"
+            ;;
         m)  test_method="$OPTARG"
             ;;
         n)  no_threshold="1"
+            ;;
+        t)  bb_number_threads="$OPTARG"
             ;;
         w)  workdir=`realpath "$OPTARG"`
             ;;
@@ -352,6 +362,8 @@ mkdir -p $workdir
 
 echo DL_DIR = \"$downloaddir\" >> conf/local.conf
 echo CONNECTIVITY_CHECK_URIS = \"\" >> conf/local.conf
+echo PARALLEL_MAKE = \"-j $parallel_make\" >> conf/local.conf
+echo BB_NUMBER_THREADS = \"$bb_number_threads\" >> conf/local.conf
 
 # Do actual build
 log "TESTING REVISION $git_rev (#$git_rev_cnt), AVERAGING OVER $test_count TEST RUNS"

@@ -24,25 +24,27 @@ scriptdir=`dirname $0`
 
 usage () {
 cat << EOF
-Usage: $script [-h] [-b BUILD_TARGET] [-c COUNT] [-d DL_DIR] [-m TEST_METHOD] [-w WORKDIR] [REV1 [REV2]...]
+Usage: $script [-h] [-b BUILD_TARGET] [-c COUNT] [-d DL_DIR] [-j MAKE_JOBS] [-t BB_THREADS] [-m TEST_METHOD] [-w WORKDIR] [REV1 [REV2]...]
 
 Optional arguments:
   -h                show this help and exit.
   -b                build target to test
   -c                average over COUNT test runs
   -d                DL_DIR to use
+  -j                number of make jobs, i.e. PARALLEL_MAKE to use
   -m                test method (buildtime, buildtime2, tmpsize, esdktime,
                         parsetime)
+  -t                number of task threads, i.e. BB_NUMBER_THREADS to use
   -w                work directory to use
 EOF
 }
 
-while getopts "hb:c:d:m:w:" opt; do
+while getopts "hb:c:d:j:m:t:w:" opt; do
     case $opt in
         h)  usage
             exit 0
             ;;
-        b|c|d|m|w)  cmd_args+=(-$opt "$OPTARG")
+        b|c|d|j|m|t|w)  cmd_args+=(-$opt "$OPTARG")
             ;;
         *)  usage
             exit 1
