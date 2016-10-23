@@ -15,6 +15,7 @@ SYSTEMD_SERVICE_${PN} = "dpkg-configure.service"
 
 export PERL = "${bindir}/perl"
 PERL_class-native = "${STAGING_BINDIR_NATIVE}/perl-native/perl"
+PERL_class-nativesdk = "${STAGING_BINDIR_NATIVE}/perl-native/perl"
 
 export PERL_LIBDIR = "${libdir}/perl"
 PERL_LIBDIR_class-native = "${libdir}/perl-native/perl"
@@ -43,7 +44,7 @@ do_install_append_class-native() {
     sed -i -e 's|^#!${PERL}|#!/usr/bin/env nativeperl|' ${D}${bindir}/dpkg-*
 }
 
-do_install_append () {
+do_install_append_class-target () {
     install -d ${D}${systemd_unitdir}/system
     install -m 0644 ${WORKDIR}/dpkg-configure.service ${D}${systemd_unitdir}/system
     sed -e 's,@BASE_BINDIR@,${base_bindir},g' \
@@ -57,10 +58,12 @@ PACKAGES =+ "dpkg-perl dselect libdpkg-perl update-alternatives-dpkg"
 
 RDEPENDS_${PN} = "${VIRTUAL-RUNTIME_update-alternatives} run-postinsts perl"
 RDEPENDS_${PN}_class-native = ""
+RDEPENDS_${PN}_class-nativesdk = "nativesdk-${VIRTUAL-RUNTIME_update-alternatives} nativesdk-perl"
 RSUGGESTS_${PN} = "apt"
 
 RDEPENDS_dpkg-perl = "binutils libdpkg-perl make xz"
 RRECOMMENDS_dpkg-perl = "gnupg gpgv"
+RRECOMMENDS_dpkg-perl_class-nativesdk = ""
 
 RDEPENDS_dselect = "dpkg"
 RSUGGESTS_dselect = "perl"
@@ -108,4 +111,4 @@ FILES_update-alternatives-dpkg = " \
 PKG_dpkg-dev = "libdpkg-dev"
 PKG_dpkg-perl = "dpkg-dev"
 
-BBCLASSEXTEND = "native"
+BBCLASSEXTEND = "native nativesdk"
