@@ -10,6 +10,7 @@ UPSTREAM_CHECK_URI = "${DEBIAN_MIRROR}/main/d/dpkg/"
 inherit autotools gettext perlnative pkgconfig perl-version update-alternatives
 
 PERL_class-native = "${STAGING_BINDIR_NATIVE}/perl-native/perl"
+PERL_class-nativesdk = "${STAGING_BINDIR_NATIVE}/perl-native/perl"
 
 export PERL_LIBDIR = "${libdir}/perl/${@get_perl_version(d)}"
 PERL_LIBDIR_class-native = "${libdir}/perl-native/perl/${@get_perl_version(d)}"
@@ -48,12 +49,14 @@ PACKAGES =+ "dpkg-perl dselect libdpkg-perl start-stop-daemon update-alternative
 
 RDEPENDS_${PN} = "${VIRTUAL-RUNTIME_update-alternatives}"
 RDEPENDS_${PN}_class-native = ""
+RDEPENDS_${PN}_class-nativesdk = "nativesdk-${VIRTUAL-RUNTIME_update-alternatives} nativesdk-perl"
 RRECOMMENDS_${PN} = "start-stop-daemon"
 RRECOMMENDS_${PN}_class-native = ""
 RSUGGESTS_${PN} = "apt"
 
 RDEPENDS_dpkg-perl = "binutils libdpkg-perl make xz"
 RRECOMMENDS_dpkg-perl = "gnupg"
+RRECOMMENDS_dpkg-perl_class-nativesdk = ""
 
 RDEPENDS_dselect = "dpkg"
 RSUGGESTS_dselect = "perl"
@@ -127,4 +130,4 @@ ALTERNATIVE_${PN}-start-stop-daemon = "start-stop-daemon"
 ALTERNATIVE_LINK_NAME[start-stop-daemon] = "${base_sbindir}/start-stop-daemon"
 ALTERNATIVE_PRIORITY = "100"
 
-BBCLASSEXTEND = "native"
+BBCLASSEXTEND = "native nativesdk"
