@@ -11,7 +11,7 @@ S = "${WORKDIR}/TimeDate-${PV}"
 
 inherit cpan ptest-perl
 
-BBCLASSEXTEND = "native"
+BBCLASSEXTEND = "native nativesdk"
 
 RDEPENDS_${PN}_class-native = ""
 RDEPENDS_${PN} += "perl-module-carp perl-module-exporter perl-module-strict perl-module-time-local"
