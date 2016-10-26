@@ -9,6 +9,7 @@ LICENSE = "MIT"
 inherit core-image
 
 PYTHON_PROFILE_DIR ?= "${TMPDIR}/work-shared/${MACHINE}/python/pgo-data"
+PROFILE_DATA_WORKDIR = "${WORKDIR}/profile-data"
 #PYTHON_PROFILE_TASK_DEFAULT = "-m test.regrtest --pgo -w -x test_asyncore test_gdb test_multiprocessing test_subprocess"
 ## Exclude tests that are segfaulting on qemux86 target
 #PYTHON_PROFILE_TASK_DEFAULT += "test_bytes test_str test_string test_tuple test_unicode test_userstring test_xmlrpc"
@@ -48,7 +49,7 @@ python do_profile() {
             bb.fatal("Failed to archive profile data on target: %s" % output)
 
         # Retrieve and unpack profile data
-        profile_dir = d.getVar("PYTHON_PROFILE_DIR", True)
+        profile_dir = d.getVar("PROFILE_DATA_WORKDIR", True)
         target.copy_from('/home/root/pgo-data.tgz', profile_dir)
 
         profile_tarball = os.path.join(profile_dir, 'pgo-data.tgz')
@@ -68,4 +69,14 @@ python do_profile() {
 
 addtask profile after do_build
 do_profile[depends] += "qemu-native:do_populate_sysroot qemu-helper-native:do_populate_sysroot"
-do_profile[cleandirs] = "${PYTHON_PROFILE_DIR}"
+do_profile[cleandirs] = "${PROFILE_DATA_WORKDIR}"
+
+
+python do_profile_setscene () {
+    sstate_setscene(d)
+}
+
+SSTATETASKS += "do_profile"
+do_profile[sstate-inputdirs] = "${PROFILE_DATA_WORKDIR}"
+do_profile[sstate-outputdirs] = "${PYTHON_PROFILE_DIR}"
+addtask do_profile_setscene
