@@ -331,6 +331,7 @@ def _git_ls_tree(repodir, treeish='HEAD', recursive=False):
         cmd.append('-r')
     out, _ = bb.process.run(cmd, cwd=repodir)
     ret = {}
+    out = out.decode('utf-8')
     for line in out.split('\0'):
         if line:
             split = line.split(None, 4)
