@@ -9,6 +9,9 @@ LIC_FILES_CHKSUM = "file://COPYING;md5=751419260aa954499f7abaabaa882bbe \
                     file://trace-input.c;beginline=5;endline=8;md5=3ec82f43bbe0cfb5951ff414ef4d44d0 \
 "
 
+PACKAGECONFIG ??= ""
+PACKAGECONFIG[audit] = ",,audit"
+
 EXTRA_OEMAKE = "\
     'prefix=${prefix}' \
     'bindir=${bindir}' \
@@ -20,6 +23,7 @@ EXTRA_OEMAKE = "\
     'libdir=${@oe.path.relative(prefix, libdir)}' \
     \
     NO_PYTHON=1 \
+    ${@bb.utils.contains('PACKAGECONFIG', 'audit', '', 'NO_AUDIT=1', d)} \
 "
 
 do_compile_prepend() {
