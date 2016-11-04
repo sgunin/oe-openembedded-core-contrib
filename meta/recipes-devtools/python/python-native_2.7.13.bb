@@ -17,6 +17,7 @@ SRC_URI += "\
             file://builddir.patch \
             file://parallel-makeinst-create-bindir.patch \
             file://revert_use_of_sysconfigdata.patch \
+            file://Makefile-fix-.so-loading-when-when-running-profile-t.patch \
            "
 
 S = "${WORKDIR}/Python-${PV}"
@@ -35,8 +36,17 @@ EXTRA_OEMAKE = '\
   STAGING_INCDIR=${STAGING_INCDIR_NATIVE} \
 '
 
+PYTHON_NATIVE_MAKE_TARGET ?= "${@'profile-opt' if d.getVar('PYTHON_NATIVE_PROFILE_OPT', True) == '1' else ''}"
+
 do_configure_append() {
 	autoreconf --verbose --install --force --exclude=autopoint ../Python-${PV}/Modules/_ctypes/libffi
+}
+
+do_compile() {
+    if [ -n "${PYTHON_NATIVE_PROFILE_TASK}" ]; then
+        sed -i -e 's,^PROFILE_TASK=.*,PROFILE_TASK=${PYTHON_NATIVE_PROFILE_TASK},g' Makefile
+    fi
+    oe_runmake ${PYTHON_NATIVE_MAKE_TARGET}
 }
 
 do_install() {

@@ -1,0 +1,26 @@
+Makefile: fix .so loading when when running profile task
+
+Use correct search path when doing profiling for profile-optimized
+build. This way we load the correct Python libraries, i.e. the ones from
+our build directory, and not the ones from the host os.
+
+Upstream-Status: Pending
+
+Signed-off-by: Markus Lehtonen <markus.lehtonen@linux.intel.com>
+
+diff --git a/Makefile.pre.in b/Makefile.pre.in
+index 2affc41..4355e7f 100644
+--- a/Makefile.pre.in
++++ b/Makefile.pre.in
+@@ -458,7 +458,7 @@ build_all_generate_profile:
+ 
+ run_profile_task:
+ 	: # FIXME: can't run for a cross build
+-	$(LLVM_PROF_FILE) ./$(BUILDPYTHON) $(PROFILE_TASK) || true
++	$(LLVM_PROF_FILE) $(RUNSHARED) ./$(BUILDPYTHON) $(PROFILE_TASK) || true
+ 
+ build_all_merge_profile:
+ 	$(LLVM_PROF_MERGER)
+-- 
+2.6.6
+
