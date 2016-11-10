@@ -239,6 +239,13 @@ class OutputLog(object):
         msg = self.find("TIME: ").msg
         return msg.split(':', 1)[1].strip()
 
+    def get_du_meas_size(self):
+        """Helper for getting size of du measurement"""
+        msg = self.find(".*SIZE of.*: ").msg
+        value = msg.split(':', 1)[1].strip()
+        # Split out possible unit
+        return int(value.split()[0])
+
 
 def time_log_to_json(time_log):
     """Convert time log to json results"""
@@ -370,52 +377,46 @@ def convert_buildstats(indir, outfile):
                   cls=ResultsJsonEncoder)
 
 
-def convert_results(globalres, poky_repo, results_dir):
+def convert_results(poky_repo, results_dir, tester_host):
     """Convert 'old style' to new JSON based format.
 
     Conversion is a destructive operation, converted files being deleted.
     """
-    if not globalres:
-        raise CommitError("Need non-empty globalres for conversion")
-
-    times = []
     test_params = OrderedDict([
         ('test1', {'log_start_re': "Running Test 1, part 1/3",
                    'log_end_re': "Buildstats are saved in.*-test1$",
-                   'sysres_meas_params': [(1, 'build', 'bitbake core-image-sato')],
+                   'meas_params': [('sysres', (1, 'build', 'bitbake core-image-sato')),
+                                   ('diskusage', ('tmpdir', 'tmpdir'))]
                    }),
         ('test12', {'log_start_re': "Running Test 1, part 2/3",
                    'log_end_re': "More stats can be found in.*results.log.2",
-                   'sysres_meas_params': [(2, 'build', 'bitbake virtual/kernel')]
+                   'meas_params': [('sysres', (2, 'build', 'bitbake virtual/kernel'))],
                    }),
         ('test13', {'log_start_re': "Running Test 1, part 3/3",
                     'log_end_re': "Buildstats are saved in.*-test13$",
-                    'sysres_meas_params': [(3, 'build', 'bitbake core-image-sato')],
+                    'meas_params': [('sysres', (3, 'build', 'bitbake core-image-sato')),
+                                    ('diskusage', ('tmpdir', 'tmpdir'))],
                     }),
         ('test2', {'log_start_re': "Running Test 2",
                    'log_end_re': "More stats can be found in.*results.log.4",
-                   'sysres_meas_params': [(4, 'do_rootfs', 'bitbake do_rootfs')],
+                   'meas_params': [('sysres', (4, 'do_rootfs', 'bitbake do_rootfs'))],
                    }),
         ('test3', {'log_start_re': "Running Test 3",
                    'log_end_re': "More stats can be found in.*results.log.7",
-                   'sysres_meas_params': [(5, 'parse_1', 'bitbake -p (no caches)'),
-                                          (6, 'parse_2', 'bitbake -p (no tmp/cache)'),
-                                          (7, 'parse_3', 'bitbake -p (cached)')]
+                   'meas_params': [('sysres', (5, 'parse_1', 'bitbake -p (no caches)')),
+                                   ('sysres', (6, 'parse_2', 'bitbake -p (no tmp/cache)')),
+                                   ('sysres', (7, 'parse_3', 'bitbake -p (cached)'))],
                    }),
         ('test4', {'log_start_re': "Running Test 4",
                    'log_end_re': "All done, cleaning up",
-                   'sysres_meas_params': [(8, 'deploy', 'eSDK deploy')],
+                   'meas_params': [('diskusage', ('installer_bin', 'eSDK installer')),
+                                   ('sysres', (8, 'deploy', 'eSDK deploy')),
+                                   ('diskusage', ('deploy_dir', 'deploy dir'))],
                    })
          ])
-    test_du_params = {
-        'test1': [(0, 'tmpdir', 'tmpdir', 1)],
-        'test13': [(1, 'tmpdir', 'tmpdir', 1)],
-        'test4': [(2, 'installer_bin', 'eSDK installer', 0),
-                  (3, 'deploy_dir', 'deploy dir', 2)]
-        }
 
     def _import_test(topdir, name, output_log, log_start_re, log_end_re,
-                     sysres_meas_params):
+                     meas_params):
         """Import test results from one results.log.X into JSON format"""
         test_res = {'name': name,
                     'measurements': [],
@@ -425,29 +426,44 @@ def convert_results(globalres, poky_repo, results_dir):
         test_res['description'] = output_log.get_test_descr()
         test_res['start_time'] = start_time
         test_res['elapsed_time'] = end_time - start_time
-        for i, meas_name, meas_legend in sysres_meas_params:
-            measurement = {'type': 'sysres'}
-            start_time = output_log.get_sysres_meas_start_time()
+        for meas_type, params in meas_params:
+            measurement = {'type': meas_type}
+            if meas_type == 'sysres':
+                i, meas_name, meas_legend = params
+                start_time = output_log.get_sysres_meas_start_time()
+
+                time_log_fn = os.path.join(topdir, 'results.log.{}'.format(i))
+                if not os.path.isfile(time_log_fn):
+                    raise ConversionError("results.log.{} not found".format(i))
+                exit_status, measurement['values'] = time_log_to_json(time_log_fn)
+                # Remove old results.log
+                os.unlink(time_log_fn)
+
+                if exit_status != 0:
+                    log.debug("Detected failed test %s in %s", name, topdir)
+                    test_res['status'] = 'ERROR'
+                    # Consider the rest of the measurements (including this)
+                    # invalid. Return what we got so far
+                    return test_res
+
+                measurement['values']['start_time'] = start_time
+            elif meas_type == 'diskusage':
+                meas_name, meas_legend = params
+                try:
+                    measurement['values'] = {'size': output_log.get_du_meas_size()}
+                except ConversionError:
+                    # Test4 might not have the second du measurement
+                    if meas_name == 'deploy_dir':
+                        log.debug("deploy_dir measurement for test4 not found")
+                        continue
+                    else:
+                        raise
+            else:
+                raise CommitError("BUG: invalid measurement type: {}".format(meas_type))
+
             measurement['name'] = meas_name
             measurement['legend'] = meas_legend
-
-            time_log_fn = os.path.join(topdir, 'results.log.{}'.format(i))
-            if not os.path.isfile(time_log_fn):
-                raise ConversionError("results.log.{} not found".format(i))
-            exit_status, measurement['values'] = time_log_to_json(time_log_fn)
-            measurement['values']['start_time'] = start_time
-
-            # Track wall clock times also in the separate helper array
-            if exit_status == 0:
-                test_res['measurements'].append(measurement)
-                times.append(output_log.get_sysres_meas_time())
-            else:
-                log.debug("Detected failed test %s in %s", name, topdir)
-                times.append('0')
-                test_res['status'] = 'ERROR'
-
-            # Remove old results.log
-            os.unlink(time_log_fn)
+            test_res['measurements'].append(measurement)
         return test_res
 
 
@@ -456,10 +472,11 @@ def convert_results(globalres, poky_repo, results_dir):
     if out_log.new_fmt:
         raise ConversionError("New output.log format detected, refusing to "
                               "convert results")
+    git_branch, git_rev = out_log.get_git_rev_info()
 
     tests = OrderedDict()
 
-    # Read timing results of tests
+    # Parse test results
     for test, params in test_params.items():
         # Special handling for test4
         if (test == 'test4' and
@@ -470,28 +487,6 @@ def convert_results(globalres, poky_repo, results_dir):
         except ConversionError as err:
             raise ConversionError("Presumably incomplete test run. Unable to "
                                   "parse '{}' from output.log: {}".format(test, err))
-
-    # Try to find the corresponding entry from globalres
-    git_rev = out_log.records[0].msg.split()[-1].split(':')[1]
-    gr_data = None
-    for i in range(len(globalres[git_rev])):
-        if globalres[git_rev][i]['times'] == times:
-            gr_data = globalres[git_rev].pop(i)
-            break
-    if gr_data is None:
-        raise CommitError("Unable to find row in globalres.log corresponding "
-                          "{}".format(os.path.basename(results_dir)))
-
-    # Add disk usage measurements
-    for test, params in test_du_params.items():
-        for du_params in params:
-            sz_index = du_params[0]
-            if len(gr_data['sizes']) > sz_index:
-                du_meas = {'type': 'diskusage',
-                           'name': du_params[1],
-                           'legend': du_params[2],
-                           'values': {'size': gr_data['sizes'][sz_index]}}
-                tests[test]['measurements'].insert(du_params[3], du_meas)
 
     # Convert buildstats
     for path in glob(results_dir + '/buildstats-*'):
@@ -519,11 +514,11 @@ def convert_results(globalres, poky_repo, results_dir):
     # Create final results dict
     cmd = ['rev-list', '--count', git_rev, '--']
     commit_cnt = poky_repo.run_cmd(cmd).splitlines()[0]
-    results = OrderedDict((('tester_host', gr_data['host']),
+    results = OrderedDict((('tester_host', tester_host),
                            ('start_time', out_log.records[0].time),
                            ('elapsed_time', (out_log.records[-1].time -
                                              out_log.records[0].time)),
-                           ('git_branch', gr_data['branch']),
+                           ('git_branch', git_branch),
                            ('git_commit', git_rev),
                            ('git_commit_count', commit_cnt),
                            ('product', 'poky'),
@@ -552,7 +547,7 @@ def git_commit_dir(data_repo, src_dir, branch, msg, tag=None, tag_msg="",
 
 
 def import_testrun(archive, data_repo, poky_repo, branch_fmt, tag_fmt,
-                   convert=False, globalres=None):
+                   convert=False):
     """Import one testrun into Git"""
     archive = os.path.abspath(archive)
     archive_fn = os.path.basename(archive)
@@ -650,7 +645,7 @@ def import_testrun(archive, data_repo, poky_repo, branch_fmt, tag_fmt,
         if os.path.exists(os.path.join(results_dir, 'output.log')) and convert:
             log.info("Converting test results from %s", archive_fn)
             try:
-                convert_results(globalres, poky_repo, results_dir)
+                convert_results(poky_repo, results_dir, fn_fields['host'])
                 converted = True
             except ConversionError as err:
                 log.warn("Skipping %s, conversion failed: %s", archive_fn, err)
@@ -760,11 +755,8 @@ def parse_args(argv=None):
                         default='%(host)s/%(branch)s/%(machine)s/%(rev_cnt)s-g%(rev)s',
                         help="Tag 'basename' to use, tag number will be "
                              "automatically appended")
-    parser.add_argument('-G', '--globalres', type=os.path.abspath,
-                        help="Globalres log file, used in conversion")
     parser.add_argument('-c', '--convert', action='store_true',
-                        help="Convert results to new JSON-based format, "
-                             "requires -G option to be defined")
+                        help="Convert results to new JSON-based format")
     parser.add_argument('-P', '--poky-git', type=os.path.abspath, required=True,
                         help="Path to poky clone")
     parser.add_argument('-g', '--git-dir', type=os.path.abspath, required=True,
@@ -772,8 +764,6 @@ def parse_args(argv=None):
     parser.add_argument('archive', nargs="+", type=os.path.abspath,
                         help="Results archive")
     args = parser.parse_args()
-    if args.convert and not args.globalres:
-        parser.error("-c/--convert requires -G/--globalres to be defined")
 
     return args
 
@@ -802,19 +792,13 @@ def main(argv=None):
         else:
             data_repo = GitRepo(args.git_dir, is_topdir=True)
 
-        # Import test results data
-        if args.globalres:
-            globalres = read_globalres(args.globalres)
-        else:
-            globalres = None
-
         # Import archived results
         imported = []
         skipped = []
         for archive in sorted(args.archive, key=get_archive_timestamp):
             result = import_testrun(archive, data_repo, poky_repo,
                                     args.git_branch_name, args.git_tag_name,
-                                    args.convert, globalres)
+                                    args.convert)
             if result[0]:
                 imported.append(result[1])
             else:
