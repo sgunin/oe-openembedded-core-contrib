@@ -70,6 +70,10 @@ export _PYTHON_PROJECT_BASE = "${B}"
 export _PYTHON_PROJECT_SRC = "${S}"
 export CCSHARED = "-fPIC"
 
+# These enable build with modified prefix (used in python3-prorile-opt recipe)
+STAGING_INCDIR_DEFAULT ?= "${STAGING_INCDIR}"
+STAGING_LIBDIR_DEFAULT ?= "${STAGING_LIBDIR}"
+
 # Fix cross compilation of different modules
 export CROSSPYTHONPATH = "${STAGING_LIBDIR_NATIVE}/python${PYTHON_MAJMIN}/lib-dynload/:${B}/build/lib.linux-${TARGET_ARCH}-${PYTHON_MAJMIN}:${S}/Lib:${S}/Lib/plat-linux"
 
@@ -84,12 +88,12 @@ do_configure_append() {
 do_compile() {
         # regenerate platform specific files, because they depend on system headers
         cd ${S}/Lib/plat-linux*
-        include=${STAGING_INCDIR} ${STAGING_BINDIR_NATIVE}/python3-native/python3 \
+        include=${STAGING_INCDIR_DEFAULT} ${STAGING_BINDIR_NATIVE}/python3-native/python3 \
                 ${S}/Tools/scripts/h2py.py -i '(u_long)' \
-                ${STAGING_INCDIR}/dlfcn.h \
-                ${STAGING_INCDIR}/linux/cdrom.h \
-                ${STAGING_INCDIR}/netinet/in.h \
-                ${STAGING_INCDIR}/sys/types.h
+                ${STAGING_INCDIR_DEFAULT}/dlfcn.h \
+                ${STAGING_INCDIR_DEFAULT}/linux/cdrom.h \
+                ${STAGING_INCDIR_DEFAULT}/netinet/in.h \
+                ${STAGING_INCDIR_DEFAULT}/sys/types.h
         sed -e 's,${STAGING_DIR_HOST},,g' -i *.py
         cd -
 
@@ -100,7 +104,7 @@ do_compile() {
 	if [ ! -f Makefile.orig ]; then
 		install -m 0644 Makefile Makefile.orig
 	fi
-	sed -i -e 's,^CONFIGURE_LDFLAGS=.*,CONFIGURE_LDFLAGS=-L. -L${STAGING_LIBDIR},g' \
+	sed -i -e 's,^CONFIGURE_LDFLAGS=.*,CONFIGURE_LDFLAGS=-L. -L${STAGING_LIBDIR_DEFAULT},g' \
 		-e 's,libdir=${libdir},libdir=${STAGING_LIBDIR},g' \
 		-e 's,libexecdir=${libexecdir},libexecdir=${STAGING_DIR_HOST}${libexecdir},g' \
 		-e 's,^LIBDIR=.*,LIBDIR=${STAGING_LIBDIR},g' \
@@ -112,14 +116,10 @@ do_compile() {
 	# then call do_install twice we get Makefile.orig == Makefile.sysroot
 	install -m 0644 Makefile Makefile.sysroot
 
-	oe_runmake HOSTPGEN=${STAGING_BINDIR_NATIVE}/python3-native/pgen \
-		HOSTPYTHON=${STAGING_BINDIR_NATIVE}/python3-native/python3 \
-		STAGING_LIBDIR=${STAGING_LIBDIR} \
-		STAGING_BASELIBDIR=${STAGING_BASELIBDIR} \
-		STAGING_INCDIR=${STAGING_INCDIR} \
-		LIB=${baselib} \
-		ARCH=${TARGET_ARCH} \
-		OPT="${CFLAGS}" libpython3.so
+    if [ "${PYTHON3_MAKE_TARGET}" = "build_all_generate_profile" ]; then
+        # This is only used in PGO profiling by python-profile-opt package
+        export EXTRA_CFLAGS="-fprofile-dir=./python3-pgo-profiles/"
+    fi
 
 	oe_runmake HOSTPGEN=${STAGING_BINDIR_NATIVE}/python3-native/pgen \
 		HOSTPYTHON=${STAGING_BINDIR_NATIVE}/python3-native/python3 \
@@ -128,7 +128,7 @@ do_compile() {
 		STAGING_BASELIBDIR=${STAGING_BASELIBDIR} \
 		LIB=${baselib} \
 		ARCH=${TARGET_ARCH} \
-		OPT="${CFLAGS}"
+		OPT="${CFLAGS}" ${PYTHON3_MAKE_TARGET}
 }
 
 do_install() {
@@ -148,8 +148,14 @@ do_install() {
 		STAGING_BASELIBDIR=${STAGING_BASELIBDIR} \
 		LIB=${baselib} \
 		ARCH=${TARGET_ARCH} \
-		DESTDIR=${D} LIBDIR=${libdir}
+		DESTDIR=${D} LIBDIR=${libdir} ${PYTHON3_MAKE_TARGET}
 	
+    if [ "${PYTHON3_MAKE_TARGET}" = "build_all_generate_profile" ]; then
+        # Need special make install if pgo generation is enabled
+        _PYTHON3_MAKE_INSTALL_TARGET="install_generate_profile"
+    else
+        _PYTHON3_MAKE_INSTALL_TARGET="install"
+    fi
 	oe_runmake HOSTPGEN=${STAGING_BINDIR_NATIVE}/python3-native/pgen \
 		HOSTPYTHON=${STAGING_BINDIR_NATIVE}/python3-native/python3 \
 		STAGING_LIBDIR=${STAGING_LIBDIR} \
@@ -157,7 +163,7 @@ do_install() {
 		STAGING_BASELIBDIR=${STAGING_BASELIBDIR} \
 		LIB=${baselib} \
 		ARCH=${TARGET_ARCH} \
-		DESTDIR=${D} LIBDIR=${libdir} install
+		DESTDIR=${D} LIBDIR=${libdir} ${_PYTHON3_MAKE_INSTALL_TARGET}
 
 	# avoid conflict with 2to3 from Python 2
 	rm -f ${D}/${bindir}/2to3
@@ -206,9 +212,9 @@ PACKAGES =+ "${PN}-pyvenv"
 FILES_${PN}-pyvenv += "${bindir}/pyvenv-${PYTHON_MAJMIN} ${bindir}/pyvenv"
 
 # package libpython3
-PACKAGES =+ "libpython3 libpython3-staticdev"
-FILES_libpython3 = "${libdir}/libpython*.so.*"
-FILES_libpython3-staticdev += "${libdir}/python${PYTHON_MAJMIN}/config-${PYTHON_BINABI}/libpython${PYTHON_BINABI}.a"
+PACKAGES =+ "lib${BPN} lib${BPN}-staticdev"
+FILES_lib${BPN} = "${libdir}/libpython*.so.*"
+FILES_lib${BPN}-staticdev += "${libdir}/python${PYTHON_MAJMIN}/config-${PYTHON_BINABI}/lib${BPN}*.a"
 INSANE_SKIP_${PN}-dev += "dev-elf"
 
 # catch all the rest (unsorted)

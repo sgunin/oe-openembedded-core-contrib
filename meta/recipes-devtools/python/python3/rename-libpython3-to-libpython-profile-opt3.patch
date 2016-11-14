@@ -1,0 +1,111 @@
+rename libpython3 to libpython-profile-opt3
+
+Upstream-Status: Inappropriate [oe-specific]
+
+Signed-off-by: Markus Lehtonen <markus.lehtonen@linux.intel.com>
+
+diff --git a/Lib/distutils/command/build_ext.py b/Lib/distutils/command/build_ext.py
+index f03a4e3..4c65aff 100644
+--- a/Lib/distutils/command/build_ext.py
++++ b/Lib/distutils/command/build_ext.py
+@@ -746,7 +746,7 @@ class build_ext(Command):
+         else:
+             from distutils import sysconfig
+             if sysconfig.get_config_var('Py_ENABLE_SHARED'):
+-                pythonlib = 'python{}.{}{}'.format(
++                pythonlib = 'python-profile-opt{}.{}{}'.format(
+                     sys.hexversion >> 24, (sys.hexversion >> 16) & 0xff,
+                     sysconfig.get_config_var('ABIFLAGS'))
+                 return ext.libraries + [pythonlib]
+diff --git a/Makefile.pre.in b/Makefile.pre.in
+index bace00e..2b87614 100644
+--- a/Makefile.pre.in
++++ b/Makefile.pre.in
+@@ -622,7 +622,7 @@ $(LIBRARY): $(LIBRARY_OBJS)
+ 	$(AR) $(ARFLAGS) $@ $(MODOBJS)
+ 	$(RANLIB) $@
+ 
+-libpython$(LDVERSION).so: $(LIBRARY_OBJS)
++libpython-profile-opt$(LDVERSION).so: $(LIBRARY_OBJS)
+ 	if test $(INSTSONAME) != $(LDLIBRARY); then \
+ 		$(BLDSHARED) -Wl,-h$(INSTSONAME) -o $(INSTSONAME) $(LIBRARY_OBJS) $(MODLIBS) $(SHLIBS) $(LIBC) $(LIBM) $(LDLAST); \
+ 		$(LN) -f $(INSTSONAME) $@; \
+@@ -630,7 +630,7 @@ libpython$(LDVERSION).so: $(LIBRARY_OBJS)
+ 		$(BLDSHARED) -o $@ $(LIBRARY_OBJS) $(MODLIBS) $(SHLIBS) $(LIBC) $(LIBM) $(LDLAST); \
+ 	fi
+ 
+-libpython3.so:	libpython$(LDVERSION).so
++libpython-profile-opt3.so:	libpython-profile-opt$(LDVERSION).so
+ 	$(BLDSHARED) $(NO_AS_NEEDED) -o $@ -Wl,-h$@ $^
+ 
+ libpython$(LDVERSION).dylib: $(LIBRARY_OBJS)
+diff --git a/Misc/python-config.in b/Misc/python-config.in
+index a808f1a..0dcc615 100644
+--- a/Misc/python-config.in
++++ b/Misc/python-config.in
+@@ -47,7 +47,7 @@ for opt in opt_flags:
+         print(' '.join(flags))
+ 
+     elif opt in ('--libs', '--ldflags'):
+-        libs = ['-lpython' + pyver + sys.abiflags]
++        libs = ['-lpython-profile-opt' + pyver + sys.abiflags]
+         libs += getvar('LIBS').split()
+         libs += getvar('SYSLIBS').split()
+         # add the prefix/lib/pythonX.Y/config dir, but only if there is no
+diff --git a/Misc/python-config.sh.in b/Misc/python-config.sh.in
+index 30c6927..efad748 100644
+--- a/Misc/python-config.sh.in
++++ b/Misc/python-config.sh.in
+@@ -40,7 +40,7 @@ LIBM="@LIBM@"
+ LIBC="@LIBC@"
+ SYSLIBS="$LIBM $LIBC"
+ ABIFLAGS="@ABIFLAGS@"
+-LIBS="-lpython${VERSION}${ABIFLAGS} @LIBS@ $SYSLIBS"
++LIBS="-lpython-profile-opt${VERSION}${ABIFLAGS} @LIBS@ $SYSLIBS"
+ BASECFLAGS="@BASECFLAGS@"
+ LDLIBRARY="@LDLIBRARY@"
+ LINKFORSHARED="@LINKFORSHARED@"
+diff --git a/Misc/python.pc.in b/Misc/python.pc.in
+index ae69867..b73d027 100644
+--- a/Misc/python.pc.in
++++ b/Misc/python.pc.in
+@@ -9,5 +9,5 @@ Description: Python library
+ Requires: 
+ Version: @VERSION@
+ Libs.private: @LIBS@
+-Libs: -L${libdir} -lpython@VERSION@@ABIFLAGS@
++Libs: -L${libdir} -lpython-profile-opt@VERSION@@ABIFLAGS@
+ Cflags: -I${includedir}/python@VERSION@@ABIFLAGS@
+diff --git a/configure.ac b/configure.ac
+index 6bd9322..4bf3dc2 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -990,7 +990,7 @@ AC_SUBST(LIBRARY)
+ AC_MSG_CHECKING(LIBRARY)
+ if test -z "$LIBRARY"
+ then
+-	LIBRARY='libpython$(VERSION)$(ABIFLAGS).a'
++	LIBRARY='libpython-profile-opt$(VERSION)$(ABIFLAGS).a'
+ fi
+ AC_MSG_RESULT($LIBRARY)
+ 
+@@ -1151,13 +1151,13 @@ if test $enable_shared = "yes"; then
+ 	  fi
+           ;;
+     Linux*|GNU*|NetBSD*|FreeBSD*|DragonFly*|OpenBSD*)
+-	  LDLIBRARY='libpython$(LDVERSION).so'
+-	  BLDLIBRARY='-L. -lpython$(LDVERSION)'
++	  LDLIBRARY='libpython-profile-opt$(LDVERSION).so'
++	  BLDLIBRARY='-L. -lpython-profile-opt$(LDVERSION)'
+ 	  RUNSHARED=LD_LIBRARY_PATH=`pwd`${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}
+ 	  INSTSONAME="$LDLIBRARY".$SOVERSION
+ 	  if test "$with_pydebug" != yes
+           then
+-	      PY3LIBRARY=libpython3.so
++	      PY3LIBRARY=libpython-profile-opt3.so
+ 	  fi
+ 	  ;;
+     hp*|HP*)
+-- 
+2.6.6
+

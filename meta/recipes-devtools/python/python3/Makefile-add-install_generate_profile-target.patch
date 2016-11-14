@@ -1,0 +1,25 @@
+Makefile: add install_generate_profile target
+
+Making it possible to install the binaries with profile generation
+enabled. We need this as linking is also performed at the install stage.
+
+Upstream-Status: Inappropriate [oe-specific]
+
+Signed-off-by: Markus Lehtonen <markus.lehtonen@linux.intel.com>
+
+diff --git a/Makefile.pre.in b/Makefile.pre.in
+index 2b87614..826155b 100644
+--- a/Makefile.pre.in
++++ b/Makefile.pre.in
+@@ -1046,6 +1046,8 @@ QUICKTESTOPTS=	$(TESTOPTS) -x test_subprocess test_io test_lib2to3 \
+ quicktest:	all platform
+ 		$(TESTRUNNER) $(QUICKTESTOPTS)
+ 
++install_generate_profile:
++	$(MAKE) install LDFLAGS="$(LDFLAGS) $(PGO_PROF_GEN_FLAG) @LTOFLAGS@" LIBS="$(LIBS)"
+ 
+ install: @FRAMEWORKINSTALLFIRST@ commoninstall bininstall maninstall @FRAMEWORKINSTALLLAST@
+ 	if test "x$(ENSUREPIP)" != "xno"  ; then \
+-- 
+2.6.6
+
