@@ -1,0 +1,28 @@
+Upstream-Status: Backport [from 2.2]
+
+Signed-off-by: Andreas Oberritter <obi@opendreambox.org>
+
+From a9c556ccad819869a6a5d932aac0a75a99372f08 Mon Sep 17 00:00:00 2001
+From: Barry Warsaw <barry@python.org>
+Date: Wed, 17 Sep 2014 19:32:43 +0300
+Subject: [PATCH] _init_completion: Handle cword < 0 (LP: #1289597)
+
+Previously only bash 4.3 seemed to provoke this, but now with the
+empty command consistency tweak it occurs with earlier as well.
+---
+ bash_completion | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/bash_completion b/bash_completion
+index 7e01ae4..3bb4bc2 100644
+--- a/bash_completion
++++ b/bash_completion
+@@ -727,7 +727,7 @@ _init_completion()
+         fi
+     done
+ 
+-    [[ $cword -eq 0 ]] && return 1
++    [[ $cword -le 0 ]] && return 1
+     prev=${words[cword-1]}
+ 
+     [[ ${split-} ]] && _split_longopt && split=true
