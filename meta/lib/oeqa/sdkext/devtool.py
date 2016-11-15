@@ -15,6 +15,9 @@ class DevtoolTest(oeSDKExtTest):
         self.myapp_cmake_dst = os.path.join(self.tc.sdktestdir, "myapp_cmake")
         shutil.copytree(self.myapp_cmake_src, self.myapp_cmake_dst)
 
+        # Clean sources dir to make "git clone" can run again
+        shutil.rmtree(os.path.join(self.tc.sdktestdir, "tc/workspace/sources"), True)
+
     def _test_devtool_build(self, directory):
         self._run('devtool add myapp %s' % directory)
         try:
