@@ -39,7 +39,7 @@ SDK_LOCAL_CONF_BLACKLIST ?= "CONF_VERSION \
 SDK_INHERIT_BLACKLIST ?= "buildhistory icecc"
 SDK_UPDATE_URL ?= ""
 
-SDK_TARGETS ?= "${PN}"
+SDK_TARGETS ?= "${@multilib_pkg_extend(d, d.getVar('BPN'))}"
 
 def get_sdk_install_targets(d, images_only=False):
     sdk_install_targets = ''
@@ -567,12 +567,14 @@ SDK_PRE_INSTALL_COMMAND_task-populate-sdk-ext = "${sdk_ext_preinst}"
 sdk_ext_postinst() {
 	printf "\nExtracting buildtools...\n"
 	cd $target_sdk_dir
-	env_setup_script="$target_sdk_dir/environment-setup-${REAL_MULTIMACH_TARGET_SYS}"
+	env_setup_scripts="`ls $target_sdk_dir/environment-setup-*`"
 	./${SDK_BUILDTOOLS_INSTALLER} -d buildtools -y > buildtools.log
 	if [ $? -ne 0 ]; then
 		printf 'ERROR: buildtools installation failed:\n'
 		cat buildtools.log
-		echo "printf 'ERROR: this SDK was not fully installed and needs reinstalling\n'" >> $env_setup_script
+		for e in $env_setup_scripts; do
+			echo "printf 'ERROR: this SDK was not fully installed and needs reinstalling\n'" >> $e
+		done
 		exit 1
 	fi
 
@@ -581,23 +583,25 @@ sdk_ext_postinst() {
 	# We don't need the log either since it succeeded
 	rm -f buildtools.log
 
-	# Make sure when the user sets up the environment, they also get
-	# the buildtools-tarball tools in their path.
-	echo ". $target_sdk_dir/buildtools/environment-setup*" >> $env_setup_script
+	for e in $env_setup_scripts; do
+		# Make sure when the user sets up the environment, they also get
+		# the buildtools-tarball tools in their path.
+		echo ". $target_sdk_dir/buildtools/environment-setup*" >> $e
+		# Allow bitbake environment setup to be ran as part of this sdk.
+		echo "export OE_SKIP_SDK_CHECK=1" >> $e
 
-	# Allow bitbake environment setup to be ran as part of this sdk.
-	echo "export OE_SKIP_SDK_CHECK=1" >> $env_setup_script
+		# A bit of another hack, but we need this in the path only for devtool
+		# so put it at the end of $PATH.
+		echo "export PATH=$target_sdk_dir/sysroots/${SDK_SYS}${bindir_nativesdk}:\$PATH" >> $e
 
-	# A bit of another hack, but we need this in the path only for devtool
-	# so put it at the end of $PATH.
-	echo "export PATH=$target_sdk_dir/sysroots/${SDK_SYS}${bindir_nativesdk}:\$PATH" >> $env_setup_script
+		echo "printf 'SDK environment now set up; additionally you may now run devtool to perform development tasks.\nRun devtool --help for further details.\n'" >> $e
 
-	echo "printf 'SDK environment now set up; additionally you may now run devtool to perform development tasks.\nRun devtool --help for further details.\n'" >> $env_setup_script
+		# Warn if trying to use external bitbake and the ext SDK together
+		echo "(which bitbake > /dev/null 2>&1 && \
+			echo 'WARNING: attempting to use the extensible SDK in an environment set up to run bitbake - this may lead to unexpected results. Please source this script in a new shell session instead.') || \
+			true" >> $e
+	done
 
-	# Warn if trying to use external bitbake and the ext SDK together
-	echo "(which bitbake > /dev/null 2>&1 && \
-		echo 'WARNING: attempting to use the extensible SDK in an environment set up to run bitbake - this may lead to unexpected results. Please source this script in a new shell session instead.') || \
-		true" >> $env_setup_script
 
 	if [ "$prepare_buildsystem" != "no" ]; then
 		printf "Preparing build system...\n"
@@ -612,6 +616,9 @@ sdk_ext_postinst() {
 			python $target_sdk_dir/ext-sdk-prepare.py $LOGFILE '${SDK_INSTALL_TARGETS}'"
 		if [ $? -ne 0 ]; then
 			echo "printf 'ERROR: this SDK was not fully installed and needs reinstalling\n'" >> $env_setup_script
+			for e in $env_setup_scripts; do
+				echo "printf 'ERROR: this SDK was not fully installed and needs reinstalling\n'" >> $e
+			done
 			exit 1
 			rm $target_sdk_dir/ext-sdk-prepare.py
 		fi
@@ -642,10 +649,11 @@ fakeroot python do_populate_sdk_ext() {
 def get_ext_sdk_depends(d):
     # Note: the deps varflag is a list not a string, so we need to specify expand=False
     deps = d.getVarFlag('do_image_complete', 'deps', False)
-    pn = d.getVar('PN')
-    deplist = ['%s:%s' % (pn, dep) for dep in deps]
-    for task in ['do_image_complete', 'do_rootfs', 'do_build']:
-        deplist.extend((d.getVarFlag(task, 'depends') or '').split())
+    deplist = []
+    for pn in multilib_pkg_extend(d, d.getVar('BPN')).split():
+        deplist += ['%s:%s' % (pn, dep) for dep in deps]
+        for task in ['do_image_complete', 'do_rootfs', 'do_build']:
+            deplist.extend((d.getVarFlag(task, 'depends') or '').split())
     return ' '.join(deplist)
 
 python do_sdk_depends() {
