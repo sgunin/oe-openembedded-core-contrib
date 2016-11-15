@@ -40,7 +40,7 @@ SDK_LOCAL_CONF_BLACKLIST ?= "CONF_VERSION \
 SDK_INHERIT_BLACKLIST ?= "buildhistory icecc"
 SDK_UPDATE_URL ?= ""
 
-SDK_TARGETS ?= "${PN}"
+SDK_TARGETS ?= "${@multilib_pkg_extend(d, d.getVar('BPN', True))}"
 
 def get_sdk_install_targets(d, images_only=False):
     sdk_install_targets = ''
@@ -57,9 +57,11 @@ def get_sdk_install_targets(d, images_only=False):
 
     if not images_only:
         if d.getVar('SDK_INCLUDE_PKGDATA') == '1':
-            sdk_install_targets += ' meta-world-pkgdata:do_allpackagedata'
+            for pn in multilib_pkg_extend(d, 'meta-world-pkgdata').split():
+                sdk_install_targets += ' %s:do_allpackagedata' % pn
         if d.getVar('SDK_INCLUDE_TOOLCHAIN') == '1':
-            sdk_install_targets += ' meta-extsdk-toolchain:do_populate_sysroot'
+            for pn in multilib_pkg_extend(d, 'meta-extsdk-toolchain').split():
+                sdk_install_targets += ' %s:do_populate_sysroot' % pn
 
     return sdk_install_targets
 
@@ -642,36 +644,47 @@ SDK_PRE_INSTALL_COMMAND_task-populate-sdk-ext = "${sdk_ext_preinst}"
 sdk_ext_postinst() {
 	printf "\nExtracting buildtools...\n"
 	cd $target_sdk_dir
-	env_setup_script="$target_sdk_dir/environment-setup-${REAL_MULTIMACH_TARGET_SYS}"
-        if [ -n "${SDK_BUILDTOOLS_INSTALLER}" ]; then
-		printf "buildtools\ny" | ./${SDK_BUILDTOOLS_INSTALLER} > buildtools.log || { printf 'ERROR: buildtools installation failed:\n' ; cat buildtools.log ; echo "printf 'ERROR: this SDK was not fully installed and needs reinstalling\n'" >> $env_setup_script ; exit 1 ; }
+	env_setup_scripts="`ls $target_sdk_dir/environment-setup-*`"
+	if [ -n "${SDK_BUILDTOOLS_INSTALLER}" ]; then
+		./${SDK_BUILDTOOLS_INSTALLER} -d buildtools -y > buildtools.log
+		if [ $? -ne 0 ]; then
+			echo 'ERROR: buildtools installation failed:'
+			cat buildtools.log
+			for e in $env_setup_scripts; do
+				echo "echo 'ERROR: this SDK was not fully installed and needs reinstalling'" >> $e
+			done
+			exit 1
+		fi
 
 		# Delete the buildtools tar file since it won't be used again
 		rm -f ./${SDK_BUILDTOOLS_INSTALLER}
 		# We don't need the log either since it succeeded
 		rm -f buildtools.log
 
-		# Make sure when the user sets up the environment, they also get
-		# the buildtools-tarball tools in their path.
-		echo "# Save and reset OECORE_NATIVE_SYSROOT as buildtools may change it" >> $env_setup_script
-		echo "SAVED=\"\$OECORE_NATIVE_SYSROOT\"" >> $env_setup_script
-		echo ". $target_sdk_dir/buildtools/environment-setup*" >> $env_setup_script
-		echo "OECORE_NATIVE_SYSROOT=\"\$SAVED\"" >> $env_setup_script
+		for e in $env_setup_scripts; do
+			# Make sure when the user sets up the environment, they also get
+			# the buildtools-tarball tools in their path.
+			echo "# Save and reset OECORE_NATIVE_SYSROOT as buildtools may change it" >> $e
+			echo "SAVED=\"\$OECORE_NATIVE_SYSROOT\"" >> $e
+			echo ". $target_sdk_dir/buildtools/environment-setup*" >> $e
+			echo "OECORE_NATIVE_SYSROOT=\"\$SAVED\"" >> $e
+		done
 	fi
 
-	# Allow bitbake environment setup to be ran as part of this sdk.
-	echo "export OE_SKIP_SDK_CHECK=1" >> $env_setup_script
-	# Work around runqemu not knowing how to get this information within the eSDK
-	echo "export DEPLOY_DIR_IMAGE=$target_sdk_dir/tmp/${@os.path.relpath(d.getVar('DEPLOY_DIR_IMAGE'), d.getVar('TMPDIR'))}" >> $env_setup_script
+	for e in $env_setup_scripts; do
+		# Allow bitbake environment setup to be ran as part of this sdk.
+		echo "export OE_SKIP_SDK_CHECK=1" >> $e
 
-	# A bit of another hack, but we need this in the path only for devtool
-	# so put it at the end of $PATH.
-	echo "export PATH=$target_sdk_dir/sysroots/${SDK_SYS}${bindir_nativesdk}:\$PATH" >> $env_setup_script
+		# Work around runqemu not knowing how to get this information within the eSDK
+		echo "export DEPLOY_DIR_IMAGE=$target_sdk_dir/tmp/${@os.path.relpath(d.getVar('DEPLOY_DIR_IMAGE'), d.getVar('TMPDIR'))}" >> $e
 
-	echo "printf 'SDK environment now set up; additionally you may now run devtool to perform development tasks.\nRun devtool --help for further details.\n'" >> $env_setup_script
-
-	# Warn if trying to use external bitbake and the ext SDK together
-	echo "(which bitbake > /dev/null 2>&1 && echo 'WARNING: attempting to use the extensible SDK in an environment set up to run bitbake - this may lead to unexpected results. Please source this script in a new shell session instead.') || true" >> $env_setup_script
+		# A bit of another hack, but we need this in the path only for devtool
+		# so put it at the end of $PATH.
+		echo "export PATH=$target_sdk_dir/sysroots/${SDK_SYS}${bindir_nativesdk}:\$PATH" >> $e
+		echo "printf 'SDK environment now set up; additionally you may now run devtool to perform development tasks.\nRun devtool --help for further details.\n'" >> $e
+		# Warn if trying to use external bitbake and the ext SDK together
+		echo "(which bitbake > /dev/null 2>&1 && echo 'WARNING: attempting to use the extensible SDK in an environment set up to run bitbake - this may lead to unexpected results. Please source this script in a new shell session instead.') || true" >> $e
+	done
 
 	if [ "$prepare_buildsystem" != "no" -a -n "${SDK_BUILDTOOLS_INSTALLER}" ]; then
 		printf "Preparing build system...\n"
@@ -679,7 +692,13 @@ sdk_ext_postinst() {
 		# current working directory when first ran, nor will it set $1 when
 		# sourcing a script. That is why this has to look so ugly.
 		LOGFILE="$target_sdk_dir/preparing_build_system.log"
-		sh -c ". buildtools/environment-setup* > $LOGFILE && cd $target_sdk_dir/`dirname ${oe_init_build_env_path}` && set $target_sdk_dir && . $target_sdk_dir/${oe_init_build_env_path} $target_sdk_dir >> $LOGFILE && python3 $target_sdk_dir/ext-sdk-prepare.py $LOGFILE '${SDK_INSTALL_TARGETS}'" || { echo "printf 'ERROR: this SDK was not fully installed and needs reinstalling\n'" >> $env_setup_script ; exit 1 ; }
+		sh -c ". buildtools/environment-setup* > $LOGFILE && cd $target_sdk_dir/`dirname ${oe_init_build_env_path}` && set $target_sdk_dir && . $target_sdk_dir/${oe_init_build_env_path} $target_sdk_dir >> $LOGFILE && python3 $target_sdk_dir/ext-sdk-prepare.py $LOGFILE '${SDK_INSTALL_TARGETS}'"
+		if [ $? -ne 0 ]; then
+			for e in $env_setup_scripts; do
+				echo "echo 'ERROR: this SDK was not fully installed and needs reinstalling'" >> $e
+			done
+			exit 1
+		fi
 	fi
 	if [ -e $target_sdk_dir/ext-sdk-prepare.py ]; then
 		rm $target_sdk_dir/ext-sdk-prepare.py
@@ -721,12 +740,17 @@ def generate_nativesdk_lockedsigs(d):
 def get_ext_sdk_depends(d):
     # Note: the deps varflag is a list not a string, so we need to specify expand=False
     deps = d.getVarFlag('do_image_complete', 'deps', False)
-    pn = d.getVar('PN')
-    deplist = ['%s:%s' % (pn, dep) for dep in deps]
+    deplist = []
+    for pn in multilib_pkg_extend(d, d.getVar('BPN')).split():
+        deplist += ['%s:%s' % (pn, dep) for dep in deps]
     tasklist = bb.build.tasksbetween('do_image_complete', 'do_build', d)
     tasklist.append('do_rootfs')
     for task in tasklist:
         deplist.extend((d.getVarFlag(task, 'depends') or '').split())
+
+    for pn in multilib_pkg_extend(d, 'meta-extsdk-toolchain').split():
+         deplist += ['%s:do_populate_sysroot' % pn]
+
     return ' '.join(deplist)
 
 python do_sdk_depends() {
@@ -740,7 +764,7 @@ python do_sdk_depends() {
 addtask sdk_depends
 
 do_sdk_depends[dirs] = "${WORKDIR}"
-do_sdk_depends[depends] = "${@get_ext_sdk_depends(d)} meta-extsdk-toolchain:do_populate_sysroot"
+do_sdk_depends[depends] = "${@get_ext_sdk_depends(d)}"
 do_sdk_depends[recrdeptask] = "${@d.getVarFlag('do_populate_sdk', 'recrdeptask', False)}"
 do_sdk_depends[recrdeptask] += "do_populate_lic do_package_qa do_populate_sysroot do_deploy ${SDK_RECRDEP_TASKS}"
 do_sdk_depends[rdepends] = "${@get_sdk_ext_rdepends(d)}"
