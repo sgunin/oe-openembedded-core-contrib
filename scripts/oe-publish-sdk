@@ -113,10 +113,25 @@ def publish(args):
             return ret
 
     # Setting up the git repo
+    cmd_common = "if [ ! -e .git ]; then"
+    cmd_common += "    git init .;"
+    cmd_common += "    mv .git/hooks/post-update.sample .git/hooks/post-update;"
+    cmd_common += "    echo '*.pyc\n*.pyo' > .gitignore;"
+    cmd_common += "fi;"
+    cmd_common += "git add -A .;"
+    cmd_common += "git config user.email 'oe@oe.oe' && git config user.name 'OE' && git commit -q -m 'init repo' || true;"
     if not is_remote:
-        cmd = 'set -e; mkdir -p %s/layers; cd %s/layers; if [ ! -e .git ]; then git init .; mv .git/hooks/post-update.sample .git/hooks/post-update; echo "*.pyc\n*.pyo" > .gitignore; fi; git add -A .; git config user.email "oe@oe.oe" && git config user.name "OE" && git commit -q -m "init repo" || true; git update-server-info' % (destination, destination)
+        cmd = "set -e;"
+        cmd += "mkdir -p %s/layers;" % destination
+        cmd += "cd %s/layers;" % destination
+        cmd += cmd_common
+        cmd += "git update-server-info"
     else:
-        cmd = "ssh %s 'set -e; mkdir -p %s/layers; cd %s/layers; if [ ! -e .git ]; then git init .; mv .git/hooks/post-update.sample .git/hooks/post-update; echo '*.pyc\n*.pyo' > .gitignore; fi; git add -A .; git config user.email 'oe@oe.oe' && git config user.name 'OE' && git commit -q -m \"init repo\" || true; git update-server-info'" % (host, destdir, destdir)
+        cmd = "ssh %s 'set -e;" % host
+        cmd += "mkdir -p %s/layers;" % destdir
+        cmd += "cd %s/layers;" % destdir
+        cmd += cmd_common
+        cmd += "git update-server-info'"
     ret = subprocess.call(cmd, shell=True)
     if ret == 0:
         logger.info('SDK published successfully')
