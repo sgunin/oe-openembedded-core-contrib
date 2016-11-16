@@ -193,6 +193,11 @@ do_install() {
 	fi
 
 	oe_multilib_header python${PYTHON_BINABI}/pyconfig.h
+
+    # Install tools
+    install -d -m 755 ${D}/${docdir}/${PN}
+    cp -r ${S}/Tools ${D}/${docdir}/${PN}/
+    find ${D}/${docdir}/${PN}/ -name Makefile -delete
 }
 
 do_install_append_class-nativesdk () {
