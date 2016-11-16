@@ -1079,6 +1079,17 @@
         ],
         "summary": "Python Tcl/Tk bindings"
     },
+    "tools": {
+        "cached": [],
+        "files": [
+            "${docdir}/${PN}/Tools"
+        ],
+        "rdepends": [
+            "core",
+            "modules"
+        ],
+        "summary": "Useful scripts from Python"
+    },
     "typing": {
         "cached": [
             "${libdir}/python3.5/__pycache__/typing.*.pyc"
