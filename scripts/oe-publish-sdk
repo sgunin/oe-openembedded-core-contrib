@@ -116,7 +116,7 @@ def publish(args):
     cmd_common = "if [ ! -e .git ]; then"
     cmd_common += "    git init .;"
     cmd_common += "    mv .git/hooks/post-update.sample .git/hooks/post-update;"
-    cmd_common += "    echo '*.pyc\n*.pyo' > .gitignore;"
+    cmd_common += "    echo '*.pyc\n*.pyo\npyshtables.py' > .gitignore;"
     cmd_common += "fi;"
     cmd_common += "git add -A .;"
     cmd_common += "git config user.email 'oe@oe.oe' && git config user.name 'OE' && git commit -q -m 'init repo' || true;"
