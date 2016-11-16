@@ -1,7 +1,7 @@
 import shutil
 import subprocess
 import urllib.request
-from oeqa.oetest import oeSDKExtTest
+from oeqa.oetest import oeSDKExtTest, skipModule
 from oeqa.utils.decorators import *
 
 class DevtoolTest(oeSDKExtTest):
@@ -66,6 +66,9 @@ class DevtoolTest(oeSDKExtTest):
     @testcase(1482)
     @skipUnlessPassed('test_devtool_location')
     def test_extend_autotools_recipe_creation(self):
+        # librdfa requires libxml2
+        if not oeSDKExtTest.hasLockedSig("libxml2"):
+            skipModule("No libxml2 package in the eSDK")
         req = 'https://github.com/rdfa/librdfa'
         recipe = "bbexample"
         self._run('devtool add %s %s' % (recipe, req) )
