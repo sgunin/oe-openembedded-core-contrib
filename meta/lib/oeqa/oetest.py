@@ -171,6 +171,12 @@ class oeSDKExtTest(oeSDKTest):
         return subprocess.check_output(". %s > /dev/null;"\
             " %s;" % (self.tc.sdkenv, cmd), stderr=subprocess.STDOUT, shell=True, env=env).decode("utf-8")
 
+    @classmethod
+    def hasLockedSig(self, recipe):
+        if re.search(" " + recipe + ":do_populate_sysroot:", oeTest.tc.locked_sigs):
+            return True
+        return False
+
 def getmodule(pos=2):
     # stack returns a list of tuples containg frame information
     # First element of the list the is current frame, caller is 1
@@ -707,6 +713,13 @@ class SDKExtTestContext(SDKTestContext):
 
         self.sdkextfilesdir = os.path.join(os.path.dirname(os.path.abspath(
             oeqa.sdkext.__file__)), "files")
+
+        self.locked_sig_file = os.path.join(self.sdktestdir, "tc/conf/locked-sigs.inc")
+        if os.path.exists(self.locked_sig_file):
+            with open(self.locked_sig_file) as f:
+                self.locked_sigs = f.read()
+        else:
+            bb.fatal("%s not found. Did you build the ext sdk image?\n%s" % e)
 
     def _get_test_namespace(self):
         if self.cm:
