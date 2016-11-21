@@ -1,7 +1,6 @@
 SUMMARY = "Package maintenance system from Debian"
 SECTION = "base"
 LICENSE = "GPLv2+"
-DEPENDS = "perl"
 DEPENDS_append_class-native = " bzip2-replacement-native"
 PROVIDES = "virtual/update-alternatives"
 
@@ -9,7 +8,7 @@ SRC_URI_append_class-native = " file://0001-When-running-do_package_write_deb-we
 
 UPSTREAM_CHECK_URI = "${DEBIAN_MIRROR}/main/d/dpkg/"
 
-inherit autotools gettext perlnative pkgconfig systemd
+inherit autotools cpan-base gettext perlnative pkgconfig systemd
 
 SYSTEMD_SERVICE_${PN} = "dpkg-configure.service"
 
@@ -17,8 +16,7 @@ export PERL = "${bindir}/perl"
 PERL_class-native = "${STAGING_BINDIR_NATIVE}/perl-native/perl"
 PERL_class-nativesdk = "${STAGING_BINDIR_NATIVE}/perl-native/perl"
 
-export PERL_LIBDIR = "${libdir}/perl"
-PERL_LIBDIR_class-native = "${libdir}/perl-native/perl"
+export PERL_LIBDIR = "${PERLLIBDIRS}/${PERLVERSION}"
 
 PACKAGECONFIG ??= "bzip2 gzip start-stop-daemon update-alternatives"
 PACKAGECONFIG[bzip2] = "--with-bz2,--without-bz2,bzip2"
