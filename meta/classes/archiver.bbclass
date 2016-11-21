@@ -290,6 +290,7 @@ def create_diff_gz(d, src_orig, src, ar_outdir):
     dirname = os.path.dirname(src)
     basename = os.path.basename(src)
     os.chdir(dirname)
+    bb.utils.mkdirhier(ar_outdir)
     out_file = os.path.join(ar_outdir, '%s-diff.gz' % d.getVar('PF', True))
     diff_cmd = 'diff -Naur %s.orig %s.patched | gzip -c > %s' % (basename, basename, out_file)
     subprocess.call(diff_cmd, shell=True)
