@@ -75,8 +75,8 @@ def get_buildtimedata(var, d):
     return timediff, cpuperc
 
 def write_task_data(status, logfile, e, d):
-    bn = d.getVar('BUILDNAME', True)
-    bsdir = os.path.join(d.getVar('BUILDSTATS_BASE', True), bn)
+    bn = d.getVar('BUILDNAME')
+    bsdir = os.path.join(d.getVar('BUILDSTATS_BASE'), bn)
     with open(os.path.join(logfile), "a") as f:
         elapsedtime = get_timedata("__timedata_task", d, e.time)
         if elapsedtime:
@@ -106,9 +106,9 @@ python run_buildstats () {
     import bb.event
     import time, subprocess, platform
 
-    bn = d.getVar('BUILDNAME', True)
-    bsdir = os.path.join(d.getVar('BUILDSTATS_BASE', True), bn)
-    taskdir = os.path.join(bsdir, d.getVar('PF', True))
+    bn = d.getVar('BUILDNAME')
+    bsdir = os.path.join(d.getVar('BUILDSTATS_BASE'), bn)
+    taskdir = os.path.join(bsdir, d.getVar('PF'))
 
     if isinstance(e, bb.event.BuildStarted):
         ########################################################################
@@ -162,7 +162,7 @@ python run_buildstats () {
         if e.task == "do_rootfs":
             bs = os.path.join(bsdir, "build_stats")
             with open(bs, "a") as f:
-                rootfs = d.getVar('IMAGE_ROOTFS', True)
+                rootfs = d.getVar('IMAGE_ROOTFS')
                 if os.path.isdir(rootfs):
                     try:
                         rootfs_size = subprocess.check_output(["du", "-sh", rootfs],

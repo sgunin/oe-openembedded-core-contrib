@@ -11,7 +11,7 @@ PATCH_GIT_USER_EMAIL ?= "oe.patch@oe"
 inherit terminal
 
 def src_patches(d, all=False, expand=True):
-    workdir = d.getVar('WORKDIR', True)
+    workdir = d.getVar('WORKDIR')
     fetch = bb.fetch2.Fetch([], d)
     patches = []
     sources = []
@@ -79,13 +79,13 @@ def should_apply(parm, d):
     """Determine if we should apply the given patch"""
 
     if "mindate" in parm or "maxdate" in parm:
-        pn = d.getVar('PN', True)
-        srcdate = d.getVar('SRCDATE_%s' % pn, True)
+        pn = d.getVar('PN')
+        srcdate = d.getVar('SRCDATE_%s' % pn)
         if not srcdate:
-            srcdate = d.getVar('SRCDATE', True)
+            srcdate = d.getVar('SRCDATE')
 
         if srcdate == "now":
-            srcdate = d.getVar('DATE', True)
+            srcdate = d.getVar('DATE')
 
         if "maxdate" in parm and parm["maxdate"] < srcdate:
             return False, 'is outdated'
@@ -95,22 +95,22 @@ def should_apply(parm, d):
 
 
     if "minrev" in parm:
-        srcrev = d.getVar('SRCREV', True)
+        srcrev = d.getVar('SRCREV')
         if srcrev and srcrev < parm["minrev"]:
             return False, 'applies to later revisions'
 
     if "maxrev" in parm:
-        srcrev = d.getVar('SRCREV', True)
+        srcrev = d.getVar('SRCREV')
         if srcrev and srcrev > parm["maxrev"]:
             return False, 'applies to earlier revisions'
 
     if "rev" in parm:
-        srcrev = d.getVar('SRCREV', True)
+        srcrev = d.getVar('SRCREV')
         if srcrev and parm["rev"] not in srcrev:
             return False, "doesn't apply to revision"
 
     if "notrev" in parm:
-        srcrev = d.getVar('SRCREV', True)
+        srcrev = d.getVar('SRCREV')
         if srcrev and parm["notrev"] in srcrev:
             return False, "doesn't apply to revision"
 
@@ -127,20 +127,20 @@ python patch_do_patch() {
         "git": oe.patch.GitApplyTree,
     }
 
-    cls = patchsetmap[d.getVar('PATCHTOOL', True) or 'quilt']
+    cls = patchsetmap[d.getVar('PATCHTOOL') or 'quilt']
 
     resolvermap = {
         "noop": oe.patch.NOOPResolver,
         "user": oe.patch.UserResolver,
     }
 
-    rcls = resolvermap[d.getVar('PATCHRESOLVE', True) or 'user']
+    rcls = resolvermap[d.getVar('PATCHRESOLVE') or 'user']
 
     classes = {}
 
-    s = d.getVar('S', True)
+    s = d.getVar('S')
 
-    os.putenv('PATH', d.getVar('PATH', True))
+    os.putenv('PATH', d.getVar('PATH'))
 
     # We must use one TMPDIR per process so that the "patch" processes
     # don't generate the same temp file name.

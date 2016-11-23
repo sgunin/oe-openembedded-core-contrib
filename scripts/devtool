@@ -290,7 +290,7 @@ def main():
     if global_args.bbpath is None:
         tinfoil = setup_tinfoil(config_only=True, basepath=basepath)
         try:
-            global_args.bbpath = tinfoil.config_data.getVar('BBPATH', True)
+            global_args.bbpath = tinfoil.config_data.getVar('BBPATH')
         finally:
             tinfoil.shutdown()
 
