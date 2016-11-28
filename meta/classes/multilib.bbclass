@@ -23,6 +23,13 @@ python multilib_virtclass_handler () {
     overrides = overrides.replace("pn-${PN}", "pn-${PN}:pn-" + pn)
     e.data.setVar("OVERRIDES", overrides)
 
+    def multilib_set_default_tune():
+        # DEFAULTTUNE can change TARGET_ARCH override so expand this now before update_data
+        newtune = e.data.getVar("DEFAULTTUNE_" + "virtclass-multilib-" + variant, False)
+        if newtune:
+            e.data.setVar("DEFAULTTUNE", newtune)
+            e.data.setVar('DEFAULTTUNE_ML_%s' % variant, newtune)
+
     if bb.data.inherits_class('image', e.data):
         e.data.setVar("MLPREFIX", variant + "-")
         e.data.setVar("PN", variant + "-" + e.data.getVar("PN", False))
@@ -30,6 +37,9 @@ python multilib_virtclass_handler () {
         target_vendor = e.data.getVar("TARGET_VENDOR_" + "virtclass-multilib-" + variant, False)
         if target_vendor:
             e.data.setVar("TARGET_VENDOR", target_vendor)
+
+        multilib_set_default_tune()
+
         return
 
     if bb.data.inherits_class('cross-canadian', e.data):
@@ -65,11 +75,7 @@ python multilib_virtclass_handler () {
             pkgs += " " + variant + "-" + pkg
         e.data.setVar(whitelist, pkgs)
 
-    # DEFAULTTUNE can change TARGET_ARCH override so expand this now before update_data
-    newtune = e.data.getVar("DEFAULTTUNE_" + "virtclass-multilib-" + variant, False)
-    if newtune:
-        e.data.setVar("DEFAULTTUNE", newtune)
-        e.data.setVar('DEFAULTTUNE_ML_%s' % variant, newtune)
+    multilib_set_default_tune()
 }
 
 addhandler multilib_virtclass_handler
