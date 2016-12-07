@@ -231,12 +231,274 @@ do_populate_sysroot[vardepsexclude] += "MULTI_PROVIDER_WHITELIST"
 SSTATETASKS += "do_populate_sysroot"
 do_populate_sysroot[cleandirs] = "${SYSROOT_DESTDIR}"
 do_populate_sysroot[sstate-inputdirs] = "${SYSROOT_DESTDIR}"
-do_populate_sysroot[sstate-outputdirs] = "${STAGING_DIR_HOST}/"
-do_populate_sysroot[stamp-extra-info] = "${MACHINE}"
+do_populate_sysroot[sstate-outputdirs] = "${STAGING_DIR}/${PACKAGE_ARCH}/${PN}"
+do_populate_sysroot[sstate-fixmedir] = "${STAGING_DIR}/${PACKAGE_ARCH}/${PN}"
 
 python do_populate_sysroot_setscene () {
     sstate_setscene(d)
 }
 addtask do_populate_sysroot_setscene
+
+#
+# Manifests here are complicated. The main sysroot area has the unpacked sstate
+# which us unrelocated and tracked by the main sstate manifests. Each recipe
+# specific sysroot has manifests for each dependency that is installed there.
+# The task hash is used to tell whether the data needs to be reinstalled. We 
+# use a symlink to point to the currently installed hash. There is also a 
+# "complete" stamp file which is used to mark if installation completed. If 
+# something fails (e.g. a postinst), this won't get written and we would 
+# remove and reinstall the dependency. This also means partially installed 
+# dependencies should get cleaned up correctly.
+#
+
+python extend_recipe_sysroot() {
+    import copy
+    import subprocess
+
+    taskdepdata = d.getVar("BB_TASKDEPDATA", False)
+    mytaskname = d.getVar("BB_RUNTASK", True)
+    #bb.warn(str(taskdepdata))
+    pn = d.getVar("PN", True)
+
+    if mytaskname.endswith("_setscene"):
+        mytaskname = mytaskname.replace("_setscene", "")
+
+    start = None
+    configuredeps = []
+    # Detect bitbake -b usage
+    # Everything but quilt-native would have dependencies
+    nodeps = (pn != "quilt-native")
+
+    for dep in taskdepdata:
+        data = taskdepdata[dep]
+        if data[1] == mytaskname and data[0] == pn:
+            start = dep
+        if not nodeps and start:
+            break
+        if nodeps and data[0] != pn:
+            nodeps = False
+    if start is None:
+        bb.fatal("Couldn't find ourself in BB_TASKDEPDATA?")
+
+    # We need to figure out which sysroot files we need to expose to this task.
+    # This needs to match what would get restored from sstate, which is controlled 
+    # ultimately by calls from bitbake to setscene_depvalid().
+    # That function expects a setscene dependency tree. We build a dependency tree 
+    # condensed to inter-sstate task dependencies, similar to that used by setscene 
+    # tasks. We can then call into setscene_depvalid() and decide
+    # which dependencies we can "see" and should expose in the recipe specific sysroot.
+    setscenedeps = copy.deepcopy(taskdepdata)
+
+    start = set([start])
+
+    sstatetasks = d.getVar("SSTATETASKS", True).split()
+
+    def print_dep_tree(deptree):
+        data = ""
+        for dep in deptree:
+            deps = "    " + "\n    ".join(deptree[dep][3]) + "\n"
+            data = "%s:\n  %s\n  %s\n%s  %s\n  %s\n" % (deptree[dep][0], deptree[dep][1], deptree[dep][2], deps, deptree[dep][4], deptree[dep][5])
+        return data
+
+    #bb.note("Full dep tree is:\n%s" % print_dep_tree(taskdepdata))
+
+    #bb.note(" start2 is %s" % str(start))
+
+    # If start is an sstate task (like do_package) we need to add in its direct dependencies
+    # else the code below won't recurse into them.
+    for dep in set(start):
+        for dep2 in setscenedeps[dep][3]:
+            start.add(dep2)
+        start.remove(dep)
+
+    #bb.note(" start3 is %s" % str(start))
+
+    # Create collapsed do_populate_sysroot -> do_populate_sysroot tree
+    for dep in taskdepdata:
+        data = setscenedeps[dep]        
+        if data[1] not in sstatetasks:
+            for dep2 in setscenedeps:
+                data2 = setscenedeps[dep2]
+                if dep in data2[3]:
+                    data2[3].update(setscenedeps[dep][3])
+                    data2[3].remove(dep)
+            if dep in start:
+                start.update(setscenedeps[dep][3])
+                start.remove(dep)
+            del setscenedeps[dep]
+
+    # Remove circular references
+    for dep in setscenedeps:
+        if dep in setscenedeps[dep][3]:
+            setscenedeps[dep][3].remove(dep)
+
+    #bb.note("Computed dep tree is:\n%s" % print_dep_tree(setscenedeps))
+    #bb.note(" start is %s" % str(start))
+
+    # Direct dependencies should be present and can be depended upon
+    for dep in set(start):
+        if setscenedeps[dep][1] == "do_populate_sysroot":
+            if dep not in configuredeps:
+                configuredeps.append(dep)
+    bb.note("Direct dependencies are %s" % str(configuredeps))
+    #bb.note(" or %s" % str(start))
+
+    # Call into setscene_depvalid for each sub-dependency and only copy sysroot files
+    # for ones that would be restored from sstate.
+    done = list(start)
+    next = list(start)
+    while next:
+        new = []
+        for dep in next:
+            data = setscenedeps[dep]
+            for datadep in data[3]:
+                if datadep in done:
+                    continue
+                taskdeps = {}
+                taskdeps[dep] = setscenedeps[dep][:2]
+                taskdeps[datadep] = setscenedeps[datadep][:2]
+                retval = setscene_depvalid(datadep, taskdeps, [], d)
+                if retval:
+                    bb.note("Skipping setscene dependency %s for installation into the sysroot" % datadep)
+                    continue
+                done.append(datadep)
+                new.append(datadep)
+                if datadep not in configuredeps and setscenedeps[datadep][1] == "do_populate_sysroot":
+                    configuredeps.append(datadep)
+                    bb.note("Adding dependency on %s" % setscenedeps[datadep][0])
+                else:
+                    bb.note("Following dependency on %s" % setscenedeps[datadep][0])
+        next = new
+
+    #if nodeps:
+        # FIXME
+        #bb.warn("Unable to find task dependencies, -b being used? Pulling in all m4 files")
+        #for l in [d.expand("${STAGING_DATADIR_NATIVE}/aclocal/"), d.expand("${STAGING_DATADIR}/aclocal/")]:
+        #    cp.extend(os.path.join(l, f) for f in os.listdir(l))
+
+    stagingdir = d.getVar("STAGING_DIR", True)
+    recipesysroot = d.getVar("RECIPE_SYSROOT", True)
+    recipesysrootnative = d.getVar("RECIPE_SYSROOT_NATIVE", True)
+
+    depdir = recipesysroot + "/installeddeps"
+    bb.utils.mkdirhier(depdir)
+
+    lock = bb.utils.lockfile(recipesysroot + "/sysroot.lock")
+
+    fixme = []
+    fixmenative = []
+    postinsts = []
+
+    def copyfile(c, target, fixme):
+        if c.endswith("/fixmepath"):
+            fixme.append(c)
+            return None
+        if c.endswith("/fixmepath.cmd"):
+            return None
+        #bb.warn(c)
+        dest = c.replace(stagingdir, "")
+        dest = target + "/" + "/".join(dest.split("/")[3:])
+        bb.utils.mkdirhier(os.path.dirname(dest))
+        if "/usr/bin/postinst-" in c:
+            postinsts.append(dest)
+        if os.path.islink(c):
+            linkto = os.readlink(c)
+            if os.path.lexists(dest):
+                if os.readlink(dest) == linkto:
+                    return dest
+                bb.fatal("Link %s already exists to a different location?" % dest)
+            os.symlink(linkto, dest)
+            #bb.warn(c)
+        else:
+            os.link(c, dest)
+        return dest
+
+    for dep in configuredeps:
+        c = setscenedeps[dep][0]
+        taskhash = setscenedeps[dep][5]
+        taskmanifest = depdir + "/" + c + "." + taskhash
+        if os.path.exists(depdir + "/" + c):
+            lnk = os.readlink(depdir + "/" + c)
+            if lnk == c + "." + taskhash and os.path.exists(depdir + "/" + c + ".complete"): 
+                bb.note("%s exists in sysroot, skipping" % c)
+                continue
+            else:
+                bb.note("%s exists in sysroot, but is stale (%s vs. %s), removing." % (c, lnk, c + "." + taskhash))
+                sstate_clean_manifest(depdir + "/" + lnk, d)
+                os.unlink(depdir + "/" + c)
+        elif os.path.lexists(depdir + "/" + c):
+            os.unlink(depdir + "/" + c)
+
+        os.symlink(c + "." + taskhash, depdir + "/" + c)
+
+        native = False
+        if c.endswith("-native"):
+            manifest = d.expand("${SSTATE_MANIFESTS}/manifest-${BUILD_ARCH}-%s.populate_sysroot" % c)
+            native = True
+        elif c.startswith("nativesdk-"):
+            manifest = d.expand("${SSTATE_MANIFESTS}/manifest-${SDK_ARCH}_${SDK_OS}-%s.populate_sysroot" % c)
+        elif "-cross-" in c:
+            manifest = d.expand("${SSTATE_MANIFESTS}/manifest-${BUILD_ARCH}_${TARGET_ARCH}-%s.populate_sysroot" % c)
+            native = True
+        elif "-crosssdk" in c:
+            manifest = d.expand("${SSTATE_MANIFESTS}/manifest-${BUILD_SDK}_${SDK_ARCH}_${SDK_OS}-%s.populate_sysroot" % c)
+            native = True
+        else:
+            manifest = d.expand("${SSTATE_MANIFESTS}/manifest-${MACHINE_ARCH}-%s.populate_sysroot" % c)
+            if not os.path.exists(manifest):
+                manifest = d.expand("${SSTATE_MANIFESTS}/manifest-${TUNE_PKGARCH}-%s.populate_sysroot" % c)
+            if not os.path.exists(manifest):
+                manifest = d.expand("${SSTATE_MANIFESTS}/manifest-allarch-%s.populate_sysroot" % c)
+        if not os.path.exists(manifest):
+            bb.warn("Manifest %s not found?" % manifest)
+        else:
+            with open(manifest, "r") as f, open(taskmanifest, 'w') as m: 
+                for l in f:
+                    l = l.strip()
+                    if l.endswith("/"):
+                        continue
+                    if native:
+                        dest = copyfile(l, recipesysrootnative, fixmenative)
+                    else:
+                        dest = copyfile(l, recipesysroot, fixme)
+                    if dest:
+                        m.write(dest + "\n")
+
+    def processfixme(fixme, target):
+        if not fixme:
+            return
+        cmd = "sed -e 's:^[^/]*/:%s/:g' %s | xargs sed -i -e 's:FIXMESTAGINGDIRTARGET:%s:g; s:FIXMESTAGINGDIRHOST:%s:g'" % (target, " ".join(fixme), recipesysroot, recipesysrootnative)
+        bb.note(cmd)
+        subprocess.check_call(cmd, shell=True)
+
+    processfixme(fixme, recipesysroot)
+    processfixme(fixmenative, recipesysrootnative)
+
+    for p in postinsts:
+        subprocess.check_call(p, shell=True)
+
+    for dep in configuredeps:
+        c = setscenedeps[dep][0]
+        open(depdir + "/" + c + ".complete", "w").close()
+
+    bb.utils.unlockfile(lock)
+}
+extend_recipe_sysroot[vardepsexclude] += "MACHINE SDK_ARCH BUILD_ARCH SDK_OS BB_TASKDEPDATA"
+
+python do_prepare_recipe_sysroot () {
+    bb.build.exec_func("extend_recipe_sysroot", d)
+}
+addtask do_prepare_recipe_sysroot before do_configure after do_fetch
+
+# Clean out the recipe specific sysroots before do_fetch
+do_fetch[cleandirs] += "${RECIPE_SYSROOT} ${RECIPE_SYSROOT_NATIVE}"
+
+python () {
+    bbtasks = d.getVar('__BBTASKS', False) or []
+    for task in bbtasks:
+        deps = d.getVarFlag(task, "depends", True)
+        if deps and "populate_sysroot" in deps or task == "do_package" or task.startswith("do_package_write_"):
+            d.appendVarFlag(task, "prefuncs", " extend_recipe_sysroot")
+}
 
 

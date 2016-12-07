@@ -15,6 +15,7 @@ do_patch[noexec] = "1"
 do_configure[noexec] = "1"
 do_compile[noexec] = "1"
 
+do_install[prefuncs] += "extend_recipe_sysroot"
 do_install[depends] += "virtual/${MLPREFIX}libc:do_populate_sysroot"
 
 COMPATIBLE_HOST_libc-musl_class-target = "null"
