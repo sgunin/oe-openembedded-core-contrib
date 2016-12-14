@@ -568,7 +568,13 @@ sdk_ext_postinst() {
 	printf "\nExtracting buildtools...\n"
 	cd $target_sdk_dir
 	env_setup_script="$target_sdk_dir/environment-setup-${REAL_MULTIMACH_TARGET_SYS}"
-	printf "buildtools\ny" | ./${SDK_BUILDTOOLS_INSTALLER} > buildtools.log || { printf 'ERROR: buildtools installation failed:\n' ; cat buildtools.log ; echo "printf 'ERROR: this SDK was not fully installed and needs reinstalling\n'" >> $env_setup_script ; exit 1 ; }
+	./${SDK_BUILDTOOLS_INSTALLER} -d buildtools -y > buildtools.log
+	if [ $? -ne 0 ]; then
+		printf 'ERROR: buildtools installation failed:\n'
+		cat buildtools.log
+		echo "printf 'ERROR: this SDK was not fully installed and needs reinstalling\n'" >> $env_setup_script
+		exit 1
+	fi
 
 	# Delete the buildtools tar file since it won't be used again
 	rm -f ./${SDK_BUILDTOOLS_INSTALLER}
@@ -589,7 +595,9 @@ sdk_ext_postinst() {
 	echo "printf 'SDK environment now set up; additionally you may now run devtool to perform development tasks.\nRun devtool --help for further details.\n'" >> $env_setup_script
 
 	# Warn if trying to use external bitbake and the ext SDK together
-	echo "(which bitbake > /dev/null 2>&1 && echo 'WARNING: attempting to use the extensible SDK in an environment set up to run bitbake - this may lead to unexpected results. Please source this script in a new shell session instead.') || true" >> $env_setup_script
+	echo "(which bitbake > /dev/null 2>&1 && \
+		echo 'WARNING: attempting to use the extensible SDK in an environment set up to run bitbake - this may lead to unexpected results. Please source this script in a new shell session instead.') || \
+		true" >> $env_setup_script
 
 	if [ "$prepare_buildsystem" != "no" ]; then
 		printf "Preparing build system...\n"
@@ -597,8 +605,16 @@ sdk_ext_postinst() {
 		# current working directory when first ran, nor will it set $1 when
 		# sourcing a script. That is why this has to look so ugly.
 		LOGFILE="$target_sdk_dir/preparing_build_system.log"
-		sh -c ". buildtools/environment-setup* > $LOGFILE && cd $target_sdk_dir/`dirname ${oe_init_build_env_path}` && set $target_sdk_dir && . $target_sdk_dir/${oe_init_build_env_path} $target_sdk_dir >> $LOGFILE && python $target_sdk_dir/ext-sdk-prepare.py $LOGFILE '${SDK_INSTALL_TARGETS}'" || { echo "printf 'ERROR: this SDK was not fully installed and needs reinstalling\n'" >> $env_setup_script ; exit 1 ; }
-		rm $target_sdk_dir/ext-sdk-prepare.py
+		sh -c ". buildtools/environment-setup* > $LOGFILE && \
+			cd $target_sdk_dir/`dirname ${oe_init_build_env_path}` && \
+			set $target_sdk_dir && \
+			. $target_sdk_dir/${oe_init_build_env_path} $target_sdk_dir >> $LOGFILE && \
+			python $target_sdk_dir/ext-sdk-prepare.py $LOGFILE '${SDK_INSTALL_TARGETS}'"
+		if [ $? -ne 0 ]; then
+			echo "printf 'ERROR: this SDK was not fully installed and needs reinstalling\n'" >> $env_setup_script
+			exit 1
+			rm $target_sdk_dir/ext-sdk-prepare.py
+		fi
 	fi
 	echo done
 }
