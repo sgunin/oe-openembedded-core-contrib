@@ -7,17 +7,17 @@ SECTION = "console/utils"
 LICENSE = "GPLv2 & CDDL-1.0 & LGPLv2.1+"
 LIC_FILES_CHKSUM = "file://COPYING;md5=32f68170be424c2cd64804337726b312"
 
-SRC_URI = "${SOURCEFORGE_MIRROR}/project/cdrtools/cdrtools-${REALPV}.tar.bz2"
+SRC_URI = "${SOURCEFORGE_MIRROR}/project/cdrtools/alpha/cdrtools-${PV}.tar.bz2"
 
-SRC_URI[md5sum] = "7d45c5b7e1f78d85d1583b361aee6e8b"
-SRC_URI[sha256sum] = "ed282eb6276c4154ce6a0b5dee0bdb81940d0cbbfc7d03f769c4735ef5f5860f"
+SRC_URI[md5sum] = "ea362a6a42d8aa0d5fc154d195f47926"
+SRC_URI[sha256sum] = "49c1a67fa7ad3d7c0b05d41d18cb6677b40d4811faba111f0c01145d3ef0491b"
 
 EXTRA_OEMAKE = "-e MAKEFLAGS="
 
 inherit native
 
-PV = "3.01a31+really3.01"
-REALPV = "3.01"
+PV = "3.02a07"
+REALPV = "3.02"
 
 S = "${WORKDIR}/${BPN}-${REALPV}"
 
