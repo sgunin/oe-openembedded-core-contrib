@@ -53,3 +53,5 @@ NOINST_TOOLS_EXPERIMENTAL ?= " \
     tools/gatt-service \
     profiles/iap/iapd \
 "
+
+PARALLEL_MAKE = ""
