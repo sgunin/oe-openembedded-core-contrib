@@ -1,6 +1,3 @@
-From b5a9234272e6084557224c73ab7737ed47f09848 Mon Sep 17 00:00:00 2001
-From: Lukasz Nowak <lnowak@tycoint.com>
-Date: Wed, 23 Nov 2016 12:48:21 +0000
 Subject: [PATCH v2] libiproute: handle table ids larger than 255
 
 Linux kernel, starting from 2.6.19 allows ip table ids to have 32-bit values.
@@ -24,23 +21,25 @@ Upstream-Status: Submitted [http://lists.busybox.net/pipermail/busybox/2016-Dece
 
 Signed-off-by: Lukasz Nowak <lnowak@tycoint.com>
 ---
- networking/libiproute/iproute.c | 24 ++++++++++++++++++++----
+ networking/libiproute/iproute.c | 27 +++++++++++++++++++++------
  networking/libiproute/iprule.c  | 11 +++++++++--
- 2 files changed, 29 insertions(+), 6 deletions(-)
+ 2 files changed, 30 insertions(+), 8 deletions(-)
 
 diff --git a/networking/libiproute/iproute.c b/networking/libiproute/iproute.c
-index 6ecd5f7..d5af498 100644
+index 48dc6e3..bdd17da 100644
 --- a/networking/libiproute/iproute.c
 +++ b/networking/libiproute/iproute.c
-@@ -87,6 +87,7 @@ static int FAST_FUNC print_route(const struct sockaddr_nl *who UNUSED_PARAM,
+@@ -66,7 +66,8 @@ static int FAST_FUNC print_route(const struct sockaddr_nl *who UNUSED_PARAM,
  	inet_prefix dst;
  	inet_prefix src;
  	int host_len = -1;
+-
 +	uint32_t tid;
- 
++	
  	if (n->nlmsg_type != RTM_NEWROUTE && n->nlmsg_type != RTM_DELROUTE) {
  		fprintf(stderr, "Not a route: %08x %08x %08x\n",
-@@ -99,6 +100,14 @@ static int FAST_FUNC print_route(const struct sockaddr_nl *who UNUSED_PARAM,
+ 			n->nlmsg_len, n->nlmsg_type, n->nlmsg_flags);
+@@ -78,6 +79,14 @@ static int FAST_FUNC print_route(const struct sockaddr_nl *who UNUSED_PARAM,
  	if (len < 0)
  		bb_error_msg_and_die("wrong nlmsg len %d", len);
  
@@ -55,7 +54,7 @@ index 6ecd5f7..d5af498 100644
  	if (r->rtm_family == AF_INET6)
  		host_len = 128;
  	else if (r->rtm_family == AF_INET)
-@@ -128,7 +137,7 @@ static int FAST_FUNC print_route(const struct sockaddr_nl *who UNUSED_PARAM,
+@@ -107,7 +116,7 @@ static int FAST_FUNC print_route(const struct sockaddr_nl *who UNUSED_PARAM,
  			}
  		}
  	} else {
@@ -64,7 +63,7 @@ index 6ecd5f7..d5af498 100644
  			return 0;
  		}
  	}
-@@ -157,10 +166,8 @@ static int FAST_FUNC print_route(const struct sockaddr_nl *who UNUSED_PARAM,
+@@ -136,10 +145,8 @@ static int FAST_FUNC print_route(const struct sockaddr_nl *who UNUSED_PARAM,
  		return 0;
  	}
  
@@ -75,21 +74,22 @@ index 6ecd5f7..d5af498 100644
  
  	if (tb[RTA_SRC]) {
  		src.bitlen = r->rtm_src_len;
-@@ -283,6 +290,10 @@ static int FAST_FUNC print_route(const struct sockaddr_nl *who UNUSED_PARAM,
+@@ -258,7 +265,10 @@ static int FAST_FUNC print_route(const struct sockaddr_nl *who UNUSED_PARAM,
  	if (tb[RTA_OIF]) {
  		printf("dev %s ", ll_index_to_name(*(int*)RTA_DATA(tb[RTA_OIF])));
  	}
+-
 +#if ENABLE_FEATURE_IP_RULE
 +	if (tid && tid != RT_TABLE_MAIN && !G_filter.tb)
 +		printf("table %s ", rtnl_rttable_n2a(tid));
 +#endif
- 
  	/* Todo: parse & show "proto kernel", "scope link" here */
  
-@@ -434,7 +445,12 @@ IF_FEATURE_IP_RULE(ARG_table,)
+ 	if (tb[RTA_PREFSRC] && /*G_filter.rprefsrc.bitlen - always 0*/ 0 != host_len) {
+@@ -419,7 +429,12 @@ IF_FEATURE_IP_RULE(ARG_table,)
  			NEXT_ARG();
  			if (rtnl_rttable_a2n(&tid, *argv))
- 				invarg(*argv, "table");
+ 				invarg_1_to_2(*argv, "table");
 -			req.r.rtm_table = tid;
 +			if (tid < 256)
 +				req.r.rtm_table = tid;
@@ -101,10 +101,10 @@ index 6ecd5f7..d5af498 100644
  		} else if (arg == ARG_dev || arg == ARG_oif) {
  			NEXT_ARG();
 diff --git a/networking/libiproute/iprule.c b/networking/libiproute/iprule.c
-index 774a3e2..3fac7c5 100644
+index dba6434..6836ff7 100644
 --- a/networking/libiproute/iprule.c
 +++ b/networking/libiproute/iprule.c
-@@ -119,7 +119,9 @@ static int FAST_FUNC print_rule(const struct sockaddr_nl *who UNUSED_PARAM,
+@@ -114,7 +114,9 @@ static int FAST_FUNC print_rule(const struct sockaddr_nl *who UNUSED_PARAM,
  		printf("iif %s ", (char*)RTA_DATA(tb[RTA_IIF]));
  	}
  
@@ -115,10 +115,10 @@ index 774a3e2..3fac7c5 100644
  		printf("lookup %s ", rtnl_rttable_n2a(r->rtm_table));
  
  	if (tb[RTA_FLOW]) {
-@@ -259,7 +261,12 @@ static int iprule_modify(int cmd, char **argv)
+@@ -254,7 +256,12 @@ static int iprule_modify(int cmd, char **argv)
  			NEXT_ARG();
  			if (rtnl_rttable_a2n(&tid, *argv))
- 				invarg(*argv, "table ID");
+ 				invarg_1_to_2(*argv, "table ID");
 -			req.r.rtm_table = tid;
 +			if (tid < 256)
 +				req.r.rtm_table = tid;
@@ -130,5 +130,5 @@ index 774a3e2..3fac7c5 100644
  		} else if (key == ARG_dev ||
  			   key == ARG_iif
 -- 
-2.7.4
+2.1.0
 

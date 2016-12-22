@@ -1,8 +1,8 @@
 require busybox.inc
 
-SRCREV = "1b7c17391de66502dd7a97c866e0a33681edbb1f"
+SRCREV = "868530ade244bf8162fb6a10816bd815b166d509"
 # Lookout for PV bump too when SRCREV is changed
-PV = "1.25.0+git${SRCPV}"
+PV = "1.25.1+git${SRCPV}"
 
 S = "${WORKDIR}/git"
 
@@ -33,7 +33,6 @@ SRC_URI = "git://busybox.net/busybox.git \
            file://inetd \
            file://login-utilities.cfg \
            file://recognize_connmand.patch \
-           file://busybox-cross-menuconfig.patch \
            file://0001-Use-CC-when-linking-instead-of-LD-and-use-CFLAGS-and.patch \
            file://mount-via-label.cfg \
            file://sha1sum.cfg \
@@ -46,6 +45,8 @@ SRC_URI = "git://busybox.net/busybox.git \
            file://rcS \
            file://rcK \
            file://runlevel \
+           file://makefile-libbb-race.patch \
+           file://0001-libiproute-handle-table-ids-larger-than-255.patch \
 "
 SRC_URI_append_libc-musl = " file://musl.cfg "
 
