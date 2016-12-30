@@ -382,11 +382,17 @@ def convert_results(poky_repo, results_dir, tester_host):
 
     Conversion is a destructive operation, converted files being deleted.
     """
+    test_descriptions = {'test1': "Build core-image-sato",
+                         'test12': "Build virtual/kernel",
+                         'test13': "Build core-image-sato with rm_work enabled",
+                         'test2': "Run core-image-sato do_rootfs with sstate",
+                         'test3': "Bitbake parsing (bitbake -p)",
+                         'test4': "eSDK metrics"}
     test_params = OrderedDict([
         ('test1', {'log_start_re': "Running Test 1, part 1/3",
                    'log_end_re': "Buildstats are saved in.*-test1$",
                    'meas_params': [('sysres', (1, 'build', 'bitbake core-image-sato')),
-                                   ('diskusage', ('tmpdir', 'tmpdir'))]
+                                   ('diskusage', ('tmpdir', 'tmpdir'))],
                    }),
         ('test12', {'log_start_re': "Running Test 1, part 2/3",
                    'log_end_re': "More stats can be found in.*results.log.2",
@@ -423,7 +429,7 @@ def convert_results(poky_repo, results_dir, tester_host):
                     'status': 'SUCCESS'}
         start_time = output_log.set_start(log_start_re).time
         end_time = output_log.set_end(log_end_re).time
-        test_res['description'] = output_log.get_test_descr()
+        test_res['description'] = test_descriptions[name]
         test_res['start_time'] = start_time
         test_res['elapsed_time'] = end_time - start_time
         for meas_type, params in meas_params:
