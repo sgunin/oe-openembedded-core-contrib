@@ -22,10 +22,12 @@ import shutil
 import sys
 import tempfile
 import time
-from collections import defaultdict, OrderedDict
+import xml.etree.ElementTree as ET
+from collections import defaultdict, OrderedDict, MutableMapping
 from datetime import datetime, timedelta, tzinfo
 from glob import glob
 from subprocess import check_output, CalledProcessError
+from xml.dom import minidom
 
 # Import oe libs
 scripts_path = os.path.dirname(os.path.realpath(__file__))
@@ -377,8 +379,59 @@ def convert_buildstats(indir, outfile):
                   cls=ResultsJsonEncoder)
 
 
-def convert_results(poky_repo, results_dir, tester_host):
-    """Convert 'old style' to new JSON based format.
+def convert_results(poky_repo, results_dir, tester_host, out_fmt,
+                    metadata_template):
+    """Convert results to new JSON or XML based format."""
+    if os.path.exists(os.path.join(results_dir, 'results.json')):
+        return convert_json_results(poky_repo, results_dir, out_fmt,
+                                    metadata_template)
+    elif os.path.exists(os.path.join(results_dir, 'results.xml')):
+        if out_fmt != 'xml':
+            raise ConversionError("Unable to convert XML results")
+    elif os.path.exists(os.path.join(results_dir, 'output.log')):
+        return convert_old_results(poky_repo, results_dir, tester_host, out_fmt,
+                                   metadata_template)
+    raise ConversionError("No result data found")
+
+
+def create_metadata(template, hostname, rev_info):
+    """Helper for constructing metadata.
+
+    Create metadata dict from given template of from scratch. Involves a lot of
+    guessing/hardcoding."""
+    metadata = template.copy() if template else OrderedDict()
+    default_config = {'MACHINE': 'qemux86',
+                      'BB_NUMBER_THREADS': '8',
+                      'PARALLEL_MAKE': '-j 8'}
+
+    if not 'hostname' in metadata:
+        metadata['hostname'] = hostname
+    if not 'distro' in metadata:
+        metadata['distro'] = {'id': 'poky'}
+    if not 'config' in metadata:
+        metadata['config'] = OrderedDict()
+    for key, val in sorted(default_config.items()):
+        if not key in metadata['config']:
+            metadata['config'][key] = val
+
+    # Special handling for branch
+    branch = '(nobranch)' if rev_info['branch'] == 'None' else rev_info['branch']
+    rev_dict = OrderedDict([('commit', rev_info['commit']),
+                            ('commit_count', rev_info['commit_count']),
+                            ('branch', rev_info['branch'])])
+
+    metadata['layers'] = OrderedDict()
+    for layer in ('meta', 'meta-poky', 'meta-yocto-bsp'):
+        metadata['layers'][layer] = rev_dict
+
+    metadata['bitbake'] = rev_dict
+
+    return metadata
+
+
+def convert_old_results(poky_repo, results_dir, tester_host, new_fmt,
+                        metadata_template):
+    """Convert 'old style' to new JSON or XML based format.
 
     Conversion is a destructive operation, converted files being deleted.
     """
@@ -524,15 +577,193 @@ def convert_results(poky_repo, results_dir, tester_host):
                            ('start_time', out_log.records[0].time),
                            ('elapsed_time', (out_log.records[-1].time -
                                              out_log.records[0].time)),
-                           ('git_branch', git_branch),
-                           ('git_commit', git_rev),
-                           ('git_commit_count', commit_cnt),
-                           ('product', 'poky'),
                            ('tests', tests)))
 
-    # Write results.json
+    # Create metadata dict
+    metadata = create_metadata(metadata_template,
+                               tester_host,
+                               {'commit': git_rev,
+                                'commit_count': commit_cnt,
+                                'branch': git_branch})
+
+    # Write metadata and results files
+    if new_fmt == 'json':
+        write_results_json(results_dir, metadata, results)
+    elif new_fmt == 'xml':
+        write_results_xml(results_dir, metadata, results)
+    else:
+        raise NotImplementedError("Unknown results format '{}'".format(new_fmt))
+
+    return True
+
+
+def convert_json_results(poky_repo, results_dir, new_fmt, metadata_template):
+    """Convert JSON formatted results"""
+    metadata_file = os.path.join(results_dir, 'metadata.json')
+    results_file = os.path.join(results_dir, 'results.json')
+
+    with open(results_file) as fobj:
+        results = json.load(fobj, object_pairs_hook=OrderedDict)
+
+    if os.path.exists(metadata_file):
+        if new_fmt == 'json':
+            log.debug("Results in desired format, no need to convert")
+            return False
+        with open(metadata_file) as fobj:
+            metadata = json.load(fobj, object_pairs_hook=OrderedDict)
+        # Remove old metadata file
+        os.unlink(metadata_file)
+    else:
+        metadata = create_metadata(metadata_template,
+                                   results['tester_host'],
+                                   {'commit': results.pop('git_commit'),
+                                    'commit_count': results.pop('git_commit_count'),
+                                    'branch': results.pop('git_branch')})
+
+        # Remove metadata from the results dict
+        results.pop('product')
+
+    # Remove old results file
+    os.unlink(results_file)
+
+    # Write metadata and results files
+    if new_fmt == 'json':
+        write_results_json(results_dir, metadata, results)
+    elif new_fmt == 'xml':
+        write_results_xml(results_dir, metadata, results)
+    else:
+        raise NotImplementedError("Unknown results format '{}'".format(new_fmt))
+
+    return True
+
+
+def write_results_json(results_dir, metadata, results):
+    """Write results into a JSON formatted file"""
+    with open(os.path.join(results_dir, 'metadata.json'), 'w') as fobj:
+        json.dump(metadata, fobj, indent=4)
     with open(os.path.join(results_dir, 'results.json'), 'w') as fobj:
         json.dump(results, fobj, indent=4, cls=ResultsJsonEncoder)
+
+def metadata_dict_to_xml(tag, dictionary, **kwargs):
+    elem = ET.Element(tag, **kwargs)
+    for key, val in dictionary.items():
+        if tag == 'layers':
+            child = (metadata_dict_to_xml('layer', val, name=key))
+        elif isinstance(val, MutableMapping):
+            child = (metadata_dict_to_xml(key, val))
+        else:
+            if tag == 'config':
+                child = ET.Element('variable', name=key)
+            else:
+                child = ET.Element(key)
+            child.text = str(val)
+        elem.append(child)
+    return elem
+
+def write_pretty_xml(tree, out_file):
+    """Write out XML element tree into a file"""
+    # Use minidom for pretty-printing
+    dom_doc = minidom.parseString(ET.tostring(tree.getroot(), 'utf-8'))
+    with open(out_file, 'w') as fobj:
+        dom_doc.writexml(fobj, addindent='  ', newl='\n', encoding='utf-8')
+    #tree.write(out_file, encoding='utf-8', xml_declaration=True)
+
+
+def timestamp_to_isoformat(timestamp):
+    """Convert unix timestamp to isoformat"""
+    if isinstance(timestamp, datetime):
+        return timestamp.isoformat()
+    else:
+        return datetime.utcfromtimestamp(timestamp).isoformat()
+
+def xml_encode(obj):
+    """Encode value for xml"""
+    if isinstance(obj, timedelta):
+        return str(obj.total_seconds())
+    else:
+        return str(obj)
+
+def write_results_xml(results_dir, metadata, results):
+    """Write test results into a JUnit XML file"""
+    # Write metadata
+    tree = ET.ElementTree(metadata_dict_to_xml('metadata', metadata))
+    write_pretty_xml(tree, os.path.join(results_dir, 'metadata.xml'))
+
+    # Write results
+    test_classes = {'test1': 'Test1P1',
+                    'test12': 'Test1P2',
+                    'test13': 'Test1P3',
+                    'test2': 'Test2',
+                    'test3': 'Test3',
+                    'test4': 'Test4'}
+
+    top = ET.Element('testsuites')
+    suite = ET.SubElement(top, 'testsuite')
+    suite.set('hostname', results['tester_host'])
+    suite.set('name', 'oeqa.buildperf')
+    suite.set('timestamp', timestamp_to_isoformat(results['start_time']))
+    suite.set('time', xml_encode(results['elapsed_time']))
+
+    test_cnt = skip_cnt = fail_cnt = err_cnt = 0
+    for test in results['tests'].values():
+        test_cnt += 1
+        testcase = ET.SubElement(suite, 'testcase')
+        testcase.set('classname', 'oeqa.buildperf.test_basic.' + test_classes[test['name']])
+        testcase.set('name', test['name'])
+        testcase.set('description', test['description'])
+        testcase.set('timestamp', timestamp_to_isoformat(test['start_time']))
+        testcase.set('time', xml_encode(test['elapsed_time']))
+        status = test['status']
+        if status in ('ERROR', 'FAILURE', 'EXP_FAILURE'):
+            if status in ('FAILURE', 'EXP_FAILURE'):
+                result = ET.SubElement(testcase, 'failure')
+                fail_cnt += 1
+            else:
+                result = ET.SubElement(testcase, 'error')
+                err_cnt += 1
+            if 'message' in test:
+                result.set('message', test['message'])
+                result.set('type', test['err_type'])
+                result.text = test['err_output']
+        elif status == 'SKIPPED':
+            result = ET.SubElement(testcase, 'skipped')
+            result.text = test['message']
+            skip_cnt += 1
+        elif status not in ('SUCCESS', 'UNEXPECTED_SUCCESS'):
+            raise TypeError("BUG: invalid test status '%s'" % status)
+
+        for data in test['measurements']:
+            measurement = ET.SubElement(testcase, data['type'])
+            measurement.set('name', data['name'])
+            measurement.set('legend', data['legend'])
+            vals = data['values']
+            if data['type'] == 'sysres':
+                timestamp = timestamp_to_isoformat(vals['start_time'])
+                ET.SubElement(measurement, 'time', timestamp=timestamp).text = \
+                    xml_encode(vals['elapsed_time'])
+                for key, val in vals.items():
+                    if key == 'rusage':
+                        attrib = dict((k, xml_encode(v)) for k, v in vals['rusage'].items())
+                        ET.SubElement(measurement, 'rusage', attrib=attrib)
+                    elif key == 'iostat':
+                        attrib = dict((k, xml_encode(v)) for k, v in vals['iostat'].items())
+                        ET.SubElement(measurement, 'iostat', attrib=attrib)
+                    elif key == 'buildstats_file':
+                        ET.SubElement(measurement, 'buildstats_file').text = vals['buildstats_file']
+                    elif key not in ('start_time', 'elapsed_time'):
+                        raise TypeError("Unkown measurement value {}: '{}'".format(key, val))
+            elif data['type'] == 'diskusage':
+                ET.SubElement(measurement, 'size').text = str(vals['size'])
+            else:
+                raise TypeError('BUG: unsupported measurement type')
+    suite.set('tests', str(test_cnt))
+    suite.set('failures', str(fail_cnt))
+    suite.set('errors', str(err_cnt))
+    suite.set('skipped', str(skip_cnt))
+
+    # Use minidom for pretty-printing
+    tree = ET.ElementTree(top)
+    write_pretty_xml(tree, os.path.join(results_dir, 'results.xml'))
 
 
 def git_commit_dir(data_repo, src_dir, branch, msg, tag=None, tag_msg="",
@@ -553,12 +784,12 @@ def git_commit_dir(data_repo, src_dir, branch, msg, tag=None, tag_msg="",
 
 
 def import_testrun(archive, data_repo, poky_repo, branch_fmt, tag_fmt,
-                   convert=False):
+                   convert=False, metadata_template=None):
     """Import one testrun into Git"""
     archive = os.path.abspath(archive)
     archive_fn = os.path.basename(archive)
 
-    fields = archive_fn.split('-')
+    fields = archive_fn.rsplit('-', 3)
     fn_fields = {'timestamp': fields[-1].split('.')[0],
                  'rev': fields[-2],
                  'host': None}
@@ -648,16 +879,17 @@ def import_testrun(archive, data_repo, poky_repo, branch_fmt, tag_fmt,
 
         # Check if the file hierarchy is 'old style'
         converted = False
-        if os.path.exists(os.path.join(results_dir, 'output.log')) and convert:
-            log.info("Converting test results from %s", archive_fn)
+        log.info("Importing test results from %s", archive_fn)
+        if convert:
             try:
-                convert_results(poky_repo, results_dir, fn_fields['host'])
-                converted = True
+                converted = convert_results(poky_repo, results_dir,
+                                            fn_fields['host'], convert,
+                                            metadata_template)
             except ConversionError as err:
                 log.warn("Skipping %s, conversion failed: %s", archive_fn, err)
                 return False, str(err)
-        else:
-            log.info('Importing test results from %s', archive)
+        if converted:
+            log.info("    converted results to {}".format(convert.upper()))
 
         # Get info for git branch and tag names
         fmt_fields = {'host': fn_fields['host'],
@@ -667,7 +899,20 @@ def import_testrun(archive, data_repo, poky_repo, branch_fmt, tag_fmt,
                       'machine': 'qemux86',
                       'rev_cnt': None}
 
-        if os.path.exists(os.path.join(results_dir, 'results.json')):
+        if os.path.exists(os.path.join(results_dir, 'metadata.json')):
+            with open(os.path.join(results_dir, 'metadata.json')) as fobj:
+                data = json.load(fobj)
+            fmt_fields['host'] = data['hostname']
+            fmt_fields['branch'] = data['layers']['meta']['branch']
+            fmt_fields['rev'] = data['layers']['meta']['commit']
+            fmt_fields['rev_cnt'] = data['layers']['meta']['commit_count']
+        elif os.path.exists(os.path.join(results_dir, 'metadata.xml')):
+            data = ET.parse(os.path.join(results_dir, 'metadata.xml')).getroot()
+            fmt_fields['host'] = data.find('hostname').text
+            fmt_fields['branch'] = data.find("layers/layer[@name='meta']/branch").text
+            fmt_fields['rev'] = data.find("layers/layer[@name='meta']/commit").text
+            fmt_fields['rev_cnt'] = data.find("layers/layer[@name='meta']/commit_count").text
+        elif os.path.exists(os.path.join(results_dir, 'results.json')):
             with open(os.path.join(results_dir, 'results.json')) as fobj:
                 data = json.load(fobj)
             fmt_fields['host'] = data['tester_host']
@@ -680,6 +925,10 @@ def import_testrun(archive, data_repo, poky_repo, branch_fmt, tag_fmt,
                     out_log.get_git_rev_info()
             cmd = ['rev-list', '--count', fmt_fields['rev'], '--']
             fmt_fields['rev_cnt'] = poky_repo.run_cmd(cmd).splitlines()[0]
+
+        # Special case for git branch
+        if fmt_fields['branch'] == 'None':
+            fmt_fields['branch'] = '(nobranch)'
 
         # Compose git branch and tag name
         git_branch = branch_fmt % fmt_fields
@@ -744,8 +993,10 @@ def get_archive_timestamp(filename):
     split = os.path.basename(filename).rsplit('-', 2)
     if len(split) == 4:
         return split[3].split('.')[0]
-    else:
+    elif len(split) == 3:
         return split[2]
+    else:
+        return filename
 
 
 def parse_args(argv=None):
@@ -764,9 +1015,11 @@ def parse_args(argv=None):
                         default='%(host)s/%(branch)s/%(machine)s/%(rev_cnt)s-g%(rev)s',
                         help="Tag 'basename' to use, tag number will be "
                              "automatically appended")
-    parser.add_argument('-c', '--convert', action='store_true',
-                        help="Convert results to new JSON-based format")
-    parser.add_argument('-P', '--poky-git', type=os.path.abspath, required=True,
+    parser.add_argument('-c', '--convert', choices=('json', 'xml'),
+                        help="Convert results to new format")
+    parser.add_argument('-M', '--metadata-template', type=os.path.abspath,
+                        help="Pre-filled test metadata in JSON format")
+    parser.add_argument('-P', '--poky-git', type=os.path.abspath,
                         help="Path to poky clone")
     parser.add_argument('-g', '--git-dir', type=os.path.abspath, required=True,
                         help="Git repository where to commit results")
@@ -805,13 +1058,23 @@ def main(argv=None):
         else:
             data_repo = GitRepo(args.git_dir, is_topdir=True)
 
+        # Read metadata template
+        if args.metadata_template:
+            try:
+                with open(args.metadata_template) as fobj:
+                    metadata = json.load(fobj, object_pairs_hook=OrderedDict)
+            except ValueError as err:
+                raise CommitError("Metadata template not valid JSON format: {}".format(err))
+        else:
+            metadata = OrderedDict()
+
         # Import archived results
         imported = []
         skipped = []
         for archive in sorted(args.archive, key=get_archive_timestamp):
             result = import_testrun(archive, data_repo, poky_repo,
                                     args.git_branch_name, args.git_tag_name,
-                                    args.convert)
+                                    args.convert, metadata)
             if result[0]:
                 imported.append(result[1])
             else:
