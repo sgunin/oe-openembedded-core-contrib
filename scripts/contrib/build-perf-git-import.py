@@ -754,6 +754,9 @@ def parse_args(argv=None):
 
     parser.add_argument('-d', '--debug', action='store_true',
                         help='Debug level logging')
+    parser.add_argument('-l', '--log-file', type=os.path.abspath,
+                        default=datetime.now().strftime('build-perf-git-import-%Y%m%d_%H%M%S.log'),
+                        help='Log file to use')
     parser.add_argument('-B', '--git-branch-name',
                         default='%(host)s/%(branch)s/%(machine)s',
                         help="Branch name to use")
@@ -779,6 +782,10 @@ def main(argv=None):
     args = parse_args(argv)
     if args.debug:
         log.setLevel(logging.DEBUG)
+    if args.log_file:
+        file_handler = logging.FileHandler(args.log_file)
+        file_handler.setFormatter(log.handlers[0].formatter)
+        log.addHandler(file_handler)
 
     ret = 1
     try:
@@ -814,11 +821,15 @@ def main(argv=None):
         data_repo.run_cmd(['reset', '--hard', 'HEAD', '--'])
         data_repo.run_cmd(['clean', '-fd'])
 
-        print("\nSuccessfully imported {} archived results".format(len(imported)))
+        # Log end report with plain formatting
+        formatter = logging.Formatter('%(message)s')
+        for handler in log.handlers:
+            handler.setFormatter(formatter)
+        log.info("\nSuccessfully imported {} archived results".format(len(imported)))
         if skipped:
-            print("Failed to import {} result archives:".format(len(skipped)))
+            log.info("Failed to import {} result archives:".format(len(skipped)))
             for archive, reason in skipped:
-                print("    {}: {}".format(archive, reason))
+                log.info("    {}: {}".format(archive, reason))
 
         ret = 0
     except CommitError as err:
