@@ -269,7 +269,23 @@ python write_specfile () {
         else:
             spec_preamble.append('%s' % textwrap.fill(dedent_text, width=75))
 
-    packages = d.getVar('PACKAGES')
+    # The "PACKAGE_HAVE_EXTRA_ARCH" have been set in function do_package_rpm
+    # If the subpackages have extra arch, the arch variable have been set in "PACKAGE_HAVE_EXTRA_ARCH"
+    # If "PACKAGE_HAVE_EXTRA_ARCH" was set, build rpm for the subpackages that have extra arch
+    # If "PACKAGE_HAVE_EXTRA_ARCH" was not set, remove the subpackages that have extra arch from the "PACKAGES", and then build
+    # rpm for the remaining subpackages.
+    package_extra_arch = d.getVar('PACKAGE_HAVE_EXTRA_ARCH', True)
+    packages = ""
+    if not package_extra_arch:
+        packages_tmp = d.getVar('PACKAGES', True)
+        need_remove_pkg = d.getVar('REMOVE_EXTRA_ARCH_PKG', True)
+        list_pkg_tmp = packages_tmp.split()
+        for pkg in need_remove_pkg:
+            list_pkg_tmp.remove(pkg)
+        packages = ' '.join(list_pkg_tmp)
+    else:
+        packages = package_extra_arch
+
     if not packages or packages == '':
         bb.debug(1, "No packages; nothing to do")
         return
@@ -657,6 +673,23 @@ python do_package_rpm () {
             return "".join(name.split(ml))
         return name
 
+    # When generating rpm packages, the packages arch was default to TUNE_PKGARCH.
+    # But sometime some packages' arch maybe overrides as part of PACKAGE_ARCH,
+    # for example set one package's arch to "noarch".
+    # The following function was to check extra arch for packages, and return the 
+    # "package:arch" pairs which package in pair has different arch from the default.
+    def check_extra_package_arch(packages, d):
+        arch_main = d.getVar('PACKAGE_ARCH', True)
+        diff_arch = {}
+        for pkg in packages.split():
+            localdata = bb.data.createCopy(d)
+            localdata.setVar('OVERRIDES', d.getVar('OVERRIDES', False) + ":" + pkg)
+            bb.data.update_data(localdata)
+            arch_pkg = localdata.getVar('PACKAGE_ARCH', True)
+            if arch_pkg != arch_main:
+                diff_arch[pkg] = arch_pkg
+        return diff_arch
+
     workdir = d.getVar('WORKDIR')
     tmpdir = d.getVar('TMPDIR')
     pkgd = d.getVar('PKGD')
@@ -670,73 +703,106 @@ python do_package_rpm () {
         bb.debug(1, "No packages; nothing to do")
         return
 
-    # Construct the spec file...
-    # If the spec file already exist, and has not been stored into 
-    # pseudo's files.db, it maybe cause rpmbuild src.rpm fail,
-    # so remove it before doing rpmbuild src.rpm.
-    srcname    = strip_multilib(d.getVar('PN'), d)
-    outspecfile = workdir + "/" + srcname + ".spec"
-    if os.path.isfile(outspecfile):
-        os.remove(outspecfile)
-    d.setVar('OUTSPECFILE', outspecfile)
-    bb.build.exec_func('write_specfile', d)
+    # The rpm_build function was used to build rpm for packages.
+    # It have two functionality:
+    # If the args was null, the build was default for the default arch: TUNE_PKGARCH.
+    # If the args was not null, it was in format (package:arch)
+    # The args[0] was package that used to build rpm, the args[1]
+    # was the package's arch.
+    def rpm_build(*args):
+        # Construct the spec file...
+        # If the spec file already exist, and has not been stored into 
+        # pseudo's files.db, it maybe cause rpmbuild src.rpm fail,
+        # so remove it before doing rpmbuild src.rpm.
+        srcname = ""
+        package_arch = ""
+        if not args:
+            srcname    = strip_multilib(d.getVar('PN', True), d)
+            package_arch = (d.getVar('PACKAGE_ARCH', True) or "").replace("-", "_")
+        else:
+            srcname = args[0]
+            package_arch = args[1]
 
-    perfiledeps = (d.getVar("MERGEPERFILEDEPS") or "0") == "0"
-    if perfiledeps:
-        outdepends, outprovides = write_rpm_perfiledata(srcname, d)
+        outspecfile = workdir + "/" + srcname + ".spec"
+        if os.path.isfile(outspecfile):
+            os.remove(outspecfile)
+        d.setVar('OUTSPECFILE', outspecfile)
+        bb.build.exec_func('write_specfile', d)
 
-    # Setup the rpmbuild arguments...
-    rpmbuild = d.getVar('RPMBUILD')
-    targetsys = d.getVar('TARGET_SYS')
-    targetvendor = d.getVar('HOST_VENDOR')
-    package_arch = (d.getVar('PACKAGE_ARCH') or "").replace("-", "_")
-    sdkpkgsuffix = (d.getVar('SDKPKGSUFFIX') or "nativesdk").replace("-", "_")
-    if package_arch not in "all any noarch".split() and not package_arch.endswith(sdkpkgsuffix):
-        ml_prefix = (d.getVar('MLPREFIX') or "").replace("-", "_")
-        d.setVar('PACKAGE_ARCH_EXTEND', ml_prefix + package_arch)
-    else:
-        d.setVar('PACKAGE_ARCH_EXTEND', package_arch)
-    pkgwritedir = d.expand('${PKGWRITEDIRRPM}/${PACKAGE_ARCH_EXTEND}')
-    d.setVar('RPM_PKGWRITEDIR', pkgwritedir)
-    bb.debug(1, 'PKGWRITEDIR: %s' % d.getVar('RPM_PKGWRITEDIR'))
-    pkgarch = d.expand('${PACKAGE_ARCH_EXTEND}${HOST_VENDOR}-${HOST_OS}')
-    magicfile = d.expand('${STAGING_DIR_NATIVE}${datadir_native}/misc/magic.mgc')
-    bb.utils.mkdirhier(pkgwritedir)
-    os.chmod(pkgwritedir, 0o755)
+        perfiledeps = (d.getVar("MERGEPERFILEDEPS", True) or "0") == "0"
+        if perfiledeps:
+            outdepends, outprovides = write_rpm_perfiledata(srcname, d)
 
-    cmd = rpmbuild
-    cmd = cmd + " --nodeps --short-circuit --target " + pkgarch + " --buildroot " + pkgd
-    cmd = cmd + " --define '_topdir " + workdir + "' --define '_rpmdir " + pkgwritedir + "'"
-    cmd = cmd + " --define '_builddir " + d.getVar('S') + "'"
-    cmd = cmd + " --define '_build_name_fmt %%{NAME}-%%{VERSION}-%%{RELEASE}.%%{ARCH}.rpm'"
-    cmd = cmd + " --define '_use_internal_dependency_generator 0'"
-    if perfiledeps:
-        cmd = cmd + " --define '__find_requires " + outdepends + "'"
-        cmd = cmd + " --define '__find_provides " + outprovides + "'"
-    else:
-        cmd = cmd + " --define '__find_requires %{nil}'"
-        cmd = cmd + " --define '__find_provides %{nil}'"
-    cmd = cmd + " --define '_unpackaged_files_terminate_build 0'"
-    cmd = cmd + " --define 'debug_package %{nil}'"
-    cmd = cmd + " --define '_rpmfc_magic_path " + magicfile + "'"
-    cmd = cmd + " --define '_tmppath " + workdir + "'"
-    if d.getVarFlag('ARCHIVER_MODE', 'srpm') == '1' and bb.data.inherits_class('archiver', d):
-        cmd = cmd + " --define '_sourcedir " + d.getVar('ARCHIVER_OUTDIR') + "'"
-        cmdsrpm = cmd + " --define '_srcrpmdir " + d.getVar('ARCHIVER_OUTDIR') + "'"
-        cmdsrpm = cmdsrpm + " -bs " + outspecfile
-        # Build the .src.rpm
-        d.setVar('SBUILDSPEC', cmdsrpm + "\n")
-        d.setVarFlag('SBUILDSPEC', 'func', '1')
-        bb.build.exec_func('SBUILDSPEC', d)
-    cmd = cmd + " -bb " + outspecfile
+        # Setup the rpmbuild arguments...
+        rpmbuild = d.getVar('RPMBUILD', True)
+        targetsys = d.getVar('TARGET_SYS', True)
+        targetvendor = d.getVar('HOST_VENDOR', True)
 
-    # Build the rpm package!
-    d.setVar('BUILDSPEC', cmd + "\n")
-    d.setVarFlag('BUILDSPEC', 'func', '1')
-    bb.build.exec_func('BUILDSPEC', d)
+        sdkpkgsuffix = (d.getVar('SDKPKGSUFFIX', True) or "nativesdk").replace("-", "_")
+        if package_arch not in "all any noarch".split() and not package_arch.endswith(sdkpkgsuffix):
+            ml_prefix = (d.getVar('MLPREFIX', True) or "").replace("-", "_")
+            d.setVar('PACKAGE_ARCH_EXTEND', ml_prefix + package_arch)
+        else:
+            d.setVar('PACKAGE_ARCH_EXTEND', package_arch)
+        pkgwritedir = d.expand('${PKGWRITEDIRRPM}/${PACKAGE_ARCH_EXTEND}')
+        d.setVar('RPM_PKGWRITEDIR', pkgwritedir)
+        bb.debug(1, 'PKGWRITEDIR: %s' % d.getVar('RPM_PKGWRITEDIR', True))
+        pkgarch = d.expand('${PACKAGE_ARCH_EXTEND}${HOST_VENDOR}-${HOST_OS}')
+        magicfile = d.expand('${STAGING_DIR_NATIVE}${datadir_native}/misc/magic.mgc')
+        bb.utils.mkdirhier(pkgwritedir)
+        os.chmod(pkgwritedir, 0o755)
 
-    if d.getVar('RPM_SIGN_PACKAGES') == '1':
-        bb.build.exec_func("sign_rpm", d)
+        cmd = rpmbuild
+        cmd = cmd + " --nodeps --short-circuit --target " + pkgarch + " --buildroot " + pkgd
+        cmd = cmd + " --define '_topdir " + workdir + "' --define '_rpmdir " + pkgwritedir + "'"
+        cmd = cmd + " --define '_builddir " + d.getVar('S', True) + "'"
+        cmd = cmd + " --define '_build_name_fmt %%{NAME}-%%{VERSION}-%%{RELEASE}.%%{ARCH}.rpm'"
+        cmd = cmd + " --define '_use_internal_dependency_generator 0'"
+        if perfiledeps:
+            cmd = cmd + " --define '__find_requires " + outdepends + "'"
+            cmd = cmd + " --define '__find_provides " + outprovides + "'"
+        else:
+            cmd = cmd + " --define '__find_requires %{nil}'"
+            cmd = cmd + " --define '__find_provides %{nil}'"
+        cmd = cmd + " --define '_unpackaged_files_terminate_build 0'"
+        cmd = cmd + " --define 'debug_package %{nil}'"
+        cmd = cmd + " --define '_rpmfc_magic_path " + magicfile + "'"
+        cmd = cmd + " --define '_tmppath " + workdir + "'"
+        if d.getVarFlag('ARCHIVER_MODE', 'srpm', True) == '1' and bb.data.inherits_class('archiver', d):
+            cmd = cmd + " --define '_sourcedir " + d.getVar('ARCHIVER_OUTDIR', True) + "'"
+            cmdsrpm = cmd + " --define '_srcrpmdir " + d.getVar('ARCHIVER_OUTDIR', True) + "'"
+            cmdsrpm = cmdsrpm + " -bs " + outspecfile
+            # Build the .src.rpm
+            d.setVar('SBUILDSPEC', cmdsrpm + "\n")
+            d.setVarFlag('SBUILDSPEC', 'func', '1')
+            bb.build.exec_func('SBUILDSPEC', d)
+        cmd = cmd + " -bb " + outspecfile
+
+        # Build the rpm package!
+        d.setVar('BUILDSPEC', cmd + "\n")
+        d.setVarFlag('BUILDSPEC', 'func', '1')
+        bb.build.exec_func('BUILDSPEC', d)
+
+        if d.getVar('RPM_SIGN_PACKAGES', True) == '1':
+            bb.build.exec_func("sign_rpm", d)
+
+    # Get the "package:arch" pairs which package has different arch from the default.
+    extra_arch = check_extra_package_arch(packages, d)
+
+    # build rpm for extra arch packages
+    for pkg in extra_arch.keys():
+        d.setVar("PACKAGE_HAVE_EXTRA_ARCH", pkg)
+        rpm_build(pkg,extra_arch[pkg])
+        d.delVar("PACKAGE_HAVE_EXTRA_ARCH")
+
+    # build rpm for the default arch packages
+    remove_extra_arch_pkg = []
+    for pkg in extra_arch.keys():
+        remove_extra_arch_pkg.append(pkg)
+
+    d.setVar('REMOVE_EXTRA_ARCH_PKG', remove_extra_arch_pkg)
+    rpm_build()
+    d.delVar("REMOVE_EXTRA_ARCH_PKG")
 }
 
 python () {
