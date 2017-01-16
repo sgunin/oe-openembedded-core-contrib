@@ -17,24 +17,8 @@ SRC_URI[sha256sum] = "9aa4078e7eb5be583aeabbe8d87172797717f95e8c4338f0d4a17b683a
 
 S = "${WORKDIR}/pycairo-${PV}"
 
-inherit distutils3 pkgconfig
+inherit distutils3 pkgconfig waf
 
 BBCLASSEXTEND = "native"
 
-do_configure() {
-	PYTHON=${PYTHON} ./waf configure --prefix=${D}${prefix} --libdir=${D}${libdir}
-}
-
-do_compile() {
-	./waf build ${PARALLEL_MAKE}
-}
-
-do_install() {
-	./waf install
-	sed \
-		-e 's:@prefix@:${prefix}:' \
-		-e 's:@VERSION@:${PV}:' \
-		-e 's:@includedir@:${includedir}:' \
-		py3cairo.pc.in > py3cairo.pc
-	install -m 0644 py3cairo.pc ${D}${libdir}/pkgconfig/
-}
+export PYTHON
