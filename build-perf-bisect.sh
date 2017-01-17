@@ -264,6 +264,22 @@ cleanup_buildtime2 () {
     run_cmd rm -rf tmp*
 }
 
+rootfstime () {
+    # Pre-build to populate sstate cache
+    _time=`time_cmd bitbake $1` || exit 125
+    run_cmd rm -rf tmp*
+
+    do_sync
+
+    results+=(`time_cmd bitbake -c rootfs $1`) || exit 125
+
+    save_buildstats
+}
+
+cleanup_rootfstime () {
+    run_cmd rm -rf tmp*
+}
+
 tmpsize () {
     log "cleaning up build directory"
     run_cmd rm -rf bitbake.lock conf/sanity_info cache tmp sstate-cache
@@ -327,6 +343,10 @@ case "$test_method" in
     buildtime2)
         builddir="$workdir/build"
         cleanup_func=cleanup_buildtime2
+        ;;
+    rootfstime)
+        builddir="$workdir/build"
+        cleanup_func=cleanup_rootfstime
         ;;
     tmpsize)
         quantity="SIZE"
