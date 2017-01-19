@@ -43,6 +43,8 @@ logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s',
                     stream=sys.stdout)
 log = logging.getLogger()
 
+TEST_STATUSES = ('SUCCESS', 'FAILURE', 'ERROR', 'SKIPPED', 'EXPECTED_FAILURE',
+                 'UNEXPECTED_SUCCESS')
 
 class CommitError(Exception):
     """Script's internal error handling"""
@@ -478,7 +480,7 @@ def convert_old_results(poky_repo, results_dir, tester_host, new_fmt,
                      meas_params):
         """Import test results from one results.log.X into JSON format"""
         test_res = {'name': name,
-                    'measurements': [],
+                    'measurements': OrderedDict(),
                     'status': 'SUCCESS'}
         start_time = output_log.set_start(log_start_re).time
         end_time = output_log.set_end(log_end_re).time
@@ -522,7 +524,8 @@ def convert_old_results(poky_repo, results_dir, tester_host, new_fmt,
 
             measurement['name'] = meas_name
             measurement['legend'] = meas_legend
-            test_res['measurements'].append(measurement)
+            assert meas_name not in test_res['measurements']
+            test_res['measurements'][meas_name] = measurement
         return test_res
 
 
@@ -563,9 +566,9 @@ def convert_old_results(poky_repo, results_dir, tester_host, new_fmt,
             except ConversionError as err:
                 log.warn("Buildstats for %s not imported: %s", testname, err)
             else:
-                # We know that buildstats have only been saved for the first
+                # We know that buildstats have only been saved for the 'build'
                 # measurement of the two tests.
-                tests[testname]['measurements'][0]['values']['buildstats_file'] = \
+                tests[testname]['measurements']['build']['values']['buildstats_file'] = \
                     bs_relpath
         # Remove old buildstats directory
         shutil.rmtree(path)
@@ -622,6 +625,22 @@ def convert_json_results(poky_repo, results_dir, new_fmt, metadata_template):
 
         # Remove metadata from the results dict
         results.pop('product')
+
+    # Make corrections in the JSON data
+    test_status_map = {'FAIL': 'FAILURE',
+                       'EXP_FAIL': 'EXPECTED_FAILURE',
+                       'UNEXP_SUCCESS': 'UNEXPECTED_SUCCESS'}
+    for test in results['tests'].values():
+        # Correct test status
+        if not test['status'] in TEST_STATUSES:
+            test['status'] = test_status_map[test['status']]
+
+        # Put measurements in a dict
+        if isinstance(test['measurements'], list):
+            measurements = OrderedDict()
+            for measurement in test['measurements']:
+                measurements[measurement['name']] = measurement
+            test['measurements'] = measurements
 
     # Remove old results file
     os.unlink(results_file)
@@ -714,8 +733,8 @@ def write_results_xml(results_dir, metadata, results):
         testcase.set('timestamp', timestamp_to_isoformat(test['start_time']))
         testcase.set('time', xml_encode(test['elapsed_time']))
         status = test['status']
-        if status in ('ERROR', 'FAILURE', 'EXP_FAILURE'):
-            if status in ('FAILURE', 'EXP_FAILURE'):
+        if status in ('ERROR', 'FAILURE', 'EXPECTED_FAILURE'):
+            if status in ('FAILURE', 'EXPECTED_FAILURE'):
                 result = ET.SubElement(testcase, 'failure')
                 fail_cnt += 1
             else:
@@ -732,7 +751,7 @@ def write_results_xml(results_dir, metadata, results):
         elif status not in ('SUCCESS', 'UNEXPECTED_SUCCESS'):
             raise TypeError("BUG: invalid test status '%s'" % status)
 
-        for data in test['measurements']:
+        for data in test['measurements'].values():
             measurement = ET.SubElement(testcase, data['type'])
             measurement.set('name', data['name'])
             measurement.set('legend', data['legend'])
