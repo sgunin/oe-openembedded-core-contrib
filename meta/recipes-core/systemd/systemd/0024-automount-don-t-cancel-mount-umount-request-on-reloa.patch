@@ -1,0 +1,42 @@
+From a66ec9b78e1314d54fa746e59311c328da6058bb Mon Sep 17 00:00:00 2001
+From: Michael Olbrich <m.olbrich@pengutronix.de>
+Date: Mon, 25 Jul 2016 20:04:02 +0200
+Subject: [PATCH] automount: don't cancel mount/umount request on reload/reexec
+ (#3670)
+
+All pending tokens are already serialized correctly and will be handled
+when the mount unit is done.
+
+Without this a 'daemon-reload' cancels all pending tokens. Any process
+waiting for the mount will continue with EHOSTDOWN.
+This can happen when the mount unit waits for it's dependencies, e.g.
+network, devices, fsck, etc.
+(cherry picked from commit 87d41d6244f1eaf441769f7f6216a606c52b8e89)
+---
+ src/core/automount.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/src/core/automount.c b/src/core/automount.c
+index 85803a9..4e98915 100644
+--- a/src/core/automount.c
++++ b/src/core/automount.c
+@@ -98,9 +98,6 @@ static void unmount_autofs(Automount *a) {
+         if (a->pipe_fd < 0)
+                 return;
+ 
+-        automount_send_ready(a, a->tokens, -EHOSTDOWN);
+-        automount_send_ready(a, a->expire_tokens, -EHOSTDOWN);
+-
+         a->pipe_event_source = sd_event_source_unref(a->pipe_event_source);
+         a->pipe_fd = safe_close(a->pipe_fd);
+ 
+@@ -109,6 +106,9 @@ static void unmount_autofs(Automount *a) {
+         if (a->where &&
+             (UNIT(a)->manager->exit_code != MANAGER_RELOAD &&
+              UNIT(a)->manager->exit_code != MANAGER_REEXECUTE)) {
++                automount_send_ready(a, a->tokens, -EHOSTDOWN);
++                automount_send_ready(a, a->expire_tokens, -EHOSTDOWN);
++
+                 r = repeat_unmount(a->where, MNT_DETACH);
+                 if (r < 0)
+                         log_error_errno(r, "Failed to unmount: %m");

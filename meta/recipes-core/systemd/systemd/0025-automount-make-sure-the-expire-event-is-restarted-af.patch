@@ -1,0 +1,36 @@
+From 2844ad491050ca301b7057ec15fb1202e0175469 Mon Sep 17 00:00:00 2001
+From: Michael Olbrich <m.olbrich@pengutronix.de>
+Date: Tue, 4 Oct 2016 16:13:27 +0200
+Subject: [PATCH] automount: make sure the expire event is restarted after a
+ daemon-reload (#4265)
+
+If the corresponding mount unit is deserialized after the automount unit
+then the expire event is set up in automount_trigger_notify(). However, if
+the mount unit is deserialized first then the automount unit is still in
+state AUTOMOUNT_DEAD and automount_trigger_notify() aborts without setting
+up the expire event.
+Explicitly call automount_start_expire() during coldplug to make sure that
+the expire event is set up as necessary.
+
+Fixes #4249.
+(cherry picked from commit c080fbce9ca4ac21d8dbb1c2d0e8c9205edfdbfb)
+---
+ src/core/automount.c | 5 +++++
+ 1 file changed, 5 insertions(+)
+
+diff --git a/src/core/automount.c b/src/core/automount.c
+index 4e98915..a9d0d7a 100644
+--- a/src/core/automount.c
++++ b/src/core/automount.c
+@@ -271,6 +271,11 @@ static int automount_coldplug(Unit *u) {
+                                 return r;
+ 
+                         (void) sd_event_source_set_description(a->pipe_event_source, "automount-io");
++                        if (a->deserialized_state == AUTOMOUNT_RUNNING) {
++                                r = automount_start_expire(a);
++                                if (r < 0)
++                                        log_unit_warning_errno(UNIT(a), r, "Failed to start expiration timer, ignoring: %m");
++                        }
+                 }
+ 
+                 automount_set_state(a, a->deserialized_state);
