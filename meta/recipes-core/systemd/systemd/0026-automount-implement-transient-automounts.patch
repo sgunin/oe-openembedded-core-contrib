@@ -1,0 +1,98 @@
+From fb7177b2a03f7456c3ea5b2b2c3b51835eff70fd Mon Sep 17 00:00:00 2001
+From: Michael Olbrich <m.olbrich@pengutronix.de>
+Date: Wed, 9 Dec 2015 15:46:46 +0100
+Subject: [PATCH] automount: implement transient automounts
+
+(cherry picked from commit afb14803b34a9f4abf5265365aebe9a3132344c2)
+---
+ src/core/automount.c      |  3 +++
+ src/core/dbus-automount.c | 54 +++++++++++++++++++++++++++++++++++++++++++++++
+ src/core/dbus-automount.h |  2 ++
+ 3 files changed, 59 insertions(+)
+
+diff --git a/src/core/automount.c b/src/core/automount.c
+index a9d0d7a..b8d385d 100644
+--- a/src/core/automount.c
++++ b/src/core/automount.c
+@@ -1110,6 +1110,9 @@ const UnitVTable automount_vtable = {
+         .reset_failed = automount_reset_failed,
+ 
+         .bus_vtable = bus_automount_vtable,
++        .bus_set_property = bus_automount_set_property,
++
++        .can_transient = true,
+ 
+         .shutdown = automount_shutdown,
+         .supported = automount_supported,
+diff --git a/src/core/dbus-automount.c b/src/core/dbus-automount.c
+index b2806ad..26212b3 100644
+--- a/src/core/dbus-automount.c
++++ b/src/core/dbus-automount.c
+@@ -32,3 +32,57 @@ const sd_bus_vtable bus_automount_vtable[] = {
+         SD_BUS_PROPERTY("TimeoutIdleUSec", "t", bus_property_get_usec, offsetof(Automount, timeout_idle_usec), SD_BUS_VTABLE_PROPERTY_CONST),
+         SD_BUS_VTABLE_END
+ };
++
++static int bus_automount_set_transient_property(
++                Automount *a,
++                const char *name,
++                sd_bus_message *message,
++                UnitSetPropertiesMode mode,
++                sd_bus_error *error) {
++
++        int r;
++
++        assert(a);
++        assert(name);
++        assert(message);
++
++        if (streq(name, "TimeoutIdleUSec")) {
++                usec_t timeout_idle_usec;
++                r = sd_bus_message_read(message, "t", &timeout_idle_usec);
++                if (r < 0)
++                        return r;
++
++                if (mode != UNIT_CHECK) {
++                        char time[FORMAT_TIMESPAN_MAX];
++
++                        a->timeout_idle_usec = timeout_idle_usec;
++                        unit_write_drop_in_format(UNIT(a), mode, name, "[Automount]\nTimeoutIdleSec=%s\n",
++                                format_timespan(time, sizeof(time), timeout_idle_usec, USEC_PER_MSEC));
++                }
++        } else
++                return 0;
++
++        return 1;
++}
++
++int bus_automount_set_property(
++                Unit *u,
++                const char *name,
++                sd_bus_message *message,
++                UnitSetPropertiesMode mode,
++                sd_bus_error *error) {
++
++        Automount *a = AUTOMOUNT(u);
++        int r = 0;
++
++        assert(a);
++        assert(name);
++        assert(message);
++
++        if (u->transient && u->load_state == UNIT_STUB)
++                /* This is a transient unit, let's load a little more */
++
++                r = bus_automount_set_transient_property(a, name, message, mode, error);
++
++        return r;
++}
+diff --git a/src/core/dbus-automount.h b/src/core/dbus-automount.h
+index 7b51eb9..f41adda 100644
+--- a/src/core/dbus-automount.h
++++ b/src/core/dbus-automount.h
+@@ -21,3 +21,5 @@
+ 
+ 
+ extern const sd_bus_vtable bus_automount_vtable[];
++
++int bus_automount_set_property(Unit *u, const char *name, sd_bus_message *message, UnitSetPropertiesMode mode, sd_bus_error *error);

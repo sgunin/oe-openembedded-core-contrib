@@ -1,0 +1,29 @@
+From 26aed187f452644b833e061d28029b675ff32d04 Mon Sep 17 00:00:00 2001
+From: Michael Olbrich <m.olbrich@pengutronix.de>
+Date: Wed, 9 Dec 2015 16:02:51 +0100
+Subject: [PATCH] mount: write drop-in file when setting transient properties
+
+This fixes transient mount units in general. With this change,
+'from_fragment' is for transient mount units. As a result, the normal logic
+for 'fragment' mount units vs. 'mountinfo'  mount units works for transient
+mount units as well.
+
+(cherry picked from commit 96f5957f1f0d98584bb463d73616a6755e02624b)
+---
+ src/core/dbus-mount.c | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/src/core/dbus-mount.c b/src/core/dbus-mount.c
+index 935db7c..b4bbee0 100644
+--- a/src/core/dbus-mount.c
++++ b/src/core/dbus-mount.c
+@@ -157,6 +157,9 @@ static int bus_mount_set_transient_property(
+                 if (!p)
+                         return -ENOMEM;
+ 
++                unit_write_drop_in_format(UNIT(m), mode, name, "[Mount]\n%s=%s\n",
++                        name, new_property);
++
+                 free(*property);
+                 *property = p;
+         }
