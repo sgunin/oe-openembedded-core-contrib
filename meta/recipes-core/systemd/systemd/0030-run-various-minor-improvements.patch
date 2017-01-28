@@ -1,0 +1,104 @@
+From 8fd26d09a3ec01e09be6ba86b4c6390f6cff6165 Mon Sep 17 00:00:00 2001
+From: Lennart Poettering <lennart@poettering.net>
+Date: Sat, 6 Aug 2016 00:30:12 +0200
+Subject: [PATCH] run: various minor improvements
+
+Let's improve the --help text a bit, and other changes.
+
+(cherry picked from commit ad2c17019a2a25ace8d604b069124b361874139a)
+---
+ man/systemd-run.xml |  2 +-
+ src/run/run.c       | 22 ++++++++++------------
+ 2 files changed, 11 insertions(+), 13 deletions(-)
+
+diff --git a/man/systemd-run.xml b/man/systemd-run.xml
+index 9c1a292..1a30c07 100644
+--- a/man/systemd-run.xml
++++ b/man/systemd-run.xml
+@@ -45,7 +45,7 @@
+ 
+   <refnamediv>
+     <refname>systemd-run</refname>
+-    <refpurpose>Run programs in transient scope or service or timer units</refpurpose>
++    <refpurpose>Run programs in transient scope units, service units, or timer-scheduled service units</refpurpose>
+   </refnamediv>
+ 
+   <refsynopsisdiv>
+diff --git a/src/run/run.c b/src/run/run.c
+index 4b22cb7..f9a73f4 100644
+--- a/src/run/run.c
++++ b/src/run/run.c
+@@ -83,9 +83,7 @@ static void polkit_agent_open_if_enabled(void) {
+ 
+ static void help(void) {
+         printf("%s [OPTIONS...] {COMMAND} [ARGS...]\n\n"
+-               "Run the specified command in a transient scope or service or timer\n"
+-               "unit. If a timer option is specified and the unit specified with\n"
+-               "the --unit option exists, the command can be omitted.\n\n"
++               "Run the specified command in a transient scope or service.\n\n"
+                "  -h --help                       Show this help\n"
+                "     --version                    Show package version\n"
+                "     --no-ask-password            Do not prompt for password\n"
+@@ -94,7 +92,7 @@ static void help(void) {
+                "  -M --machine=CONTAINER          Operate on local container\n"
+                "     --scope                      Run this as scope rather than service\n"
+                "     --unit=UNIT                  Run under the specified unit name\n"
+-               "  -p --property=NAME=VALUE        Set unit property\n"
++               "  -p --property=NAME=VALUE        Set service or scope unit property\n"
+                "     --description=TEXT           Description for unit\n"
+                "     --slice=SLICE                Run in the specified slice\n"
+                "     --no-block                   Do not wait until operation finished\n"
+@@ -107,15 +105,15 @@ static void help(void) {
+                "  -E --setenv=NAME=VALUE          Set environment\n"
+                "  -t --pty                        Run service on pseudo tty\n"
+                "  -q --quiet                      Suppress information messages during runtime\n\n"
+-               "Timer options:\n\n"
++               "Timer options:\n"
+                "     --on-active=SECONDS          Run after SECONDS delay\n"
+                "     --on-boot=SECONDS            Run SECONDS after machine was booted up\n"
+                "     --on-startup=SECONDS         Run SECONDS after systemd activation\n"
+                "     --on-unit-active=SECONDS     Run SECONDS after the last activation\n"
+                "     --on-unit-inactive=SECONDS   Run SECONDS after the last deactivation\n"
+                "     --on-calendar=SPEC           Realtime timer\n"
+-               "     --timer-property=NAME=VALUE  Set timer unit property\n",
+-               program_invocation_short_name);
++               "     --timer-property=NAME=VALUE  Set timer unit property\n"
++               , program_invocation_short_name);
+ }
+ 
+ static bool with_timer(void) {
+@@ -178,7 +176,7 @@ static int parse_argv(int argc, char *argv[]) {
+                 { "on-calendar",       required_argument, NULL, ARG_ON_CALENDAR      },
+                 { "timer-property",    required_argument, NULL, ARG_TIMER_PROPERTY   },
+                 { "no-block",          no_argument,       NULL, ARG_NO_BLOCK         },
+-                { "no-ask-password",   no_argument,       NULL, ARG_NO_ASK_PASSWORD },
++                { "no-ask-password",   no_argument,       NULL, ARG_NO_ASK_PASSWORD  },
+                 {},
+         };
+ 
+@@ -195,13 +193,13 @@ static int parse_argv(int argc, char *argv[]) {
+                         help();
+                         return 0;
+ 
++                case ARG_VERSION:
++                        return version();
++
+                 case ARG_NO_ASK_PASSWORD:
+                         arg_ask_password = false;
+                         break;
+ 
+-                case ARG_VERSION:
+-                        return version();
+-
+                 case ARG_USER:
+                         arg_user = true;
+                         break;
+@@ -1143,7 +1141,7 @@ static int start_transient_timer(
+         if (r < 0)
+                 return bus_log_create_error(r);
+ 
+-        if (argv[0]) {
++        if (!strv_isempty(argv)) {
+                 r = sd_bus_message_open_container(m, 'r', "sa(sv)");
+                 if (r < 0)
+                         return bus_log_create_error(r);

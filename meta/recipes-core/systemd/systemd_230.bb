@@ -38,6 +38,12 @@ SRC_URI += " \
            file://0023-automount-handle-expire_tokens-when-the-mount-unit-c.patch \
            file://0024-automount-don-t-cancel-mount-umount-request-on-reloa.patch \
            file://0025-automount-make-sure-the-expire-event-is-restarted-af.patch \
+           file://0026-automount-implement-transient-automounts.patch \
+           file://0027-mount-use-get_mount_parameters_fragment-consistently.patch \
+           file://0028-mount-write-drop-in-file-when-setting-transient-prop.patch \
+           file://0029-bus-util-unify-loop-around-bus_append_unit_property_.patch \
+           file://0030-run-various-minor-improvements.patch \
+           file://0031-add-a-new-tool-for-creating-transient-mount-and-auto.patch \
            file://udev-re-enable-mount-propagation-for-udevd.patch \
            file://CVE-2016-7795.patch \
 "

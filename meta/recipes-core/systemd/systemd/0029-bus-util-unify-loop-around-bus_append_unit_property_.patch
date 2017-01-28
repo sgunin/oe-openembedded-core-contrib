@@ -1,0 +1,136 @@
+From 76fdcb03aaa2fc8cd7483e628eef8a089afc1dfd Mon Sep 17 00:00:00 2001
+From: Lennart Poettering <lennart@poettering.net>
+Date: Fri, 5 Aug 2016 18:32:42 +0200
+Subject: [PATCH] bus-util: unify loop around
+ bus_append_unit_property_assignment()
+
+This is done exactly the same way a couple of times at various places, let's
+unify this into one version.
+
+(cherry picked from commit 8673cf13c08998b50818346b703ad91fe5facfdf)
+---
+ src/nspawn/nspawn-register.c |  9 +++------
+ src/run/run.c                |  9 +++------
+ src/shared/bus-unit-util.c   | 15 +++++++++++++++
+ src/shared/bus-unit-util.h   |  1 +
+ src/systemctl/systemctl.c    |  9 +++------
+ 5 files changed, 25 insertions(+), 18 deletions(-)
+
+diff --git a/src/nspawn/nspawn-register.c b/src/nspawn/nspawn-register.c
+index 20103c5..3022184 100644
+--- a/src/nspawn/nspawn-register.c
++++ b/src/nspawn/nspawn-register.c
+@@ -68,7 +68,6 @@ int register_machine(
+                                 local_ifindex > 0 ? 1 : 0, local_ifindex);
+         } else {
+                 _cleanup_(sd_bus_message_unrefp) sd_bus_message *m = NULL;
+-                char **i;
+                 unsigned j;
+ 
+                 r = sd_bus_message_new_method_call(
+@@ -164,11 +163,9 @@ int register_machine(
+                                 return bus_log_create_error(r);
+                 }
+ 
+-                STRV_FOREACH(i, properties) {
+-                        r = bus_append_unit_property_assignment(m, *i);
+-                        if (r < 0)
+-                                return r;
+-                }
++                r = bus_append_unit_property_assignment_many(m, properties);
++                if (r < 0)
++                        return r;
+ 
+                 r = sd_bus_message_close_container(m);
+                 if (r < 0)
+diff --git a/src/run/run.c b/src/run/run.c
+index d6c9b6d..4b22cb7 100644
+--- a/src/run/run.c
++++ b/src/run/run.c
+@@ -412,18 +412,15 @@ static int parse_argv(int argc, char *argv[]) {
+ }
+ 
+ static int transient_unit_set_properties(sd_bus_message *m, char **properties) {
+-        char **i;
+         int r;
+ 
+         r = sd_bus_message_append(m, "(sv)", "Description", "s", arg_description);
+         if (r < 0)
+                 return r;
+ 
+-        STRV_FOREACH(i, properties) {
+-                r = bus_append_unit_property_assignment(m, *i);
+-                if (r < 0)
+-                        return r;
+-        }
++        r = bus_append_unit_property_assignment_many(m, properties);
++        if (r < 0)
++                return r;
+ 
+         return 0;
+ }
+diff --git a/src/shared/bus-unit-util.c b/src/shared/bus-unit-util.c
+index f6559cd..53cb293 100644
+--- a/src/shared/bus-unit-util.c
++++ b/src/shared/bus-unit-util.c
+@@ -542,6 +542,21 @@ finish:
+         return 0;
+ }
+ 
++int bus_append_unit_property_assignment_many(sd_bus_message *m, char **l) {
++        char **i;
++        int r;
++
++        assert(m);
++
++        STRV_FOREACH(i, l) {
++                r = bus_append_unit_property_assignment(m, *i);
++                if (r < 0)
++                        return r;
++        }
++
++        return 0;
++}
++
+ typedef struct BusWaitForJobs {
+         sd_bus *bus;
+         Set *jobs;
+diff --git a/src/shared/bus-unit-util.h b/src/shared/bus-unit-util.h
+index c0c172f..d102ea1 100644
+--- a/src/shared/bus-unit-util.h
++++ b/src/shared/bus-unit-util.h
+@@ -41,6 +41,7 @@ typedef struct UnitInfo {
+ int bus_parse_unit_info(sd_bus_message *message, UnitInfo *u);
+ 
+ int bus_append_unit_property_assignment(sd_bus_message *m, const char *assignment);
++int bus_append_unit_property_assignment_many(sd_bus_message *m, char **l);
+ 
+ typedef struct BusWaitForJobs BusWaitForJobs;
+ 
+diff --git a/src/systemctl/systemctl.c b/src/systemctl/systemctl.c
+index b943c68..4e2da68 100644
+--- a/src/systemctl/systemctl.c
++++ b/src/systemctl/systemctl.c
+@@ -4922,7 +4922,6 @@ static int set_property(int argc, char *argv[], void *userdata) {
+         _cleanup_(sd_bus_error_free) sd_bus_error error = SD_BUS_ERROR_NULL;
+         _cleanup_free_ char *n = NULL;
+         sd_bus *bus;
+-        char **i;
+         int r;
+ 
+         polkit_agent_open_if_enabled();
+@@ -4953,11 +4952,9 @@ static int set_property(int argc, char *argv[], void *userdata) {
+         if (r < 0)
+                 return bus_log_create_error(r);
+ 
+-        STRV_FOREACH(i, strv_skip(argv, 2)) {
+-                r = bus_append_unit_property_assignment(m, *i);
+-                if (r < 0)
+-                        return r;
+-        }
++        r = bus_append_unit_property_assignment_many(m, strv_skip(argv, 2));
++        if (r < 0)
++                return r;
+ 
+         r = sd_bus_message_close_container(m);
+         if (r < 0)
