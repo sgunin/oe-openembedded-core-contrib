@@ -13,6 +13,7 @@ SRC_URI = "http://snapshot.debian.org/archive/debian/20160731T221931Z/pool/main/
            file://0005-dpkg-compiler.m4-remove-Wvla.patch \
            file://0006-add-musleabi-to-known-target-tripets.patch \
            file://0007-dpkg-deb-build.c-Remove-usage-of-clamp-mtime-in-tar.patch \
+           file://0007-update-alternatives-disable-logging.patch \
            "
 SRC_URI_append_class-native = " file://glibc2.5-sync_file_range.patch "
 

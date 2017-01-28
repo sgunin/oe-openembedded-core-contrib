@@ -1,0 +1,37 @@
+Upstream-Status: Inappropriate [embedded specific]
+
+From ba9da25e1bc818a3cb3c98624ac9316ed9162aff Mon Sep 17 00:00:00 2001
+From: Andreas Oberritter <obi@opendreambox.org>
+Date: Sat, 28 Jan 2017 21:54:20 +0100
+Subject: [PATCH] update-alternatives: disable logging
+
+By default, update-alternatives writes to /var/log/alternatives.log.
+This causes errors on rootfs creation since recipe-sysroots were enabled.
+
+Signed-off-by: Andreas Oberritter <obi@opendreambox.org>
+---
+ utils/update-alternatives.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/utils/update-alternatives.c b/utils/update-alternatives.c
+index 2b49819..567490c 100644
+--- a/utils/update-alternatives.c
++++ b/utils/update-alternatives.c
+@@ -58,7 +58,7 @@ static const char *prog_path = "update-alternatives";
+ 
+ /* Action to perform */
+ static const char *action = NULL;
+-static const char *log_file = LOGDIR "/alternatives.log";
++static const char *log_file;
+ /* Skip alternatives properly configured in auto mode (for --config) */
+ static int opt_skip_auto = 0;
+ static int opt_verbose = 0;
+@@ -424,7 +424,7 @@ log_msg(const char *fmt, ...)
+ {
+ 	va_list args;
+ 
+-	if (fh_log == NULL) {
++	if (fh_log == NULL && log_file != NULL) {
+ 		fh_log = fopen(log_file, "a");
+ 		if (fh_log == NULL && errno != EACCES)
+ 			syserr(_("cannot append to '%s'"), log_file);
