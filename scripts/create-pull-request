@@ -183,6 +183,7 @@ if [ -n "$WEB_URL" ]; then
 		git push $REMOTE $L_BRANCH:$BRANCH
 		echo ""
 	fi
+	echo $WEB_URL
 	wget --no-check-certificate -q $WEB_URL -O /dev/null
 	if [ $? -ne 0 ]; then
 		echo "WARNING: Branch '$BRANCH' was not found on the contrib git tree."
