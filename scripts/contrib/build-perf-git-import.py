@@ -960,8 +960,14 @@ def import_testrun(archive, data_repo, poky_repo, branch_fmt, tag_fmt,
         git_timestamp = "%d" % time.mktime(timestamp.timetuple())
 
         # Commit to git
-        commit_msg = "Results of {}:{} on {}\n\n".format(
-            fmt_fields['branch'], fmt_fields['rev'], fmt_fields['host'])
+        commit_msg = """\
+Results of {branch}:{rev} on {host}
+
+branch: {branch}
+commit: {rev}
+hostname: {host}
+
+""".format(**fmt_fields)
 
         if os.path.isdir(archive):
             archive_fn += '/'
