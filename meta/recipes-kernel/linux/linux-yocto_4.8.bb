@@ -24,6 +24,8 @@ SRCREV_meta ?= "926c93ae07de2173b4f764d1da6996597a6d2b73"
 SRC_URI = "git://git.yoctoproject.org/linux-yocto-4.8.git;name=machine;branch=${KBRANCH}; \
            git://git.yoctoproject.org/yocto-kernel-cache;type=kmeta;name=meta;branch=yocto-4.8;destsuffix=${KMETA}"
 
+SRC_URI_append_qemuarm64 = " file://0001-for-ft1500a.patch"
+
 LINUX_VERSION ?= "4.8.12"
 
 PV = "${LINUX_VERSION}+git${SRCPV}"
@@ -32,6 +34,8 @@ KMETA = "kernel-meta"
 KCONF_BSP_AUDIT_LEVEL = "2"
 
 KERNEL_DEVICETREE_qemuarm = "versatile-pb.dtb"
+KERNEL_DEVICETREE_qemuarm64 = "phytium/ft1500a.dtb"
+KERNEL_FEATURES_append_qemuarm64 =" cfg/sound.scc features/pci/pci.scc features/scsi/scsi.scc features/serial/8250.scc"
 
 COMPATIBLE_MACHINE = "qemuarm|qemuarm64|qemux86|qemuppc|qemumips|qemumips64|qemux86-64"
 
