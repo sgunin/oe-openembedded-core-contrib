@@ -25,6 +25,7 @@ LIC_FILES_CHKSUM = "file://COPYING.GPLv2;md5=b234ee4d69f5fce4486a80fdaf4a4263 \
 
 SRC_URI = "https://www.ffmpeg.org/releases/${BP}.tar.xz \
            file://mips64_cpu_detection.patch \
+           file://0002-configure-allow-libpostproc-without-gpl-flag.patch \
            "
 SRC_URI[md5sum] = "67da904cf9fddeeb10a1308fc0dc39de"
 SRC_URI[sha256sum] = "cec7c87e9b60d174509e263ac4011b522385fd0775292e1670ecc1180c9bb6d4"
