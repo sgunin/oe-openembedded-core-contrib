@@ -49,9 +49,9 @@ if [ -z "$ZSH_NAME" ] && [ "$0" = "$THIS_SCRIPT" ]; then
     exit 1
 fi
 
+THIS_SCRIPT=$(readlink -f $THIS_SCRIPT)
 if [ -z "$OEROOT" ]; then
     OEROOT=$(dirname "$THIS_SCRIPT")
-    OEROOT=$(readlink -f "$OEROOT")
 fi
 unset THIS_SCRIPT
 
@@ -61,6 +61,10 @@ export OEROOT
     unset OEROOT
     return 1
 }
+
+# Create a symlink
+ln -sf $OEROOT/oe-init-build-env-memres $BUILDDIR
+
 unset OEROOT
 
 [ -z "$BUILDDIR" ] || cd "$BUILDDIR"
