@@ -1033,6 +1033,8 @@ def parse_args(argv=None):
     parser.add_argument('-l', '--log-file', type=os.path.abspath,
                         default=datetime.now().strftime('build-perf-git-import-%Y%m%d_%H%M%S.log'),
                         help='Log file to use')
+    parser.add_argument('--bare', action='store_true',
+                        help="Create a bare repo when initializing a new results repository")
     parser.add_argument('-B', '--git-branch-name',
                         default='%(host)s/%(branch)s/%(machine)s',
                         help="Branch name to use")
@@ -1079,7 +1081,7 @@ def main(argv=None):
         if not os.path.exists(args.git_dir):
             log.info('Creating Git repository %s', args.git_dir)
             os.mkdir(args.git_dir)
-            data_repo = GitRepo.init(args.git_dir)
+            data_repo = GitRepo.init(args.git_dir, args.bare)
         else:
             data_repo = GitRepo(args.git_dir, is_topdir=True)
 
@@ -1105,9 +1107,10 @@ def main(argv=None):
             else:
                 skipped.append((archive, result[1]))
 
-        log.debug('Resetting git worktree')
-        data_repo.run_cmd(['reset', '--hard', 'HEAD', '--'])
-        data_repo.run_cmd(['clean', '-fd'])
+        if not data_repo.bare:
+            log.debug('Resetting git worktree')
+            data_repo.run_cmd(['reset', '--hard', 'HEAD', '--'])
+            data_repo.run_cmd(['clean', '-fd'])
 
         # Log end report with plain formatting
         formatter = logging.Formatter('%(message)s')
