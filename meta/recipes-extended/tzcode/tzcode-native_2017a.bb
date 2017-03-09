@@ -17,6 +17,8 @@ S = "${WORKDIR}"
 
 inherit native
 
+EXTRA_OEMAKE += "cc=${CC}"
+
 do_install () {
         install -d ${D}${bindir}/
         install -m 755 zic ${D}${bindir}/
