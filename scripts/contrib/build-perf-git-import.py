@@ -538,6 +538,11 @@ def convert_old_results(poky_repo, results_dir, tester_host, new_fmt,
                               "convert results")
     git_branch, git_rev = out_log.get_git_rev_info()
 
+    # We don't want the big log files taking space
+    for path in glob(results_dir + '/*.log'):
+        if os.path.basename(path) != 'output.log':
+            os.unlink(path)
+
     tests = OrderedDict()
 
     # Parse test results
@@ -611,9 +616,6 @@ def convert_json_results(poky_repo, results_dir, new_fmt, metadata_override):
         results = json.load(fobj, object_pairs_hook=OrderedDict)
 
     if os.path.exists(metadata_file):
-        if new_fmt == 'json' and not metadata_override:
-            log.debug("Results in desired format, no need to convert")
-            return False
         with open(metadata_file) as fobj:
             metadata = json.load(fobj, object_pairs_hook=OrderedDict)
         # Remove old metadata file
@@ -643,6 +645,15 @@ def convert_json_results(poky_repo, results_dir, new_fmt, metadata_override):
             for measurement in test['measurements']:
                 measurements[measurement['name']] = measurement
             test['measurements'] = measurements
+
+        # We don't want the big log files taking space
+        if 'cmd_log_file' in test:
+            log_file = os.path.join(results_dir, test['cmd_log_file'])
+            del(test['cmd_log_file'])
+        else:
+            log_file = os.path.join(results_dir, test['name'], 'commands.log')
+        if os.path.exists(log_file):
+            os.unlink(log_file)
 
     # Remove old results file
     os.unlink(results_file)
