@@ -382,16 +382,16 @@ def convert_buildstats(indir, outfile):
 
 
 def convert_results(poky_repo, results_dir, tester_host, out_fmt,
-                    metadata_override):
+                    metadata_override, buildstats):
     """Convert results to new JSON or XML based format."""
     if os.path.exists(os.path.join(results_dir, 'results.json')):
         return convert_json_results(poky_repo, results_dir, out_fmt,
-                                    metadata_override)
+                                    metadata_override, buildstats)
     elif os.path.exists(os.path.join(results_dir, 'results.xml')):
         return convert_xml_results(results_dir, out_fmt, metadata_override)
     elif os.path.exists(os.path.join(results_dir, 'output.log')):
         return convert_old_results(poky_repo, results_dir, tester_host, out_fmt,
-                                   metadata_override)
+                                   metadata_override, buildstats)
     raise ConversionError("No result data found")
 
 
@@ -434,7 +434,7 @@ def create_metadata(hostname, rev_info):
 
 
 def convert_old_results(poky_repo, results_dir, tester_host, new_fmt,
-                        metadata_override):
+                        metadata_override, buildstats):
     """Convert 'old style' to new JSON or XML based format.
 
     Conversion is a destructive operation, converted files being deleted.
@@ -565,7 +565,7 @@ def convert_old_results(poky_repo, results_dir, tester_host, new_fmt,
                 os.path.basename(path)))
 
         # No measurements indicates failed test -> don't import buildstats
-        if tests[testname]['measurements']:
+        if tests[testname]['measurements'] and buildstats != 'n':
             bs_relpath = os.path.join(testname, 'buildstats.json')
             os.mkdir(os.path.join(results_dir, testname))
             try:
@@ -607,7 +607,8 @@ def convert_old_results(poky_repo, results_dir, tester_host, new_fmt,
     return True
 
 
-def convert_json_results(poky_repo, results_dir, new_fmt, metadata_override):
+def convert_json_results(poky_repo, results_dir, new_fmt, metadata_override,
+                         buildstats):
     """Convert JSON formatted results"""
     metadata_file = os.path.join(results_dir, 'metadata.json')
     results_file = os.path.join(results_dir, 'results.json')
@@ -654,6 +655,13 @@ def convert_json_results(poky_repo, results_dir, new_fmt, metadata_override):
             log_file = os.path.join(results_dir, test['name'], 'commands.log')
         if os.path.exists(log_file):
             os.unlink(log_file)
+
+        # Remove buildstats
+        if buildstats == 'n':
+            for measurement in test['measurements'].values():
+                if 'buildstats_file' in measurement['values']:
+                    os.unlink(os.path.join(results_dir, measurement['values']['buildstats_file']))
+                    del(measurement['values']['buildstats_file'])
 
     # Remove old results file
     os.unlink(results_file)
@@ -856,7 +864,7 @@ def git_commit_dir(data_repo, src_dir, branch, msg, tag=None, tag_msg="",
 
 
 def import_testrun(archive, data_repo, poky_repo, branch_fmt, tag_fmt,
-                   convert=False, metadata_override=None):
+                   convert=False, metadata_override=None, buildstats='y'):
     """Import one testrun into Git"""
     archive = os.path.abspath(archive)
     archive_fn = os.path.basename(archive)
@@ -956,7 +964,7 @@ def import_testrun(archive, data_repo, poky_repo, branch_fmt, tag_fmt,
             try:
                 converted = convert_results(poky_repo, results_dir,
                                             fn_fields['host'], convert,
-                                            metadata_override)
+                                            metadata_override, buildstats)
             except ConversionError as err:
                 log.warn("Skipping %s, conversion failed: %s", archive_fn, err)
                 return False, str(err)
@@ -1099,6 +1107,8 @@ def parse_args(argv=None):
                         help="Convert results to new format")
     parser.add_argument('-M', '--metadata-override', type=os.path.abspath,
                         help="Pre-filled test metadata in JSON format")
+    parser.add_argument('--buildstats', choices=('y', 'n'), default='y',
+                        help="Import buildstats")
     parser.add_argument('-P', '--poky-git', type=os.path.abspath,
                         help="Path to poky clone")
     parser.add_argument('-g', '--git-dir', type=os.path.abspath, required=True,
@@ -1154,7 +1164,7 @@ def main(argv=None):
         for archive in sorted(args.archive, key=get_archive_timestamp):
             result = import_testrun(archive, data_repo, poky_repo,
                                     args.git_branch_name, args.git_tag_name,
-                                    args.convert, metadata)
+                                    args.convert, metadata, args.buildstats)
             if result[0]:
                 imported.append(result[1])
             else:
