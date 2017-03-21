@@ -46,6 +46,7 @@ log = logging.getLogger()
 TEST_STATUSES = ('SUCCESS', 'FAILURE', 'ERROR', 'SKIPPED', 'EXPECTED_FAILURE',
                  'UNEXPECTED_SUCCESS')
 
+
 class CommitError(Exception):
     """Script's internal error handling"""
     pass
@@ -302,9 +303,43 @@ def time_log_to_json(time_log):
             os.path.basename(time_log)))
     return exit_status, res
 
+def optimize_buildstat_task(task_data):
+    """Optimize JSON formatted buildstat task data"""
+    bs_rusage_fields = ('ru_utime', 'ru_stime', 'ru_maxrss', 'ru_minflt',
+                        'ru_majflt', 'ru_inblock', 'ru_oublock', 'ru_nvcsw',
+                        'ru_nivcsw')
+    bs_iostat_fields = ('rchar', 'wchar', 'syscr', 'syscw', 'read_bytes',
+                        'write_bytes', 'cancelled_write_bytes')
 
-def convert_buildstats(indir, outfile):
+    if 'iostat' in task_data:
+        optimized = [task_data['iostat'][k] for k in bs_iostat_fields]
+        task_data['iostat'] = optimized
+
+    if 'rusage' in task_data:
+        optimized = [task_data['rusage'][k] for k in bs_rusage_fields]
+        task_data['rusage'] = optimized
+
+    if 'child_rusage' in task_data:
+        optimized = [task_data['child_rusage'][k] for k in bs_rusage_fields]
+        task_data['child_rusage'] = optimized
+
+def optimize_buildstats_file(buildstats_file):
+    """Optimize buildstats JSON file"""
+    with open(buildstats_file) as fobj:
+        buildstats = json.load(fobj, object_pairs_hook=OrderedDict)
+
+    for recipe in buildstats:
+        for task, data in recipe['tasks'].items():
+            optimize_buildstat_task(data)
+
+    # Write buildstats back into json file
+    with open(buildstats_file, 'w') as fobj:
+        json.dump(buildstats, fobj)
+
+
+def convert_buildstats(indir, outfile, optimize=False):
     """Convert buildstats into JSON format"""
+
     def split_nevr(nevr):
         """Split name and version information from recipe "nevr" string"""
         n_e_v, revision = nevr.rsplit('-', 1)
@@ -322,9 +357,9 @@ def convert_buildstats(indir, outfile):
 
     def bs_to_json(filename):
         """Convert (task) buildstats file into json format"""
-        bs_json = {'iostat': {},
-                   'rusage': {},
-                   'child_rusage': {}}
+        bs_json = OrderedDict((('iostat', {}),
+                               ('rusage', {}),
+                               ('child_rusage', {})))
         end_time = None
         with open(filename) as fobj:
             for line in fobj.readlines():
@@ -353,6 +388,15 @@ def convert_buildstats(indir, outfile):
         if end_time is None:
             return None
         bs_json['elapsed_time'] = end_time - start_time
+
+        # Remove empty stats
+        for key in ('iostat', 'rusage', 'child_rusage'):
+            if not bs_json[key]:
+                del(bs_json[key])
+
+        if optimize:
+            optimize_buildstat_task(bs_json)
+
         return bs_json
 
     log.debug('Converting buildstats %s -> %s', indir, outfile)
@@ -377,7 +421,7 @@ def convert_buildstats(indir, outfile):
 
     # Write buildstats into json file
     with open(outfile, 'w') as fobj:
-        json.dump(buildstats, fobj, indent=4, sort_keys=True,
+        json.dump(buildstats, fobj, sort_keys=True,
                   cls=ResultsJsonEncoder)
 
 
@@ -569,7 +613,8 @@ def convert_old_results(poky_repo, results_dir, tester_host, new_fmt,
             bs_relpath = os.path.join(testname, 'buildstats.json')
             os.mkdir(os.path.join(results_dir, testname))
             try:
-                convert_buildstats(path, os.path.join(results_dir, bs_relpath))
+                convert_buildstats(path, os.path.join(results_dir, bs_relpath),
+                                   buildstats == 'o')
             except ConversionError as err:
                 log.warn("Buildstats for %s not imported: %s", testname, err)
             else:
@@ -656,12 +701,17 @@ def convert_json_results(poky_repo, results_dir, new_fmt, metadata_override,
         if os.path.exists(log_file):
             os.unlink(log_file)
 
-        # Remove buildstats
-        if buildstats == 'n':
-            for measurement in test['measurements'].values():
-                if 'buildstats_file' in measurement['values']:
-                    os.unlink(os.path.join(results_dir, measurement['values']['buildstats_file']))
+        for measurement in test['measurements'].values():
+            if 'buildstats_file' in measurement['values']:
+                buildstats_file = os.path.join(results_dir,
+                                               measurement['values']['buildstats_file'])
+                # Remove buildstats
+                if buildstats == 'n':
+                    os.unlink(buildstats_file)
                     del(measurement['values']['buildstats_file'])
+                # Optimize buildstats
+                elif buildstats == 'o':
+                    optimize_buildstats_file(buildstats_file)
 
     # Remove old results file
     os.unlink(results_file)
@@ -1107,7 +1157,7 @@ def parse_args(argv=None):
                         help="Convert results to new format")
     parser.add_argument('-M', '--metadata-override', type=os.path.abspath,
                         help="Pre-filled test metadata in JSON format")
-    parser.add_argument('--buildstats', choices=('y', 'n'), default='y',
+    parser.add_argument('--buildstats', choices=('y', 'n', 'o'), default='y',
                         help="Import buildstats")
     parser.add_argument('-P', '--poky-git', type=os.path.abspath,
                         help="Path to poky clone")
