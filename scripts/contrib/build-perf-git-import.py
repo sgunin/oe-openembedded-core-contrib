@@ -382,39 +382,41 @@ def convert_buildstats(indir, outfile):
 
 
 def convert_results(poky_repo, results_dir, tester_host, out_fmt,
-                    metadata_template):
+                    metadata_override):
     """Convert results to new JSON or XML based format."""
     if os.path.exists(os.path.join(results_dir, 'results.json')):
         return convert_json_results(poky_repo, results_dir, out_fmt,
-                                    metadata_template)
+                                    metadata_override)
     elif os.path.exists(os.path.join(results_dir, 'results.xml')):
-        if out_fmt != 'xml':
-            raise ConversionError("Unable to convert XML results")
+        return convert_xml_results(results_dir, out_fmt, metadata_override)
     elif os.path.exists(os.path.join(results_dir, 'output.log')):
         return convert_old_results(poky_repo, results_dir, tester_host, out_fmt,
-                                   metadata_template)
+                                   metadata_override)
     raise ConversionError("No result data found")
 
 
-def create_metadata(template, hostname, rev_info):
+def update_metadata(metadata, override):
+    """Update metadata from override template"""
+    for key, value in override.items():
+        if isinstance(value, MutableMapping):
+            metadata[key] = update_metadata(metadata.get(key, value.__class__()),
+                                            value)
+        else:
+            metadata[key] = value
+
+    return metadata
+
+
+def create_metadata(hostname, rev_info):
     """Helper for constructing metadata.
 
-    Create metadata dict from given template of from scratch. Involves a lot of
-    guessing/hardcoding."""
-    metadata = template.copy() if template else OrderedDict()
-    default_config = {'MACHINE': 'qemux86',
-                      'BB_NUMBER_THREADS': '8',
-                      'PARALLEL_MAKE': '-j 8'}
-
-    if not 'hostname' in metadata:
-        metadata['hostname'] = hostname
-    if not 'distro' in metadata:
-        metadata['distro'] = {'id': 'poky'}
-    if not 'config' in metadata:
-        metadata['config'] = OrderedDict()
-    for key, val in sorted(default_config.items()):
-        if not key in metadata['config']:
-            metadata['config'][key] = val
+    Create metadata dict from scratch. Involves a lot of guessing/hardcoding."""
+    default_config = OrderedDict((('BB_NUMBER_THREADS', '8'),
+                                  ('MACHINE', 'qemux86'),
+                                  ('PARALLEL_MAKE', '-j 8')))
+    metadata = OrderedDict((('hostname', hostname),
+                            ('distro', OrderedDict(id='poky')),
+                            ('config', default_config)))
 
     # Special handling for branch
     branch = '(nobranch)' if rev_info['branch'] == 'None' else rev_info['branch']
@@ -432,7 +434,7 @@ def create_metadata(template, hostname, rev_info):
 
 
 def convert_old_results(poky_repo, results_dir, tester_host, new_fmt,
-                        metadata_template):
+                        metadata_override):
     """Convert 'old style' to new JSON or XML based format.
 
     Conversion is a destructive operation, converted files being deleted.
@@ -583,11 +585,11 @@ def convert_old_results(poky_repo, results_dir, tester_host, new_fmt,
                            ('tests', tests)))
 
     # Create metadata dict
-    metadata = create_metadata(metadata_template,
-                               tester_host,
+    metadata = create_metadata(tester_host,
                                {'commit': git_rev,
                                 'commit_count': commit_cnt,
                                 'branch': git_branch})
+    metadata = update_metadata(metadata, metadata_override)
 
     # Write metadata and results files
     if new_fmt == 'json':
@@ -600,7 +602,7 @@ def convert_old_results(poky_repo, results_dir, tester_host, new_fmt,
     return True
 
 
-def convert_json_results(poky_repo, results_dir, new_fmt, metadata_template):
+def convert_json_results(poky_repo, results_dir, new_fmt, metadata_override):
     """Convert JSON formatted results"""
     metadata_file = os.path.join(results_dir, 'metadata.json')
     results_file = os.path.join(results_dir, 'results.json')
@@ -609,7 +611,7 @@ def convert_json_results(poky_repo, results_dir, new_fmt, metadata_template):
         results = json.load(fobj, object_pairs_hook=OrderedDict)
 
     if os.path.exists(metadata_file):
-        if new_fmt == 'json':
+        if new_fmt == 'json' and not metadata_override:
             log.debug("Results in desired format, no need to convert")
             return False
         with open(metadata_file) as fobj:
@@ -617,8 +619,7 @@ def convert_json_results(poky_repo, results_dir, new_fmt, metadata_template):
         # Remove old metadata file
         os.unlink(metadata_file)
     else:
-        metadata = create_metadata(metadata_template,
-                                   results['tester_host'],
+        metadata = create_metadata(results['tester_host'],
                                    {'commit': results.pop('git_commit'),
                                     'commit_count': results.pop('git_commit_count'),
                                     'branch': results.pop('git_branch')})
@@ -627,6 +628,7 @@ def convert_json_results(poky_repo, results_dir, new_fmt, metadata_template):
         results.pop('product')
 
     # Make corrections in the JSON data
+    metadata = update_metadata(metadata, metadata_override)
     test_status_map = {'FAIL': 'FAILURE',
                        'EXP_FAIL': 'EXPECTED_FAILURE',
                        'UNEXP_SUCCESS': 'UNEXPECTED_SUCCESS'}
@@ -656,6 +658,31 @@ def convert_json_results(poky_repo, results_dir, new_fmt, metadata_template):
     return True
 
 
+def convert_xml_results(results_dir, new_fmt, metadata_override):
+    """Convert XML formatted results"""
+    metadata_file = os.path.join(results_dir, 'metadata.xml')
+
+    if new_fmt == 'xml' and not metadata_override:
+        log.debug("Results in desired format, no need to convert")
+        return False
+
+    # Mangle metadata
+    xml_metadata = ET.parse(metadata_file)
+    metadata = metadata_xml_to_dict(xml_metadata)
+    metadata = update_metadata(metadata, metadata_override)
+    os.unlink(metadata_file)
+
+    # Write-out new data
+    if new_fmt == 'json':
+        raise NotImplementedError("Unable to convert XML to JSON")
+    elif new_fmt == 'xml':
+        xml_metadata = metadata_dict_to_xml('metadata', metadata)
+        write_pretty_xml(xml_metadata, metadata_file)
+    else:
+        raise NotImplementedError("Unknown results format '{}'".format(new_fmt))
+    return True
+
+
 def write_results_json(results_dir, metadata, results):
     """Write results into a JSON formatted file"""
     with open(os.path.join(results_dir, 'metadata.json'), 'w') as fobj:
@@ -678,6 +705,21 @@ def metadata_dict_to_xml(tag, dictionary, **kwargs):
             child.text = str(val)
         elem.append(child)
     return elem
+
+def metadata_xml_to_dict(etree):
+    root = etree.getroot()
+    assert root.tag == 'metadata', "Invalid metadata file format"
+
+    def _xml_to_dict(elem):
+        out = OrderedDict()
+        for child in elem.getchildren():
+            key = child.attrib.get('name', child.tag)
+            if len(child):
+                out[key] = _xml_to_dict(child)
+            else:
+                out[key] = child.text
+        return out
+    return _xml_to_dict(root)
 
 def write_pretty_xml(tree, out_file):
     """Write out XML element tree into a file"""
@@ -803,7 +845,7 @@ def git_commit_dir(data_repo, src_dir, branch, msg, tag=None, tag_msg="",
 
 
 def import_testrun(archive, data_repo, poky_repo, branch_fmt, tag_fmt,
-                   convert=False, metadata_template=None):
+                   convert=False, metadata_override=None):
     """Import one testrun into Git"""
     archive = os.path.abspath(archive)
     archive_fn = os.path.basename(archive)
@@ -903,7 +945,7 @@ def import_testrun(archive, data_repo, poky_repo, branch_fmt, tag_fmt,
             try:
                 converted = convert_results(poky_repo, results_dir,
                                             fn_fields['host'], convert,
-                                            metadata_template)
+                                            metadata_override)
             except ConversionError as err:
                 log.warn("Skipping %s, conversion failed: %s", archive_fn, err)
                 return False, str(err)
@@ -1044,7 +1086,7 @@ def parse_args(argv=None):
                              "automatically appended")
     parser.add_argument('-c', '--convert', choices=('json', 'xml'),
                         help="Convert results to new format")
-    parser.add_argument('-M', '--metadata-template', type=os.path.abspath,
+    parser.add_argument('-M', '--metadata-override', type=os.path.abspath,
                         help="Pre-filled test metadata in JSON format")
     parser.add_argument('-P', '--poky-git', type=os.path.abspath,
                         help="Path to poky clone")
@@ -1086,9 +1128,9 @@ def main(argv=None):
             data_repo = GitRepo(args.git_dir, is_topdir=True)
 
         # Read metadata template
-        if args.metadata_template:
+        if args.metadata_override:
             try:
-                with open(args.metadata_template) as fobj:
+                with open(args.metadata_override) as fobj:
                     metadata = json.load(fobj, object_pairs_hook=OrderedDict)
             except ValueError as err:
                 raise CommitError("Metadata template not valid JSON format: {}".format(err))
