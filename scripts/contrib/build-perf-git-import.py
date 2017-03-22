@@ -46,6 +46,12 @@ log = logging.getLogger()
 TEST_STATUSES = ('SUCCESS', 'FAILURE', 'ERROR', 'SKIPPED', 'EXPECTED_FAILURE',
                  'UNEXPECTED_SUCCESS')
 
+BS_RUSAGE_FIELDS = ('ru_utime', 'ru_stime', 'ru_maxrss', 'ru_minflt',
+                    'ru_majflt', 'ru_inblock', 'ru_oublock', 'ru_nvcsw',
+                    'ru_nivcsw')
+BS_IOSTAT_FIELDS = ('rchar', 'wchar', 'syscr', 'syscw', 'read_bytes',
+                     'write_bytes', 'cancelled_write_bytes')
+
 
 class CommitError(Exception):
     """Script's internal error handling"""
@@ -305,35 +311,63 @@ def time_log_to_json(time_log):
 
 def optimize_buildstat_task(task_data):
     """Optimize JSON formatted buildstat task data"""
-    bs_rusage_fields = ('ru_utime', 'ru_stime', 'ru_maxrss', 'ru_minflt',
-                        'ru_majflt', 'ru_inblock', 'ru_oublock', 'ru_nvcsw',
-                        'ru_nivcsw')
-    bs_iostat_fields = ('rchar', 'wchar', 'syscr', 'syscw', 'read_bytes',
-                        'write_bytes', 'cancelled_write_bytes')
-
     if 'iostat' in task_data:
-        optimized = [task_data['iostat'][k] for k in bs_iostat_fields]
+        optimized = [task_data['iostat'][k] for k in BS_IOSTAT_FIELDS]
         task_data['iostat'] = optimized
 
     if 'rusage' in task_data:
-        optimized = [task_data['rusage'][k] for k in bs_rusage_fields]
+        optimized = [task_data['rusage'][k] for k in BS_RUSAGE_FIELDS]
         task_data['rusage'] = optimized
 
     if 'child_rusage' in task_data:
-        optimized = [task_data['child_rusage'][k] for k in bs_rusage_fields]
+        optimized = [task_data['child_rusage'][k] for k in BS_RUSAGE_FIELDS]
         task_data['child_rusage'] = optimized
+
+def optimize_buildstats(buildstats):
+    """Optimize buildstats data"""
+    for recipe in buildstats:
+        for task, data in recipe['tasks'].items():
+            optimize_buildstat_task(data)
 
 def optimize_buildstats_file(buildstats_file):
     """Optimize buildstats JSON file"""
     with open(buildstats_file) as fobj:
         buildstats = json.load(fobj, object_pairs_hook=OrderedDict)
 
-    for recipe in buildstats:
-        for task, data in recipe['tasks'].items():
-            optimize_buildstat_task(data)
+    optimize_buildstats(buildstats)
 
     # Write buildstats back into json file
     with open(buildstats_file, 'w') as fobj:
+        json.dump(buildstats, fobj)
+
+def combine_buildstats_files(results_data, results_dir):
+    """Combine buildstats into one JSON file"""
+    buildstats = OrderedDict()
+    new_buildstats_file = os.path.join(results_dir, 'buildstats.json')
+
+    if os.path.exists(new_buildstats_file):
+        # Do not overwrite an existing buildstats file
+        log.debug("Conbined buildstats file already exists")
+        return
+
+    for test in results_data['tests'].values():
+        for measurement in test['measurements'].values():
+            if 'buildstats_file' in measurement['values']:
+                buildstats_file = os.path.join(results_dir,
+                                               measurement['values']['buildstats_file'])
+                with open(buildstats_file) as fobj:
+                    meas_bs = json.load(fobj, object_pairs_hook=OrderedDict)
+                #optimize_buildstats(meas_bs)
+
+                bs_key = test['name'] + '.' + measurement['name']
+                buildstats[bs_key] = meas_bs
+
+                # Remove separate buildstats file
+                del(measurement['values']['buildstats_file'])
+                os.unlink(buildstats_file)
+
+    # Write-out combined buildstats
+    with open(os.path.join(results_dir, 'buildstats.json'), 'w') as fobj:
         json.dump(buildstats, fobj)
 
 
@@ -634,6 +668,10 @@ def convert_old_results(poky_repo, results_dir, tester_host, new_fmt,
                                              out_log.records[0].time)),
                            ('tests', tests)))
 
+    # Combine buildstats
+    if buildstats == 'c':
+        combine_buildstats_files(results, results_dir)
+
     # Create metadata dict
     metadata = create_metadata(tester_host,
                                {'commit': git_rev,
@@ -712,6 +750,10 @@ def convert_json_results(poky_repo, results_dir, new_fmt, metadata_override,
                 # Optimize buildstats
                 elif buildstats == 'o':
                     optimize_buildstats_file(buildstats_file)
+
+    # Combine buildstats
+    if buildstats == 'c':
+        combine_buildstats_files(results, results_dir)
 
     # Remove old results file
     os.unlink(results_file)
@@ -913,6 +955,17 @@ def git_commit_dir(data_repo, src_dir, branch, msg, tag=None, tag_msg="",
     data_repo.run_cmd(['tag', '-a', '-m', tag_msg, tag, 'HEAD'], env)
 
 
+def git_notes_add(data_repo, fname, ref, obj, timestamp=None):
+    """Add git notes"""
+    env = {}
+    if timestamp:
+        env['GIT_COMMITTER_DATE'] = timestamp
+        env['GIT_AUTHOR_DATE'] = timestamp
+
+    log.debug('Adding %s to git notes (%s)', fname, ref)
+    data_repo.run_cmd(['notes', '--ref', ref, 'add', '-F', fname, obj], env)
+
+
 def import_testrun(archive, data_repo, poky_repo, branch_fmt, tag_fmt,
                    convert=False, metadata_override=None, buildstats='y'):
     """Import one testrun into Git"""
@@ -1090,8 +1143,23 @@ hostname: {host}
         tag_msg = "Test run #{} of {}:{} on {}\n".format(
                 tag_cnt, fmt_fields['branch'], fmt_fields['rev'],
                 fmt_fields['host'])
-        git_commit_dir(data_repo, results_dir, git_branch, commit_msg,
-                       git_tag, tag_msg, git_timestamp)
+
+        # Store buildstas.json in Git notes, thus move the file away
+        bs_file = os.path.join(results_dir, 'buildstats.json')
+        bs_tmp = os.path.abspath('buildstats.json.' + str(datetime.now().timestamp()))
+        if os.path.exists(bs_file):
+            shutil.move(bs_file, bs_tmp)
+
+        # Commit data
+        try:
+            git_commit_dir(data_repo, results_dir, git_branch, commit_msg,
+                           git_tag, tag_msg, git_timestamp)
+            if os.path.exists(bs_tmp):
+                git_notes_add(data_repo, bs_tmp, 'buildstats/' + git_branch,
+                              'HEAD', git_timestamp)
+        finally:
+            if os.path.exists(bs_tmp):
+                os.unlink(bs_tmp)
     finally:
         shutil.rmtree(tmpdir)
     return True, "OK"
@@ -1157,7 +1225,8 @@ def parse_args(argv=None):
                         help="Convert results to new format")
     parser.add_argument('-M', '--metadata-override', type=os.path.abspath,
                         help="Pre-filled test metadata in JSON format")
-    parser.add_argument('--buildstats', choices=('y', 'n', 'o'), default='y',
+    parser.add_argument('--buildstats', choices=('y', 'n', 'o', 'c'),
+                        default='c',
                         help="Import buildstats")
     parser.add_argument('-P', '--poky-git', type=os.path.abspath,
                         help="Path to poky clone")
