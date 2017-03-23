@@ -832,6 +832,13 @@ def metadata_xml_to_dict(etree):
         return out
     return _xml_to_dict(root)
 
+def isoformat_to_dt(string):
+    """Convert timestamp string in ISO 8601 format into datetime object"""
+    if '.' in string:
+        return datetime.strptime(string, '%Y-%m-%dT%H:%M:%S.%f')
+    else:
+        return datetime.strptime(string, '%Y-%m-%dT%H:%M:%S')
+
 def write_pretty_xml(tree, out_file):
     """Write out XML element tree into a file"""
     # Use minidom for pretty-printing
@@ -972,28 +979,24 @@ def import_testrun(archive, data_repo, poky_repo, branch_fmt, tag_fmt,
     archive = os.path.abspath(archive)
     archive_fn = os.path.basename(archive)
 
-    fields = archive_fn.rsplit('-', 3)
-    fn_fields = {'timestamp': fields[-1].split('.')[0],
-                 'rev': fields[-2],
-                 'host': None}
     if os.path.isfile(archive):
+        fields = archive_fn.rsplit('-', 3)
+        fn_fields = {'timestamp': fields[-1].split('.')[0],
+                     'rev': fields[-2],
+                     'host': fields[0]}
         if len(fields) != 4:
             log.warn('Invalid archive %s, skipping...', archive)
             return False, "Invalid filename"
-        fn_fields['host'] = fields[0]
     elif os.path.isdir(archive):
-        fn_fields['host'] =  os.environ.get('BUILD_PERF_GIT_IMPORT_HOST')
+        fn_fields = {'timestamp': None,
+                     'rev': None,
+                     'host': os.environ.get('BUILD_PERF_GIT_IMPORT_HOST')}
         if not fn_fields['host'] and not convert:
             raise CommitError("You need to define tester host in "
                               "BUILD_PERF_GIT_IMPORT_HOST env var "
                               "when raw importing directories")
     else:
         raise CommitError("{} does not exist".format(archive))
-
-    # Check that the commit is valid
-    if poky_repo.rev_parse(fn_fields['rev']) is None:
-        log.warn("Commit %s not found in Poky Git, skipping...", fn_fields['rev'])
-        return False, "Commit {} not found in Poky Git".format(fn_fields['rev'])
 
     tmpdir = os.path.abspath(tempfile.mkdtemp(dir='.'))
     try:
@@ -1089,12 +1092,21 @@ def import_testrun(archive, data_repo, poky_repo, branch_fmt, tag_fmt,
             fmt_fields['branch'] = data['layers']['meta']['branch']
             fmt_fields['rev'] = data['layers']['meta']['commit']
             fmt_fields['rev_cnt'] = data['layers']['meta']['commit_count']
+            fmt_fields['host'] = data['hostname']
+
+            with open(os.path.join(results_dir, 'results.json')) as fobj:
+                data = json.load(fobj)
+            git_timestamp = str(data['start_time'])
         elif os.path.exists(os.path.join(results_dir, 'metadata.xml')):
             data = ET.parse(os.path.join(results_dir, 'metadata.xml')).getroot()
             fmt_fields['host'] = data.find('hostname').text
             fmt_fields['branch'] = data.find("layers/layer[@name='meta']/branch").text
             fmt_fields['rev'] = data.find("layers/layer[@name='meta']/commit").text
             fmt_fields['rev_cnt'] = data.find("layers/layer[@name='meta']/commit_count").text
+
+            data = ET.parse(os.path.join(results_dir, 'results.xml')).getroot()
+            timestamp = isoformat_to_dt(data.find('testsuite').attrib['timestamp'])
+            git_timestamp = "%d" % time.mktime(timestamp.timetuple())
         elif os.path.exists(os.path.join(results_dir, 'results.json')):
             with open(os.path.join(results_dir, 'results.json')) as fobj:
                 data = json.load(fobj)
@@ -1102,12 +1114,18 @@ def import_testrun(archive, data_repo, poky_repo, branch_fmt, tag_fmt,
             fmt_fields['branch'] = data['git_branch']
             fmt_fields['rev'] = data['git_commit']
             fmt_fields['rev_cnt'] = data['git_commit_count']
+            git_timestamp = str(data['start_time'])
         else:
             out_log = OutputLog(os.path.join(results_dir, 'output.log'))
             fmt_fields['branch'], fmt_fields['rev'] = \
                     out_log.get_git_rev_info()
             cmd = ['rev-list', '--count', fmt_fields['rev'], '--']
             fmt_fields['rev_cnt'] = poky_repo.run_cmd(cmd).splitlines()[0]
+            git_timestamp = "%d" % time.mktime(out_log.records[0].timestamp.timetuple())
+        # Check that the commit is valid
+        if poky_repo.rev_parse(fmt_fields['rev']) is None:
+            log.warn("Commit %s not found in Poky Git, skipping...", fmt_fields['rev'])
+            return False, "Commit {} not found in Poky Git".format(fmt_fields['rev'])
 
         # Special case for git branch
         if fmt_fields['branch'] == 'None':
@@ -1119,9 +1137,10 @@ def import_testrun(archive, data_repo, poky_repo, branch_fmt, tag_fmt,
         tag_cnt = len(data_repo.run_cmd(['tag', '-l', git_tag + '/*']).splitlines())
         git_tag += '/%d' % tag_cnt
 
-        # Get timestamp for commit and tag
-        timestamp = datetime.strptime(fn_fields['timestamp'], '%Y%m%d%H%M%S')
-        git_timestamp = "%d" % time.mktime(timestamp.timetuple())
+        # Use timestamp from filename, if available
+        if fn_fields['timestamp']:
+            timestamp = datetime.strptime(fn_fields['timestamp'], '%Y%m%d%H%M%S')
+            git_timestamp = "%d" % time.mktime(timestamp.timetuple())
 
         # Commit to git
         commit_msg = """\
