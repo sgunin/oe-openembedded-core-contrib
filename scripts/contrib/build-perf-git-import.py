@@ -311,17 +311,10 @@ def time_log_to_json(time_log):
 
 def optimize_buildstat_task(task_data):
     """Optimize JSON formatted buildstat task data"""
-    if 'iostat' in task_data:
-        optimized = [task_data['iostat'][k] for k in BS_IOSTAT_FIELDS]
-        task_data['iostat'] = optimized
-
-    if 'rusage' in task_data:
-        optimized = [task_data['rusage'][k] for k in BS_RUSAGE_FIELDS]
-        task_data['rusage'] = optimized
-
     if 'child_rusage' in task_data:
-        optimized = [task_data['child_rusage'][k] for k in BS_RUSAGE_FIELDS]
-        task_data['child_rusage'] = optimized
+        for key, val in task_data['child_rusage'].items():
+            task_data['rusage'][key] += val
+        del(task_data['child_rusage'])
 
 def optimize_buildstats(buildstats):
     """Optimize buildstats data"""
@@ -357,7 +350,7 @@ def combine_buildstats_files(results_data, results_dir):
                                                measurement['values']['buildstats_file'])
                 with open(buildstats_file) as fobj:
                     meas_bs = json.load(fobj, object_pairs_hook=OrderedDict)
-                #optimize_buildstats(meas_bs)
+                optimize_buildstats(meas_bs)
 
                 bs_key = test['name'] + '.' + measurement['name']
                 buildstats[bs_key] = meas_bs
