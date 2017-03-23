@@ -466,7 +466,8 @@ def convert_results(poky_repo, results_dir, tester_host, out_fmt,
         return convert_json_results(poky_repo, results_dir, out_fmt,
                                     metadata_override, buildstats)
     elif os.path.exists(os.path.join(results_dir, 'results.xml')):
-        return convert_xml_results(results_dir, out_fmt, metadata_override)
+        return convert_xml_results(results_dir, out_fmt, metadata_override,
+                                   buildstats)
     elif os.path.exists(os.path.join(results_dir, 'output.log')):
         return convert_old_results(poky_repo, results_dir, tester_host, out_fmt,
                                    metadata_override, buildstats)
@@ -769,13 +770,10 @@ def convert_json_results(poky_repo, results_dir, new_fmt, metadata_override,
     return True
 
 
-def convert_xml_results(results_dir, new_fmt, metadata_override):
+def convert_xml_results(results_dir, new_fmt, metadata_override, buildstats):
     """Convert XML formatted results"""
     metadata_file = os.path.join(results_dir, 'metadata.xml')
-
-    if new_fmt == 'xml' and not metadata_override:
-        log.debug("Results in desired format, no need to convert")
-        return False
+    results_file = os.path.join(results_dir, 'results.xml')
 
     # Mangle metadata
     xml_metadata = ET.parse(metadata_file)
@@ -783,12 +781,17 @@ def convert_xml_results(results_dir, new_fmt, metadata_override):
     metadata = update_metadata(metadata, metadata_override)
     os.unlink(metadata_file)
 
+    # Combine buildstats
+    results = read_results_xml(ET.parse(results_file))
+    os.unlink(results_file)
+    if buildstats == 'c':
+        combine_buildstats_files(results, results_dir)
+
     # Write-out new data
     if new_fmt == 'json':
-        raise NotImplementedError("Unable to convert XML to JSON")
+        write_results_json(results_dir, metadata, results)
     elif new_fmt == 'xml':
-        xml_metadata = metadata_dict_to_xml('metadata', metadata)
-        write_pretty_xml(xml_metadata, metadata_file)
+        write_results_xml(results_dir, metadata, results)
     else:
         raise NotImplementedError("Unknown results format '{}'".format(new_fmt))
     return True
@@ -838,6 +841,88 @@ def isoformat_to_dt(string):
         return datetime.strptime(string, '%Y-%m-%dT%H:%M:%S.%f')
     else:
         return datetime.strptime(string, '%Y-%m-%dT%H:%M:%S')
+
+def read_results_xml(etree):
+    """Convert xml etree into JSON format"""
+    def _read_measurement(elem):
+        data = OrderedDict()
+        data['type'] = elem.tag
+        data['name'] = elem.attrib['name']
+        data['legend'] = elem.attrib['legend']
+        values = OrderedDict()
+
+        # SYSRES measurement
+        if elem.tag == 'sysres':
+            for subel in elem:
+                if subel.tag == 'time':
+                    values['start_time'] = isoformat_to_dt(subel.attrib['timestamp'])
+                    values['elapsed_time'] = float(subel.text)
+                elif subel.tag == 'rusage':
+                    rusage = OrderedDict()
+                    for field in BS_RUSAGE_FIELDS:
+                        if 'time' in field:
+                            rusage[field] = float(subel.attrib[field])
+                        else:
+                            rusage[field] = int(subel.attrib[field])
+                    values['rusage'] = rusage
+                elif subel.tag == 'iostat':
+                    values['iostat'] = OrderedDict([(f, int(subel.attrib[f])) for f in BS_IOSTAT_FIELDS])
+                elif subel.tag == 'buildstats_file':
+                    values['buildstats_file'] = subel.text
+                else:
+                    raise TypeError("Unknown sysres value element '{}'".format(subel.tag))
+        # DISKUSAGE measurement
+        elif elem.tag == 'diskusage':
+            values['size'] = int(elem.find('size').text)
+        else:
+            raise Exception("Unknown measurement tag '{}'".format(elem.tag))
+        data['values'] = values
+        return data
+
+    def _read_case(elem):
+        """Convert testcase into JSON"""
+        data = OrderedDict()
+        data['name'] = elem.attrib['name']
+        data['description'] = elem.attrib['description']
+        data['status'] = 'SUCCESS'
+        data['start_time'] = isoformat_to_dt(elem.attrib['timestamp'])
+        data['elapsed_time'] = float(elem.attrib['time'])
+        measurements = OrderedDict()
+
+        for subel in elem.getchildren():
+            if subel.tag == 'error' or subel.tag == 'failure':
+                data['status'] = subel.tag.upper()
+                data['message'] = subel.attrib['message']
+                print(len(data['message'].splitlines()))
+                data['err_type'] = subel.attrib['type']
+                data['err_output'] = subel.text
+            elif subel.tag == 'skipped':
+                data['status'] = 'SKIPPED'
+                data['message'] = subel.text
+            else:
+                measurements[subel.attrib['name']] = _read_measurement(subel)
+        data['measurements'] = measurements
+        return data
+
+    def _read_suite(elem):
+        """Convert suite to JSON"""
+        data = OrderedDict()
+        data['tester_host'] = elem.attrib['hostname']
+        data['start_time'] = isoformat_to_dt(elem.attrib['timestamp'])
+        data['elapsed_time'] = float(elem.attrib['time'])
+        tests = OrderedDict()
+
+        for case in elem.getchildren():
+            tests[case.attrib['name']] = _read_case(case)
+        data['tests'] = tests
+        return data
+
+    # Main function
+    root = etree.getroot()
+    assert root.tag == 'testsuites', "Invalid test report format"
+    assert len(root) == 1, "Too many testsuites"
+
+    return _read_suite(root.getchildren()[0])
 
 def write_pretty_xml(tree, out_file):
     """Write out XML element tree into a file"""
