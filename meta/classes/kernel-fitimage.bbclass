@@ -348,10 +348,7 @@ fitimage_assemble() {
 				bbwarn "${DTB} contains the full path to the the dts file, but only the dtb name should be used."
 				DTB=`basename ${DTB} | sed 's,\.dts$,.dtb,g'`
 			fi
-			DTB_PATH="arch/${ARCH}/boot/dts/${DTB}"
-			if [ ! -e "${DTB_PATH}" ]; then
-				DTB_PATH="arch/${ARCH}/boot/${DTB}"
-			fi
+			DTB_PATH=`find arch/${ARCH}/boot -name "${DTB}"`
 
 			DTB=$(echo "${DTB}" | tr '/' '_')
 			DTBS="${DTBS} ${DTB}"
