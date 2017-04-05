@@ -92,6 +92,8 @@ class TimeZone(tzinfo):
         return None
 
 TIMEZONES = {'UTC': TimeZone(0, 'UTC'),
+             'CST': TimeZone(-21600, 'CST'),
+             'CDT': TimeZone(-18000, 'CDT'),
              'EDT': TimeZone(-18000, 'EDT'),
              'EST': TimeZone(-14400, 'EST'),
              'ET': TimeZone(-14400, 'ET'),
@@ -156,19 +158,18 @@ class OutputLog(object):
                 # Determine timestamp format
                 fobj.seek(0)
                 line = fobj.readline()
-                try:
-                    locale.setlocale(locale.LC_ALL, 'C')
-                    self._parse_line_old_default(line)
-                    parse_line = self._parse_line_old_default
-                except ConversionError:
-                    parse_line = None
-                if not parse_line:
+                locales = (('C', self._parse_line_old_default),
+                           ('es_MX.UTF-8', self._parse_line_old_default),
+                           ('ro_RO.UTF-8', self._parse_line_old_ro))
+                for loc, parse_line in locales:
                     try:
-                        locale.setlocale(locale.LC_ALL, 'ro_RO.UTF-8')
-                        self._parse_line_old_ro(line)
-                        parse_line = self._parse_line_old_ro
+                        locale.setlocale(locale.LC_ALL, loc)
+                        parse_line(line)
+                        break
                     except ConversionError:
-                        raise ConversionError("Unable to parse output.log timestamps")
+                        pass
+                if not parse_line:
+                    raise ConversionError("Unable to parse output.log timestamps")
             fobj.seek(0)
 
             for line in fobj.readlines():
