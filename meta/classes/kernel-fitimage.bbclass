@@ -11,6 +11,8 @@ python __anonymous () {
             replacementtype = "vmlinuz.bin"
         elif d.getVar("UBOOT_ARCH") == "x86":
             replacementtype = "bzImage"
+        elif d.getVar("UBOOT_ARCH") == "arm64":
+            replacementtype = "vmlinux"
         else:
             replacementtype = "zImage"
 
