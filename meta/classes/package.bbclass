@@ -1388,6 +1388,10 @@ python emit_pkgdata() {
         write_if_exists(sf, pkg, 'pkg_prerm')
         write_if_exists(sf, pkg, 'FILERPROVIDESFLIST')
         write_if_exists(sf, pkg, 'FILES_INFO')
+        write_if_exists(sf, pkg, 'PACKAGE_ADD_METADATA')
+        write_if_exists(sf, pkg, 'PACKAGE_ADD_METADATA_DEB')
+        write_if_exists(sf, pkg, 'PACKAGE_ADD_METADATA_IPK')
+        write_if_exists(sf, pkg, 'PACKAGE_ADD_METADATA_RPM')
         for dfile in (d.getVar('FILERPROVIDESFLIST_' + pkg) or "").split():
             write_if_exists(sf, pkg, 'FILERPROVIDES_' + dfile)
 
