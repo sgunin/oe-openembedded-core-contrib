@@ -69,7 +69,7 @@ PACKAGECONFIG[tirpc] = "--enable-tirpc,--disable-tirpc,libtirpc"
 PACKAGECONFIG[blkid] = "--enable-uuid,--disable-uuid,util-linux"
 PACKAGECONFIG[libmount] = "--enable-libmount-mount,--disable-libmount-mount,util-linux"
 PACKAGECONFIG[nfsv4] = "--enable-nfsv4,--disable-nfsv4,libevent libnfsidmap keyutils sqlite3"
-PACKAGECONFIG[nfsv41] = "--enable-nfsv41,--disable-nfsv41,lvm2"
+PACKAGECONFIG[nfsv41] = "--enable-nfsv41,--disable-nfsv41,libdevmapper"
 
 PACKAGES =+ "${PN}-client ${PN}-mount ${PN}-stats"
 
