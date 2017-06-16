@@ -43,6 +43,7 @@ do_install () {
         cp -pPR ${S}/$exec_prefix ${D}/
         # libc is removing zoneinfo files from package
         cp -pP "${S}/zone.tab" ${D}${datadir}/zoneinfo
+        cp -pP "${S}/zone1970.tab" ${D}${datadir}/zoneinfo
         cp -pP "${S}/iso3166.tab" ${D}${datadir}/zoneinfo
 
         # Install default timezone
@@ -202,6 +203,7 @@ FILES_${PN} += "${datadir}/zoneinfo/Pacific/Honolulu     \
                 ${datadir}/zoneinfo/WET                  \
                 ${datadir}/zoneinfo/Zulu                 \
                 ${datadir}/zoneinfo/zone.tab             \
+                ${datadir}/zoneinfo/zone1970.tab         \
                 ${datadir}/zoneinfo/iso3166.tab          \
                 ${datadir}/zoneinfo/Etc/*"
 
