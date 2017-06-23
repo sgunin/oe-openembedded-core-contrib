@@ -17,7 +17,7 @@ S = "${WORKDIR}"
 
 inherit native
 
-EXTRA_OEMAKE += "cc=${CC}"
+EXTRA_OEMAKE += "cc='${CC}'"
 
 do_install () {
         install -d ${D}${bindir}/
