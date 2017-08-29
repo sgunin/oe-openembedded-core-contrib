@@ -675,7 +675,7 @@ def pstaging_fetch(sstatefetch, sstatepkg, d):
         localdata.setVar('SRC_URI', srcuri)
         try:
             fetcher = bb.fetch2.Fetch([srcuri], localdata, cache=False)
-            fetcher.download()
+            fetcher.download(only_warn=True)
 
         except bb.fetch2.BBFetchException:
             break
@@ -684,7 +684,8 @@ def sstate_setscene(d):
     shared_state = sstate_state_fromvars(d)
     accelerate = sstate_installpkg(shared_state, d)
     if not accelerate:
-        bb.fatal("No suitable staging package found")
+        bb.warn("No suitable staging package found")
+        sys.exit(1)
 
 python sstate_task_prefunc () {
     shared_state = sstate_state_fromvars(d)
