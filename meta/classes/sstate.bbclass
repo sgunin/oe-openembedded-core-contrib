@@ -776,7 +776,7 @@ def pstaging_fetch(sstatefetch, d):
         try:
             fetcher = bb.fetch2.Fetch([srcuri], localdata, cache=False)
             fetcher.checkstatus()
-            fetcher.download()
+            fetcher.download(only_warn=True)
 
         except bb.fetch2.BBFetchException:
             pass
