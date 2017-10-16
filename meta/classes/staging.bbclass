@@ -480,6 +480,13 @@ python extend_recipe_sysroot() {
                     multilibs[variant] = get_multilib_datastore(variant, d)
                 d2 = multilibs[variant]
                 destsysroot = d2.getVar("RECIPE_SYSROOT")
+                if variant not in fixme:
+                    fixme[variant] = []
+            # Clear variant when variant == current_variant since we
+            # don't need handle it as multilib in this case, just handle
+            # it as normal is OK.
+            else:
+                variant = ''
 
         native = False
         if c.endswith("-native"):
@@ -508,6 +515,9 @@ python extend_recipe_sysroot() {
             if native:
                 fm = fixme['native']
                 targetdir = recipesysrootnative
+            elif variant:
+                fm = fixme[variant]
+                targetdir = destsysroot
             else:
                 fm = fixme['']
                 targetdir = destsysroot
