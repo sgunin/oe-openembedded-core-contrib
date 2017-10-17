@@ -190,7 +190,18 @@ python __anonymous () {
     deps = ""
     for dep in (d.getVar('TOOLCHAIN_NEED_CONFIGSITE_CACHE') or "").split():
         deps += " %s:do_populate_sysroot" % dep
-        for variant in (d.getVar('MULTILIB_VARIANTS') or "").split():
+        ml_variants = (d.getVar('MULTILIB_VARIANTS') or "").split()
+
+        # don't extend if dep has been extended already
+        extended = False
+        for variant in ml_variants:
+            if dep.startswith(variant) or dep.startswith('virtual/' + variant):
+                extended = True
+                break
+        if extended:
+            continue
+
+        for variant in ml_variants:
             clsextend = oe.classextend.ClassExtender(variant, d)
             newdep = clsextend.extend_name(dep)
             deps += " %s:do_populate_sysroot" % newdep
