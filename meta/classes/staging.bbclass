@@ -190,7 +190,22 @@ def staging_populate_sysroot_dir(targetsysroot, nativesysroot, native, d):
         pkgarchs = ['${MACHINE_ARCH}']
         pkgarchs = pkgarchs + list(reversed(d.getVar("PACKAGE_EXTRA_ARCHS").split()))
         pkgarchs.append('allarch')
+
+        # Handle multilib archs
+        variants = d.getVar("MULTILIB_VARIANTS", True) or ""
+        for variant in variants.split():
+            localdata = bb.data.createCopy(d)
+            overrides = localdata.getVar("OVERRIDES", False) + ":virtclass-multilib-" + variant
+            localdata.setVar("OVERRIDES", overrides)
+            bb.data.update_data(localdata)
+            pkgarchs_ml = localdata.getVar('PACKAGE_EXTRA_ARCHS').split()
+            for arch in pkgarchs_ml:
+                if arch not in pkgarchs:
+                    pkgarchs.append(arch)
+
         targetdir = targetsysroot
+
+    bb.debug(1, 'pkgarchs: %s' % pkgarchs)
 
     bb.utils.mkdirhier(targetdir)
     for pkgarch in pkgarchs:
