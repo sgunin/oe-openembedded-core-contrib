@@ -504,6 +504,7 @@ python extend_recipe_sysroot() {
                 variant = ''
 
         native = False
+        searched_manifest = []
         if c.endswith("-native"):
             manifest = d2.expand("${SSTATE_MANIFESTS}/manifest-${BUILD_ARCH}-%s.populate_sysroot" % c)
             native = True
@@ -523,8 +524,11 @@ python extend_recipe_sysroot() {
                 manifest = d2.expand("${SSTATE_MANIFESTS}/manifest-%s-%s.populate_sysroot" % (pkgarch, c))
                 if os.path.exists(manifest):
                     break
+                searched_manifest.append(manifest)
         if not os.path.exists(manifest):
-            bb.warn("Manifest %s not found?" % manifest)
+            if not searched_manifest:
+                searched_manifest.append(manifest)
+            bb.warn("Manifest for %s not found, searched manifests:\n%s" % (c, '\n'.join(searched_manifest)))
         else:
             newmanifest = collections.OrderedDict()
             if native:
