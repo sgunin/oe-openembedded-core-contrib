@@ -82,7 +82,7 @@ while getopts "acC:hp:t:" OPT; do
 		GITSOBCC="--signed-off-by-cc"
 		;;
 	C)
-		EXTRA_CC="$OPTARG"
+		EXTRA_CC="$EXTRA_CC,$OPTARG"
 		;;
 	h)
 		usage
