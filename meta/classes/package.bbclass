@@ -458,9 +458,6 @@ def get_package_mapping (pkg, basepkg, d):
     key = "PKG_%s" % pkg
 
     if key in data:
-        # Have to avoid undoing the write_extra_pkgs(global_variants...)
-        if bb.data.inherits_class('allarch', d) and data[key] == basepkg:
-            return pkg
         return data[key]
 
     return pkg
@@ -1351,9 +1348,6 @@ python emit_pkgdata() {
     if bb.data.inherits_class('kernel', d) or bb.data.inherits_class('module-base', d):
         write_extra_pkgs(variants, pn, packages, pkgdatadir)
 
-    if (bb.data.inherits_class('allarch', d) and not bb.data.inherits_class('packagegroup', d)):
-        write_extra_pkgs(global_variants, pn, packages, pkgdatadir)
-
     workdir = d.getVar('WORKDIR')
 
     for pkg in packages.split():
@@ -1437,9 +1431,6 @@ python emit_pkgdata() {
 
     if bb.data.inherits_class('kernel', d) or bb.data.inherits_class('module-base', d):
         write_extra_runtime_pkgs(variants, packages, pkgdatadir)
-
-    if bb.data.inherits_class('allarch', d) and not bb.data.inherits_class('packagegroup', d):
-        write_extra_runtime_pkgs(global_variants, packages, pkgdatadir)
 
     bb.utils.unlockfile(lf)
 }
