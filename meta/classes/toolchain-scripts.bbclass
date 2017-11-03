@@ -151,6 +151,12 @@ toolchain_create_sdk_siteconfig[vardepsexclude] = "TOOLCHAIN_CONFIGSITE_SYSROOTC
 
 python __anonymous () {
     import oe.classextend
+
+    # Install all MULTILIB_VARIANTS to sysroot and pack them only makes sense to
+    # image recipe.
+    if not bb.data.inherits_class('image', d):
+        return
+
     deps = ""
     for dep in (d.getVar('TOOLCHAIN_NEED_CONFIGSITE_CACHE') or "").split():
         deps += " %s:do_populate_sysroot" % dep
