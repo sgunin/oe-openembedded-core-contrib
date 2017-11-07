@@ -701,6 +701,23 @@ python do_sdk_depends() {
 }
 addtask sdk_depends
 
+# "bitbake lib32-foo-image -csdk_depends" doesn't work, use
+# "bitbake foo-image -csdk_depends" to replace of it, they will generate
+# the same depends.
+do_sdk_depends[prefuncs] = 'disable_for_multilib_image'
+python disable_for_multilib_image() {
+    mlprefix = d.getVar("MLPREFIX")
+    if mlprefix:
+        pn = d.getVar('PN')
+        bpn = d.getVar('BPN')
+        bb.fatal("do_sdk_depends for %s doesn't work, use %s to replace of it, " \
+            "they will generate the same dependencies and eSDK.\n" \
+            "For example, the following 2 commands will generate the same eSDK:\n" \
+            "$ bitbake %s -cpopulate_sdk_ext\n" \
+            "$ bitbake %s -cpopulate_sdk_ext\n" % (pn, bpn, bpn, pn))
+}
+
+
 do_sdk_depends[dirs] = "${WORKDIR}"
 do_sdk_depends[depends] = "${@get_ext_sdk_depends(d)}"
 do_sdk_depends[recrdeptask] = "${@d.getVarFlag('do_populate_sdk', 'recrdeptask', False)}"
