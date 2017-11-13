@@ -32,11 +32,20 @@ class OEHasPackage(OETestDecorator):
         need_pkgs = set()
         unneed_pkgs = set()
         pkgs = strToSet(self.need_pkgs)
+        # Conver to multilib
+        mlprefix = self.case.tc.td['MLPREFIX']
         for pkg in pkgs:
             if pkg.startswith('!'):
-                unneed_pkgs.add(pkg[1:])
+                pkg_name = pkg[1:]
+                if mlprefix and not pkg_name.startswith(mlprefix):
+                    unneed_pkgs.add('%s%s' % (mlprefix, pkg_name))
+                else:
+                    unneed_pkgs.add(pkg_name)
             else:
-                need_pkgs.add(pkg)
+                if mlprefix and not pkg.startswith(mlprefix):
+                    need_pkgs.add('%s%s' % (mlprefix, pkg))
+                else:
+                    need_pkgs.add(pkg)
 
         if unneed_pkgs:
             msg = 'Checking if %s is not installed' % ', '.join(unneed_pkgs)
