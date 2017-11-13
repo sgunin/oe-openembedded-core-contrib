@@ -38,12 +38,12 @@ class DnfBasicTest(DnfTest):
     @OETestDepends(['dnf.DnfBasicTest.test_dnf_help'])
     @OETestID(1737)
     def test_dnf_info(self):
-        self.dnf('info dnf')
+        self.dnf('info %sdnf' % self.tc.td['MLPREFIX'])
 
     @OETestDepends(['dnf.DnfBasicTest.test_dnf_help'])
     @OETestID(1738)
     def test_dnf_search(self):
-        self.dnf('search dnf')
+        self.dnf('search %sdnf' % self.tc.td['MLPREFIX'])
 
     @OETestDepends(['dnf.DnfBasicTest.test_dnf_help'])
     @OETestID(1736)

@@ -25,7 +25,7 @@ class RpmBasicTest(OERuntimeTestCase):
     @OETestID(191)
     @OETestDepends(['rpm.RpmBasicTest.test_rpm_help'])
     def test_rpm_query(self):
-        status, output = self.target.run('rpm -q rpm')
+        status, output = self.target.run('rpm -q %srpm' % self.tc.td['MLPREFIX'])
         msg = 'status and output: %s and %s' % (status, output)
         self.assertEqual(status, 0, msg=msg)
 
