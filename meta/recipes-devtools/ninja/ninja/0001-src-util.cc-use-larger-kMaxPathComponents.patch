@@ -1,0 +1,33 @@
+From 04534ec915e08f59b66bf6044290faeea4610394 Mon Sep 17 00:00:00 2001
+From: Robert Yang <liezhi.yang@windriver.com>
+Date: Wed, 15 Nov 2017 16:01:01 +0800
+Subject: [PATCH] src/util.cc: use larger kMaxPathComponents
+
+It is used for saving path components, 30 is a little small, use 100.
+
+Fixed when build llvm:
+ninja: fatal: path has too many components
+
+Upstream-Status: Pending
+
+Signed-off-by: Robert Yang <liezhi.yang@windriver.com>
+---
+ src/util.cc | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/util.cc b/src/util.cc
+index e31fd1f..f84a12e 100644
+--- a/src/util.cc
++++ b/src/util.cc
+@@ -125,7 +125,7 @@ bool CanonicalizePath(char* path, size_t* len, unsigned int* slash_bits,
+     return false;
+   }
+ 
+-  const int kMaxPathComponents = 30;
++  const int kMaxPathComponents = 100;
+   char* components[kMaxPathComponents];
+   int component_count = 0;
+ 
+-- 
+2.7.4
+
