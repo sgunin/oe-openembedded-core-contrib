@@ -6,6 +6,7 @@ inherit native
 
 SRC_URI_append = " http://golang.org/dl/go1.4.3.src.tar.gz;name=bootstrap;subdir=go1.4 \
                    file://0001-cmd-dist-unix.c-bprintf-use-larger-buf.patch;patchdir=../go1.4 \
+                   file://0002-cmd-gc-go.h-NSYMB-500-1000.patch;patchdir=../go1.4 \
 "
 SRC_URI[bootstrap.md5sum] = "dfb604511115dd402a77a553a5923a04"
 SRC_URI[bootstrap.sha256sum] = "9947fc705b0b841b5938c48b22dc33e9647ec0752bae66e50278df4f23f64959"

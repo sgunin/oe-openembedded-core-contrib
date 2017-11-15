@@ -1,0 +1,35 @@
+From 7228802277fa97bf3b3988eeef1ff5b8e97ab082 Mon Sep 17 00:00:00 2001
+From: Robert Yang <liezhi.yang@windriver.com>
+Date: Wed, 15 Nov 2017 14:23:48 +0800
+Subject: [PATCH] cmd/gc/go.h: NSYMB: 500 -> 1000
+
+It is used for saving file path, 500 is a little small when building in deep
+path, for example, it would be failed when oe-coe's len(TMPDIR) == 410, use
+1000 can fix the problem.
+
+Fixed:
+cmd/internal/objfile/disasm.go:18: can't find import: "cmd/internal/rsc.io/arm/armasm"
+
+Upstream-Status: Pending
+
+Signed-off-by: Robert Yang <liezhi.yang@windriver.com>
+---
+ go/src/cmd/gc/go.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/go/src/cmd/gc/go.h b/go/src/cmd/gc/go.h
+index bbb8835..caa326c 100644
+--- a/go/src/cmd/gc/go.h
++++ b/go/src/cmd/gc/go.h
+@@ -27,7 +27,7 @@ enum
+ {
+ 	NHUNK		= 50000,
+ 	BUFSIZ		= 8192,
+-	NSYMB		= 500,
++	NSYMB		= 1000,
+ 	NHASH		= 1024,
+ 	STRINGSZ	= 200,
+ 	MAXALIGN	= 7,
+-- 
+2.7.4
+
