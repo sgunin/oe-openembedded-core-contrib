@@ -1,0 +1,38 @@
+From 443724ac952aa9b7550dc89ac14dbea1c2cd05b0 Mon Sep 17 00:00:00 2001
+From: Robert Yang <liezhi.yang@windriver.com>
+Date: Wed, 15 Nov 2017 10:49:03 +0800
+Subject: [PATCH] cmd/dist/unix.c: bprintf(): use larger buf
+
+The buf is used for saving PATH, 4096 is a little small when building in deep
+path, for example, it would be failed when oe-coe's len(TMPDIR) == 410, use
+8192 can fix the problem.
+
+Fixed:
+[snip]
+gcc -isystem/workspace2/lyang1/aaaaaaaa/[snip]
+exec gcc: No such file or directory
+[snip]
+
+Upstream-Status: Pending
+
+Signed-off-by: Robert Yang <liezhi.yang@windriver.com>
+---
+ go/src/cmd/dist/unix.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/go/src/cmd/dist/unix.c b/go/src/cmd/dist/unix.c
+index 4a78684..fa41964 100644
+--- a/go/src/cmd/dist/unix.c
++++ b/go/src/cmd/dist/unix.c
+@@ -32,7 +32,7 @@ char*
+ bprintf(Buf *b, char *fmt, ...)
+ {
+ 	va_list arg;
+-	char buf[4096];
++	char buf[8192];
+ 	
+ 	breset(b);
+ 	va_start(arg, fmt);
+-- 
+2.7.4
+
