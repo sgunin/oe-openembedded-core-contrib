@@ -7,7 +7,7 @@ import fnmatch
 
 import oeqa.utils.ftools as ftools
 from oeqa.selftest.case import OESelftestTestCase
-from oeqa.utils.commands import runCmd, bitbake, get_bb_var, create_temp_layer
+from oeqa.utils.commands import runCmd, bitbake, get_bb_var, create_temp_layer, CommandError
 from oeqa.utils.commands import get_bb_vars, runqemu, get_test_layer
 from oeqa.core.decorator.oeid import OETestID
 

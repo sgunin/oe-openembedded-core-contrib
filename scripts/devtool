@@ -25,6 +25,8 @@ import re
 import configparser
 import subprocess
 import logging
+import json
+from collections import OrderedDict
 
 basepath = ''
 workspace = {}
@@ -109,31 +111,58 @@ def read_workspace():
     if not context.fixed_setup:
         _enable_workspace_layer(config.workspace_path, config, basepath)
 
+    def process_inline_json(strvalue, in_value):
+        if strvalue.count('{') == strvalue.count('}') and strvalue.count('[') == strvalue.count(']'):
+            pnvalues[in_value] = json.loads(strvalue, object_pairs_hook=OrderedDict)
+            return True
+        return False
+
     logger.debug('Reading workspace in %s' % config.workspace_path)
     externalsrc_re = re.compile(r'^EXTERNALSRC(_pn-([^ =]+))? *= *"([^"]*)"$')
     for fn in glob.glob(os.path.join(config.workspace_path, 'appends', '*.bbappend')):
         with open(fn, 'r') as f:
             pnvalues = {}
+            in_value = None
+            strvalue = ''
             for line in f:
-                res = externalsrc_re.match(line.rstrip())
-                if res:
-                    pn = res.group(2) or os.path.splitext(os.path.basename(fn))[0].split('_')[0]
-                    # Find the recipe file within the workspace, if any
-                    bbfile = os.path.basename(fn).replace('.bbappend', '.bb').replace('%', '*')
-                    recipefile = glob.glob(os.path.join(config.workspace_path,
-                                                        'recipes',
-                                                        pn,
-                                                        bbfile))
-                    if recipefile:
-                        recipefile = recipefile[0]
-                    pnvalues['srctree'] = res.group(3)
-                    pnvalues['bbappend'] = fn
-                    pnvalues['recipefile'] = recipefile
-                elif line.startswith('# srctreebase: '):
-                    pnvalues['srctreebase'] = line.split(':', 1)[1].strip()
+                if in_value:
+                    if not line.startswith('#'):
+                        logger.error('Syntax error in %s - invalid in-line json' % fn)
+                        sys.exit(1)
+                    strvalue += line[1:]
+                    if process_inline_json(strvalue, in_value):
+                        in_value = None
+                else:
+                    res = externalsrc_re.match(line.rstrip())
+                    if res:
+                        pn = res.group(2) or os.path.splitext(os.path.basename(fn))[0].split('_')[0]
+                        # Find the recipe file within the workspace, if any
+                        bbfile = os.path.basename(fn).replace('.bbappend', '.bb').replace('%', '*')
+                        recipefile = glob.glob(os.path.join(config.workspace_path,
+                                                            'recipes',
+                                                            pn,
+                                                            bbfile))
+                        if recipefile:
+                            recipefile = recipefile[0]
+                        pnvalues['srctree'] = res.group(3)
+                        pnvalues['bbappend'] = fn
+                        pnvalues['recipefile'] = recipefile
+                    elif line.startswith('# srctreebase: '):
+                        pnvalues['srctreebase'] = line.split(':', 1)[1].strip()
+                    elif line.startswith('# srctreetop: '):
+                        pnvalues['srctreetop'] = line.split(':', 1)[1].strip()
+                    elif line.startswith('# extradirs: '):
+                        strvalue = line.split(':', 1)[1].strip()
+                        in_value = 'extradirs'
+                        if process_inline_json(strvalue, in_value):
+                            in_value = None
             if pnvalues:
                 if not pnvalues.get('srctreebase', None):
                     pnvalues['srctreebase'] = pnvalues['srctree']
+                if not 'srctreetop' in pnvalues:
+                    pnvalues['srctreetop'] = pnvalues['srctreebase']
+                if not 'extradirs' in pnvalues:
+                    pnvalues['extradirs'] = []
                 logger.debug('Found recipe %s' % pnvalues)
                 workspace[pn] = pnvalues
 

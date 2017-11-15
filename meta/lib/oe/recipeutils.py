@@ -445,10 +445,10 @@ def get_recipe_patches(d):
     """Get a list of the patches included in SRC_URI within a recipe."""
     import oe.patch
     patches = oe.patch.src_patches(d, expand=False)
-    patchfiles = []
+    patchfiles = OrderedDict()
     for patch in patches:
         _, _, local, _, _, parm = bb.fetch.decodeurl(patch)
-        patchfiles.append(local)
+        patchfiles[local] = parm
     return patchfiles
 
 

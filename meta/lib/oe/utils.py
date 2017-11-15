@@ -368,3 +368,27 @@ class ImageQAFailed(bb.build.FuncFailed):
             msg = msg + ' (%s)' % self.description
 
         return msg
+
+def is_path_under(path1, possible_parent):
+    """
+    Return True if a path is underneath another, False otherwise.
+    Multiple paths to test can be specified (as a list or tuple) in
+    which case all specified test paths must be under the parent to
+    return True.
+    """
+    def abs_path_trailing(pth):
+        pth_abs = os.path.abspath(pth)
+        if not pth_abs.endswith(os.sep):
+            pth_abs += os.sep
+        return pth_abs
+
+    possible_parent_abs = abs_path_trailing(possible_parent)
+    if isinstance(path1, str):
+        testpaths = [path1]
+    else:
+        testpaths = path1
+    for path in testpaths:
+        path_abs = abs_path_trailing(path)
+        if not path_abs.startswith(possible_parent_abs):
+            return False
+    return True
