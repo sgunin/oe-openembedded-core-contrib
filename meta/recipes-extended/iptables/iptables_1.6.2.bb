@@ -21,6 +21,7 @@ FILES_${PN} =+ "${libdir}/xtables/ ${datadir}/xtables"
 SRC_URI = "http://netfilter.org/projects/iptables/files/iptables-${PV}.tar.bz2 \
            file://0001-configure-Add-option-to-enable-disable-libnfnetlink.patch \
            file://0002-configure.ac-only-check-conntrack-when-libnfnetlink-enabled.patch \
+           file://prevent-absolute-path-in-installed-symlink.patch \
 "
 
 SRC_URI[md5sum] = "7d2b7847e4aa8832a18437b8a4c1873d"
@@ -45,3 +46,5 @@ do_configure_prepend() {
 	# Keep ax_check_linker_flags.m4 which belongs to autoconf-archive.
 	rm -f libtool.m4 lt~obsolete.m4 ltoptions.m4 ltsugar.m4 ltversion.m4
 }
+
+BBCLASSEXTEND = "native"

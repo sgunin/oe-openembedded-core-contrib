@@ -1,0 +1,29 @@
+From d7a50cf5a9f03f3b65293d556dadfc484456b0d8 Mon Sep 17 00:00:00 2001
+From: Markus Lehtonen <markus.lehtonen@linux.intel.com>
+Date: Fri, 17 Nov 2017 14:10:59 +0200
+Subject: [PATCH] prevent absolute path in installed symlink
+
+Upstream-Status: Inappropriate [oe-specific]
+
+Signed-off-by: Markus Lehtonen <markus.lehtonen@linux.intel.com>
+---
+ iptables/Makefile.am | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/iptables/Makefile.am b/iptables/Makefile.am
+index f92cc4f..55ce793 100644
+--- a/iptables/Makefile.am
++++ b/iptables/Makefile.am
+@@ -88,7 +88,8 @@ pkgconfig_DATA = xtables.pc
+ install-exec-hook:
+ 	-if test -z "${DESTDIR}"; then /sbin/ldconfig; fi;
+ 	${INSTALL} -dm0755 "${DESTDIR}${bindir}";
+-	for i in ${vx_bin_links}; do ${LN_S} -f "${sbindir}/xtables-multi" "${DESTDIR}${bindir}/$$i"; done;
++	_relpath=`python -c "import os.path; print(os.path.relpath('${sbindir}/xtables-multi', '${bindir}'))"`; \
++	for i in ${vx_bin_links}; do ${LN_S} -f "$${_relpath}" "${DESTDIR}${bindir}/$$i"; done;
+ 	for i in ${v4_sbin_links}; do ${LN_S} -f xtables-multi "${DESTDIR}${sbindir}/$$i"; done;
+ 	for i in ${v6_sbin_links}; do ${LN_S} -f xtables-multi "${DESTDIR}${sbindir}/$$i"; done;
+ 	for i in ${x_sbin_links}; do ${LN_S} -f xtables-compat-multi "${DESTDIR}${sbindir}/$$i"; done;
+-- 
+2.13.6
+
