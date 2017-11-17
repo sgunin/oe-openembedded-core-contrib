@@ -227,8 +227,8 @@ class QemuTarget(BaseTarget):
 
 class SimpleRemoteTarget(BaseTarget):
 
-    def __init__(self, d):
-        super(SimpleRemoteTarget, self).__init__(d)
+    def __init__(self, d, logger):
+        super(SimpleRemoteTarget, self).__init__(d, logger)
         addr = d.getVar("TEST_TARGET_IP") or bb.fatal('Please set TEST_TARGET_IP with the IP address of the machine you want to run the tests on.')
         self.ip = addr.split(":")[0]
         try:
