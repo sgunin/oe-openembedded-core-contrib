@@ -18,6 +18,31 @@ from oeqa.utils.dump import TargetDumper
 from oeqa.controllers.testtargetloader import TestTargetLoader
 from abc import ABCMeta, abstractmethod
 
+def get_target_controller(d, logger):
+    testtarget = d.getVar("TEST_TARGET")
+    # old, simple names
+    if testtarget == "qemu":
+        return QemuTarget(d, logger)
+    elif testtarget == "simpleremote":
+        return SimpleRemoteTarget(d, logger)
+    else:
+        # use the class name
+        try:
+            # is it a core class defined here?
+            controller = getattr(sys.modules[__name__], testtarget)
+        except AttributeError:
+            # nope, perhaps a layer defined one
+            try:
+                bbpath = d.getVar("BBPATH").split(':')
+                testtargetloader = TestTargetLoader()
+                controller = testtargetloader.get_controller_module(testtarget, bbpath)
+            except ImportError as e:
+                bb.fatal("Failed to import {0} from available controller modules:\n{1}".format(testtarget,traceback.format_exc()))
+            except AttributeError as e:
+                bb.fatal("Invalid TEST_TARGET - " + str(e))
+        return controller(d, logger)
+
+
 class BaseTarget(object, metaclass=ABCMeta):
 
     supported_image_fstypes = []
