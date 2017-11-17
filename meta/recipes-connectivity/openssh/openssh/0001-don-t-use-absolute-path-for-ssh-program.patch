@@ -1,0 +1,31 @@
+From fb78bd8142f48d0909d8839e8bab48abe39d5ab7 Mon Sep 17 00:00:00 2001
+From: Markus Lehtonen <markus.lehtonen@linux.intel.com>
+Date: Mon, 20 Nov 2017 12:08:56 +0200
+Subject: [PATCH] don't use absolute path for ssh program
+
+Makes it possible to relocate openssh binaries referencing to the ssh
+binary.
+
+Upstream-Status: Inappropriate [oe-specific]
+
+Signed-off-by: Markus Lehtonen <markus.lehtonen@linux.intel.com>
+---
+ Makefile.in | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/Makefile.in b/Makefile.in
+index c52ce19..752f7d0 100644
+--- a/Makefile.in
++++ b/Makefile.in
+@@ -21,7 +21,7 @@ top_srcdir=@top_srcdir@
+ 
+ DESTDIR=
+ VPATH=@srcdir@
+-SSH_PROGRAM=@bindir@/ssh
++SSH_PROGRAM=ssh
+ ASKPASS_PROGRAM=$(libexecdir)/ssh-askpass
+ SFTP_SERVER=$(libexecdir)/sftp-server
+ SSH_KEYSIGN=$(libexecdir)/ssh-keysign
+-- 
+2.13.6
+

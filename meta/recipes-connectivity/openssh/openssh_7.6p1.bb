@@ -27,6 +27,8 @@ SRC_URI = "http://ftp.openbsd.org/pub/OpenBSD/OpenSSH/portable/openssh-${PV}.tar
            file://add-test-support-for-busybox.patch \
            "
 
+SRC_URI_append_class-native = " file://0001-don-t-use-absolute-path-for-ssh-program.patch"
+
 PAM_SRC_URI = "file://sshd"
 
 SRC_URI[md5sum] = "06a88699018e5fef13d4655abfed1f63"
@@ -54,7 +56,7 @@ EXTRA_AUTORECONF += "--exclude=aclocal"
 EXTRA_OECONF = "'LOGIN_PROGRAM=${base_bindir}/login' \
                 ${@bb.utils.contains('DISTRO_FEATURES', 'pam', '--with-pam', '--without-pam', d)} \
                 --without-zlib-version-check \
-                --with-privsep-path=/var/run/sshd \
+                --with-privsep-path=${localstatedir}/run/sshd \
                 --sysconfdir=${sysconfdir}/ssh \
                 --with-xauth=/usr/bin/xauth \
                 --disable-strip \
@@ -151,6 +153,8 @@ RDEPENDS_${PN} += "${PN}-scp ${PN}-ssh ${PN}-sshd ${PN}-keygen"
 RDEPENDS_${PN}-sshd += "${PN}-keygen ${@bb.utils.contains('DISTRO_FEATURES', 'pam', 'pam-plugin-keyinit pam-plugin-loginuid', '', d)}"
 RDEPENDS_${PN}-ptest += "${PN}-sftp ${PN}-misc ${PN}-sftp-server make"
 
+RDEPENDS_${PN}_class-native = ""
+
 RPROVIDES_${PN}-ssh = "ssh"
 RPROVIDES_${PN}-sshd = "sshd"
 
@@ -164,3 +168,5 @@ CONFFILES_${PN}-ssh = "${sysconfdir}/ssh/ssh_config"
 ALTERNATIVE_PRIORITY = "90"
 ALTERNATIVE_${PN}-scp = "scp"
 ALTERNATIVE_${PN}-ssh = "ssh"
+
+BBCLASSEXTEND = "native"
