@@ -28,10 +28,13 @@ do_configure_append () {
 
 do_install () {
     oe_runmake DESTDIR=${D} install
-    mv ${D}${base_sbindir}/ip ${D}${base_sbindir}/ip.iproute2
     install -d ${D}${datadir}
     mv ${D}/share/* ${D}${datadir}/ || true
     rm ${D}/share -rf || true
+}
+
+do_install_append_class-target () {
+    mv ${D}${base_sbindir}/ip ${D}${base_sbindir}/ip.iproute2
 }
 
 # The .so files in iproute2-tc are modules, not traditional libraries
@@ -52,3 +55,5 @@ ALTERNATIVE_${PN} = "ip"
 ALTERNATIVE_TARGET[ip] = "${base_sbindir}/ip.${BPN}"
 ALTERNATIVE_LINK_NAME[ip] = "${base_sbindir}/ip"
 ALTERNATIVE_PRIORITY = "100"
+
+BBCLASSEXTEND = "native"
