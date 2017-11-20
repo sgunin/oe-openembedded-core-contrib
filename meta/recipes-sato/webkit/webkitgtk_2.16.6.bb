@@ -117,3 +117,30 @@ ARM_INSTRUCTION_SET_armv7ve = "thumb"
 # Segmentation fault
 GI_DATA_ENABLED_armv7a = "False"
 GI_DATA_ENABLED_armv7ve = "False"
+
+do_configure[postfuncs] += 'shorter_flags_make'
+
+python shorter_flags_make() {
+    recipe_sysroot = d.getVar('RECIPE_SYSROOT')
+    for root, dirs, files in os.walk(d.getVar('B')):
+        for flags_make in files:
+            if flags_make == 'flags.make':
+                # To fix build error when len(TMPDIR) == 410:
+                # - Replace -I${RECIPE_SYSROOT} with -I=
+                # - Replace "-I${S}/path1/in/S -I ${S}/path2/in/S" with
+                #   "-iprefix ${S} -iwithprefixbefore /path1/in/S -iwithprefixbefore /path2/in/S"
+                flags_make = os.path.join(root, flags_make)
+                new_lines = []
+                with open(flags_make, 'r') as f:
+                    for line in f.readlines():
+                        if line.startswith('CXX_INCLUDES = ') or line.startswith('C_INCLUDES = '):
+                            line = line.replace('-I%s' % recipe_sysroot, '-I=')
+                            line = line.replace('CXX_INCLUDES =', 'CXX_INCLUDES = -iprefix %s/ ' % d.getVar('S'))
+                            line = line.replace('C_INCLUDES =', 'C_INCLUDES = -iprefix %s/ ' % d.getVar('S'))
+                            line = line.replace('-I%s' % d.getVar('S'), '-iwithprefixbefore ')
+                        new_lines.append(line)
+
+                with open(flags_make, 'w') as f:
+                        for line in new_lines:
+                            f.write(line)
+}
