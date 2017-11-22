@@ -1,0 +1,37 @@
+From 9f63bdd623a851c6f4af6d1259161d5d47d94bb3 Mon Sep 17 00:00:00 2001
+From: Robert Yang <liezhi.yang@windriver.com>
+Date: Wed, 22 Nov 2017 15:23:24 +0800
+Subject: [PATCH] sqlite3.c: use 1024 for MAX_PATHNAME
+
+The 512 is a little small when build in deep directory, e.g., it would be
+failed to run when oe-core's TMPDIR == 410, use 1024 to fix problem.
+
+Fixed:
+[snip]
+"/usr/lib/python3.5/site-packages/dnf/yum/history.py", line 799, in _get_cursor
+    self._conn = sqlite.connect(self._db_file)
+sqlite3.OperationalError: unable to open database file
+
+Upstream-Status: Pending
+
+Signed-off-by: Robert Yang <liezhi.yang@windriver.com>
+---
+ sqlite3.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/sqlite3.c b/sqlite3.c
+index 4ec1271..31edaf8 100644
+--- a/sqlite3.c
++++ b/sqlite3.c
+@@ -30379,7 +30379,7 @@ SQLITE_PRIVATE const char *sqlite3OpcodeName(int i){
+ /*
+ ** Maximum supported path-length.
+ */
+-#define MAX_PATHNAME 512
++#define MAX_PATHNAME 1024
+ 
+ /*
+ ** Maximum supported symbolic links
+-- 
+2.7.4
+
