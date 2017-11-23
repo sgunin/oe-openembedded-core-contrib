@@ -18,15 +18,6 @@ normalize_dtb () {
 	echo "$dtb"
 }
 
-get_real_dtb_path_in_kernel () {
-	dtb="$1"
-	dtb_path="${B}/arch/${ARCH}/boot/dts/$dtb"
-	if [ ! -e "$dtb_path" ]; then
-		dtb_path="${B}/arch/${ARCH}/boot/$dtb"
-	fi
-	echo "$dtb_path"
-}
-
 do_configure_append() {
 	if [ "${KERNEL_DEVICETREE_BUNDLE}" = "1" ]; then
 		if echo ${KERNEL_IMAGETYPE_FOR_MAKE} | grep -q 'zImage'; then
@@ -61,7 +52,7 @@ do_install_append() {
 		dtb=`normalize_dtb "$dtbf"`
 		dtb_ext=${dtb##*.}
 		dtb_base_name=`basename $dtb .$dtb_ext`
-		dtb_path=`get_real_dtb_path_in_kernel "$dtb"`
+		dtb_path=`find ${B}/arch/${ARCH}/boot -path "*/$dtb" -print -quit`
 		install -m 0644 $dtb_path ${D}/${KERNEL_IMAGEDEST}/$dtb_base_name.$dtb_ext
 	done
 }
