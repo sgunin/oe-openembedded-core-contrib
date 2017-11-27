@@ -118,7 +118,13 @@ python devtool_post_unpack() {
                         os.path.basename(fname) not in recipe_patches]
         srcsubdir = d.getVar('DEVTOOL_PATCH_SRCDIR')
         # Move source files to S
+        excludevars = ['RECIPE_SYSROOT', 'RECIPE_SYSROOT_NATIVE']
+        excludepaths = []
+        for excludevar in excludevars:
+            excludepaths.append(os.path.relpath(d.getVar(excludevar), workdir) + os.sep)
         for path in src_files:
+            if path.startswith(tuple(excludepaths)):
+                continue
             _move_file(os.path.join(workdir, path),
                         os.path.join(srcsubdir, path))
     elif os.path.dirname(srcsubdir) != workdir:
