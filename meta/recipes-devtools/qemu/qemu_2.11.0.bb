@@ -7,10 +7,9 @@ RDEPENDS_${PN}-ptest = "bash make"
 LIC_FILES_CHKSUM = "file://COPYING;md5=441c28d2cf86e15a37fa47e15a72fbac \
                     file://COPYING.LIB;endline=24;md5=c04def7ae38850e7d3ef548588159913"
 
-SRC_URI = "http://wiki.qemu-project.org/download/${BP}.tar.bz2 \
+SRC_URI = "http://wiki.qemu-project.org/download/${BP}-rc2.tar.xz \
            file://powerpc_rom.bin \
            file://disable-grabs.patch \
-           file://exclude-some-arm-EABI-obsolete-syscalls.patch \
            file://wacom.patch \
            file://add-ptest-in-makefile-v10.patch \
            file://run-ptest \
@@ -19,10 +18,6 @@ SRC_URI = "http://wiki.qemu-project.org/download/${BP}.tar.bz2 \
            file://pathlimit.patch \
            file://qemu-2.5.0-cflags.patch \
            file://glibc-2.25.patch \
-           file://0001-Provide-support-for-the-CUSE-TPM.patch \
-           file://0002-Introduce-condition-to-notify-waiters-of-completed-c.patch \
-           file://0003-Introduce-condition-in-TPM-backend-for-notification.patch \
-           file://0004-Add-support-for-VM-suspend-resume-for-TPM-TIS-v2.9.patch \
            file://apic-fixup-fallthrough-to-PIC.patch \
            file://ppc_locking.patch \
            "
@@ -34,8 +29,10 @@ SRC_URI_append_class-native = " \
             file://cpus.c-qemu_cpu_kick_thread_debugging.patch \
             "
 
-SRC_URI[md5sum] = "b375373f688bea0cd8865b966dad15e3"
-SRC_URI[sha256sum] = "8e040bc7556401ebb3a347a8f7878e9d4028cf71b2744b1a1699f4e741966ba8"
+SRC_URI[md5sum] = "7142d4ea10e6daef45809db1db839ce1"
+SRC_URI[sha256sum] = "bfb02b1bf0a0ffce72652b64bdb53e023e34ba7b191e1bc9e6f245c75e5d4333"
+
+S = "${WORKDIR}/qemu-2.11.0-rc2"
 
 COMPATIBLE_HOST_mipsarchn32 = "null"
 COMPATIBLE_HOST_mipsarchn64 = "null"
