@@ -1568,6 +1568,115 @@ class DevtoolTests(DevtoolBase):
         if files:
             self.fail('Unexpected file(s) copied next to bbappend: %s' % ', '.join(files))
 
+    def test_devtool_finish_modify_multisrc(self):
+        # Check preconditions
+        self.assertTrue(not os.path.exists(self.workspacedir), 'This test cannot be run with a workspace directory under the build directory')
+        # Try modifying a recipe
+        self.track_for_cleanup(self.workspacedir)
+        recipe = 'devtool-test-multisrc'
+        recipefile = get_bb_var('FILE', recipe)
+        recipedir = os.path.dirname(recipefile)
+        result = runCmd('git status --porcelain .', cwd=recipedir)
+        if result.output.strip():
+            self.fail('Recipe directory for %s contains uncommitted changes' % recipe)
+        tempdir = tempfile.mkdtemp(prefix='devtoolqa')
+        self.track_for_cleanup(tempdir)
+        self.add_command_to_tearDown('bitbake-layers remove-layer */workspace')
+        result = runCmd('devtool modify %s %s' % (recipe, tempdir))
+        mainsrc = os.path.join(tempdir, 'mypackage-1.0')
+        extrasrc = os.path.join(tempdir, 'example-files')
+        self.assertExists(os.path.join(mainsrc, 'mainfile.c'), 'Extracted main source tree could not be found')
+        self.assertExists(os.path.join(extrasrc, 'test2'), 'Extracted extra source tree could not be found')
+        # Try dry-run finishing without changes
+        result = runCmd('devtool finish %s meta-selftest -N' % recipe)
+        self.assertIn('No patches or files need updating', result.output)
+        # Make some changes to both the main and extra source trees
+        with open(os.path.join(mainsrc, 'mainfile.c'), 'a') as f:
+            f.write('\n/* Additional comment */\n')
+        result = runCmd('git commit -a -m "Add a comment"', cwd=mainsrc)
+        with open(os.path.join(extrasrc, 'test2'), 'a') as f:
+            f.write('\nAnother line\n')
+        result = runCmd('git commit -a -m "Add another line"', cwd=extrasrc)
+        # Try finishing now with dry-run to see if it reports what we expect
+        result = runCmd('devtool finish %s meta-selftest -N' % recipe)
+        self.assertNotIn('No patches or files need updating', result.output)
+        self.assertIn('+           file://0001-Add-a-comment.patch \\', result.output)
+        self.assertIn('+           file://0001-Add-another-line.patch;patchdir=../example-files \\', result.output)
+        self.assertNotIn('Removing', result.output)
+        # Now really finish
+        self.add_command_to_tearDown('rm -rf %s ; cd %s ; git checkout %s' % (recipedir, os.path.dirname(recipedir), recipedir))
+        result = runCmd('devtool finish %s meta-selftest' % recipe)
+        expected_status = [(' M', '.*/%s$' % os.path.basename(recipefile)),
+                           ('??', '.*/.*-Add-a-comment.patch$'),
+                           ('??', '.*/.*-Add-another-line.patch$')]
+        self._check_repo_status(recipedir, expected_status)
+
+    def test_devtool_finish_modify_multisrc_subdir(self):
+        # Check preconditions
+        self.assertTrue(not os.path.exists(self.workspacedir), 'This test cannot be run with a workspace directory under the build directory')
+        # Try modifying a recipe
+        self.track_for_cleanup(self.workspacedir)
+        recipe = 'devtool-test-multisrc-subdir'
+        recipefile = get_bb_var('FILE', recipe)
+        recipedir = os.path.dirname(recipefile)
+        result = runCmd('git status --porcelain .', cwd=recipedir)
+        if result.output.strip():
+            self.fail('Recipe directory for %s contains uncommitted changes' % recipe)
+        tempdir = tempfile.mkdtemp(prefix='devtoolqa')
+        self.track_for_cleanup(tempdir)
+        self.add_command_to_tearDown('bitbake-layers remove-layer */workspace')
+        result = runCmd('devtool modify %s %s' % (recipe, tempdir))
+        mainsrc = tempdir
+        extrasrc = os.path.join(tempdir, 'libfakekey')
+        self.assertExists(os.path.join(mainsrc, 'xsettings-client.c'), 'Extracted main source tree could not be found')
+        self.assertExists(os.path.join(extrasrc, 'configure.ac'), 'Extracted extra source tree could not be found')
+        # Try dry-run finishing without changes
+        result = runCmd('devtool finish %s meta-selftest -N' % recipe)
+        self.assertIn('No patches or files need updating', result.output)
+        # Make some changes to both the main and extra source trees
+        with open(os.path.join(mainsrc, 'xsettings-client.c'), 'a') as f:
+            f.write('\n/* Additional comment */\n')
+        result = runCmd('git commit -a -m "Add a comment"', cwd=mainsrc)
+        with open(os.path.join(extrasrc, 'README'), 'a') as f:
+            f.write('\nAnother line\n')
+        result = runCmd('git commit -a -m "Add another line to README"', cwd=extrasrc)
+        # Try finishing now with dry-run to see if it reports what we expect
+        # However, the first time it will fail because git treats sub-repositories
+        # the same as submodules, so the parent will appear to have uncommitted changes
+        failed = False
+        try:
+            result = runCmd('devtool finish %s meta-selftest -N' % recipe, assert_error=False)
+        except CommandError as err:
+            if err.retcode != 1:
+                self.fail('Unexpected failure from devtool finish:\n%s' % err.output)
+            lines = []
+            collecting = False
+            for line in err.output.splitlines():
+                if collecting:
+                    if line:
+                        lines.append(line)
+                elif line.startswith('ERROR: Source tree %s is not clean' % mainsrc):
+                    collecting = True
+            lines = lines[:-1]
+            self.assertEqual(lines, [' M libfakekey'], 'Unexpected modifications to main source tree')
+            if not collecting:
+                self.fail('devtool finish did not report uncommitted changes as expected:\n%s' % err.output)
+            failed = True
+        if not failed:
+            self.fail('devtool finish was expected to fail but did not:\n%s' % result.output)
+        result = runCmd('devtool finish %s meta-selftest -N -f' % recipe)
+        self.assertNotIn('No patches or files need updating', result.output)
+        self.assertIn('+           file://0001-Add-a-comment.patch \\', result.output)
+        self.assertIn('+           file://0001-Add-another-line-to-README.patch;patchdir=libfakekey \\', result.output)
+        self.assertNotIn('Removing', result.output)
+        self.add_command_to_tearDown('rm -rf %s ; cd %s ; git checkout %s' % (recipedir, os.path.dirname(recipedir), recipedir))
+        result = runCmd('devtool finish %s -f meta-selftest' % recipe)
+        expected_status = [(' M', '.*/%s$' % os.path.basename(recipefile)),
+                           ('??', '.*/%s/$' % recipe)]
+        self._check_repo_status(recipedir, expected_status)
+        self.assertExists(os.path.join(os.path.dirname(recipefile), recipe, '0001-Add-a-comment.patch'))
+        self.assertExists(os.path.join(os.path.dirname(recipefile), recipe, '0001-Add-another-line-to-README.patch'))
+
     @OETestID(1626)
     def test_devtool_rename(self):
         # Check preconditions

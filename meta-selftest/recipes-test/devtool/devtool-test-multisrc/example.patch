@@ -1,0 +1,7 @@
+diff -udNr example-files/test2 example-files2/test2
+--- example-files/test2	2017-11-22 10:29:11.766891385 +1300
++++ example-files2/test2	2017-11-22 10:30:08.920094705 +1300
+@@ -1 +1,3 @@
+ Another example file
++
++More content added here
