@@ -258,13 +258,18 @@ def patch_recipe_file(fn, values, patch=False, relpath='', redirect_output=None)
        since this cannot handle all situations.
     """
 
-    with open(fn, 'r') as f:
+    read_fn = fn
+    if redirect_output:
+        redirect_fn = os.path.join(redirect_output, os.path.basename(fn))
+        if os.path.exists(redirect_fn):
+            read_fn = redirect_fn
+    with open(read_fn, 'r') as f:
         fromlines = f.readlines()
 
     _, tolines = patch_recipe_lines(fromlines, values)
 
     if redirect_output:
-        with open(os.path.join(redirect_output, os.path.basename(fn)), 'w') as f:
+        with open(redirect_fn, 'w') as f:
             f.writelines(tolines)
         return None
     elif patch:
