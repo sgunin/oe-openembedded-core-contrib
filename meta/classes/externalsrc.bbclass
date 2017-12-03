@@ -65,7 +65,7 @@ python () {
             url_data = fetch.ud[url]
             parm = url_data.parm
             if (url_data.type == 'file' or
-                    'type' in parm and parm['type'] == 'kmeta'):
+                    (parm.get('type', None) == 'kmeta' and d.getVar('EXTERNALSRC_KMETA') != "1")):
                 local_srcuri.append(url)
 
         d.setVar('SRC_URI', ' '.join(local_srcuri))

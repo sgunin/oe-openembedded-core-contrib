@@ -42,7 +42,12 @@ def find_kernel_feature_dirs(d):
             destdir = parm["destsuffix"]
             if type == "kmeta":
                 feature_dirs.append(destdir)
-	    
+    if not feature_dirs:
+        # If the kernel-meta directory already exists (e.g from externalsrc)
+        # with EXTERNALSRC_KMETA = "1" then use it
+        kmetadir = d.getVar('KMETA')
+        if os.path.isdir(os.path.join(d.getVar('WORKDIR'), kmetadir)):
+            feature_dirs.append(kmetadir)
     return feature_dirs
 
 # find the master/machine source branch. In the same way that the fetcher proceses
