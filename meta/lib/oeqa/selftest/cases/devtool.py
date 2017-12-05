@@ -1676,9 +1676,14 @@ class DevtoolTests(DevtoolBase):
         bitbake('%s -c clean' % kernel_provider)
         #Step 4.1
         runCmd('devtool modify virtual/kernel -x %s' % tempdir)
-        self.assertExists(os.path.join(tempdir, 'Makefile'), 'Extracted source could not be found')
+        # If it's linux-yocto, we'll have two "source" trees (one the actual source,
+        # the other the kernel metadata)
+        tempsrc = os.path.join(tempdir, 'source')
+        if not os.path.isdir(tempsrc):
+            tempsrc = tempdir
+        self.assertExists(os.path.join(tempsrc, 'Makefile'), 'Extracted source could not be found')
         #Step 4.2
-        configfile = os.path.join(tempdir,'.config')
+        configfile = os.path.join(tempsrc, '.config')
         diff = runCmd('diff %s %s' % (tmpconfig, configfile))
         self.assertEqual(0,diff.status,'Kernel .config file is not the same using bitbake and devtool')
         #Step 4.3
@@ -1689,12 +1694,12 @@ class DevtoolTests(DevtoolBase):
         self.assertExists(kernelfile, 'Kernel was not build correctly')
 
         #Modify the kernel source
-        modfile = os.path.join(tempdir,'arch/x86/boot/header.S')
+        modfile = os.path.join(tempsrc, 'arch/x86/boot/header.S')
         modstring = "Use a boot loader. Devtool testing."
         modapplied = runCmd("sed -i 's/Use a boot loader./%s/' %s" % (modstring, modfile))
         self.assertEqual(0,modapplied.status,'Modification to %s on kernel source failed' % modfile)
         #Modify the configuration
-        codeconfigfile = os.path.join(tempdir,'.config.new')
+        codeconfigfile = os.path.join(tempsrc, '.config.new')
         modconfopt = "CONFIG_SG_POOL=n"
         modconf = runCmd("sed -i 's/CONFIG_SG_POOL=y/%s/' %s" % (modconfopt, codeconfigfile))
         self.assertEqual(0,modconf.status,'Modification to %s failed' % codeconfigfile)
