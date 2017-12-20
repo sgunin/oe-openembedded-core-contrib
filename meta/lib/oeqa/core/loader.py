@@ -41,9 +41,10 @@ def _built_modules_dict(modules):
         return modules_dict
 
     for module in modules:
-        # Assumption: package and module names do not contain upper case
-        # characters, whereas class names do
-        m = re.match(r'^([^A-Z]+)(?:\.([A-Z][^.]*)(?:\.([^.]+))?)?$', module)
+        # The format is module.class.test, while .class and .test is optional.
+        m = re.match(r'([^\.]+)(?:\.([^\.]+))?(?:\.([^\.]*))?', module)
+        if not m:
+            raise OEQATestNotFound("Not found %s in loaded test cases" % module)
 
         module_name, class_name, test_name = m.groups()
 
