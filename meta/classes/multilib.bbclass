@@ -145,3 +145,6 @@ python do_package_qa_multilib() {
         check_mlprefix(pkg, 'RREPLACES', ml)
         check_mlprefix(pkg, 'RCONFLICTS', ml)
 }
+
+deltask do_populate_sdk
+deltask do_populate_sdk_ext
