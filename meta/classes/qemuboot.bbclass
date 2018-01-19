@@ -67,7 +67,7 @@ QB_NETWORK_DEVICE ?= "-device virtio-net-pci,netdev=net0,mac=@MAC@"
 # This should be kept align with ROOT_VM
 QB_DRIVE_TYPE ?= "/dev/sd"
 
-# Create qemuboot.conf
+# Create qemuboot.json
 addtask do_write_qemuboot_conf after do_rootfs before do_image
 IMGDEPLOYDIR ?= "${WORKDIR}/deploy-${PN}-image-complete"
 
@@ -81,14 +81,13 @@ def qemuboot_vars(d):
 do_write_qemuboot_conf[vardeps] += "${@' '.join(qemuboot_vars(d))}"
 do_write_qemuboot_conf[vardepsexclude] += "TOPDIR"
 python do_write_qemuboot_conf() {
-    import configparser
+    import json
 
-    qemuboot = "%s/%s.qemuboot.conf" % (d.getVar('IMGDEPLOYDIR'), d.getVar('IMAGE_NAME'))
-    qemuboot_link = "%s/%s.qemuboot.conf" % (d.getVar('IMGDEPLOYDIR'), d.getVar('IMAGE_LINK_NAME'))
+    qemuboot = "%s/%s.qemuboot.json" % (d.getVar('IMGDEPLOYDIR'), d.getVar('IMAGE_NAME'))
+    qemuboot_link = "%s/%s.qemuboot.json" % (d.getVar('IMGDEPLOYDIR'), d.getVar('IMAGE_LINK_NAME'))
     finalpath = d.getVar("DEPLOY_DIR_IMAGE")
     topdir = d.getVar('TOPDIR')
-    cf = configparser.ConfigParser()
-    cf.add_section('config_bsp')
+    qb_dict = {}
     for k in sorted(qemuboot_vars(d)):
         # qemu-helper-native sysroot is not removed by rm_work and
         # contains all tools required by runqemu
@@ -101,7 +100,7 @@ python do_write_qemuboot_conf() {
         # and still run them
         if val.startswith(topdir):
             val = os.path.relpath(val, finalpath)
-        cf.set('config_bsp', k, '%s' % val)
+        qb_dict[k] = val
 
     # QB_DEFAULT_KERNEL's value of KERNEL_IMAGETYPE is the name of a symlink
     # to the kernel file, which hinders relocatability of the qb conf.
@@ -111,11 +110,11 @@ python do_write_qemuboot_conf() {
     # we only want to write out relative paths so that we can relocate images
     # and still run them
     kernel = os.path.relpath(kernel, finalpath)
-    cf.set('config_bsp', 'QB_DEFAULT_KERNEL', kernel)
+    qb_dict['QB_DEFAULT_KERNEL'] = kernel
 
     bb.utils.mkdirhier(os.path.dirname(qemuboot))
     with open(qemuboot, 'w') as f:
-        cf.write(f)
+        json.dump(qb_dict, f, indent=4, sort_keys=True)
 
     if qemuboot_link != qemuboot:
         if os.path.lexists(qemuboot_link):
