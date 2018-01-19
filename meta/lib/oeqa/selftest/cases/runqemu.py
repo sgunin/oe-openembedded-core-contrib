@@ -117,12 +117,12 @@ SYSLINUX_TIMEOUT = "10"
 
     @OETestID(2010)
     def test_boot_qemu_boot(self):
-        """Test runqemu /path/to/image.qemuboot.conf"""
-        qemuboot_conf = "%s-%s.qemuboot.conf" % (self.recipe, self.machine)
-        qemuboot_conf = os.path.join(self.deploy_dir_image, qemuboot_conf)
-        if not os.path.exists(qemuboot_conf):
-            self.skipTest("%s not found" % qemuboot_conf)
-        cmd = "%s %s" % (self.cmd_common, qemuboot_conf)
+        """Test runqemu /path/to/image.qemuboot.json"""
+        qb_json = "%s-%s.qemuboot.json" % (self.recipe, self.machine)
+        qb_json = os.path.join(self.deploy_dir_image, qb_json)
+        if not os.path.exists(qb_json):
+            self.skipTest("%s not found" % qb_json)
+        cmd = "%s %s" % (self.cmd_common, qb_json)
         with runqemu(self.recipe, ssh=False, launch_cmd=cmd) as qemu:
             self.assertTrue(qemu.runner.logged, "Failed: %s" % cmd)
 
