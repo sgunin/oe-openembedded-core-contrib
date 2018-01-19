@@ -417,6 +417,9 @@ class BaseConfig(object):
 
         unknown_arg = ""
         for arg in sys.argv[1:]:
+            if arg.endswith('.qemuboot.conf'):
+                raise RunQemuError("qemuboot.conf format is no longer supported, use a qemuboot.json file instead.")
+
             if arg in self.fstypes + self.vmtypes:
                 self.check_arg_fstype(arg)
             elif arg == 'nographic':
