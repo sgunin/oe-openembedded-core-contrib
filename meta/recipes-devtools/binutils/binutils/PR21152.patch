@@ -1,0 +1,480 @@
+This patch adds support for more relocations in relocatable link.  It also
+introduces get_lo16_rel_addend method for finding partnering LO16 relocation
+because there is a problem with current implementation when using --threads
+option.
+
+Regards,
+Vladimir
+
+ChangeLog -
+
+	PR gold/21152
+	* target.h (Sized_target::relocate_special_relocatable): Add
+	reloc_count parameter.
+	* arm.cc (Target_arm::relocate_special_relocatable): Likewise.
+	* target-reloc.h (relocate_relocs): Pass reloc_count to
+	relocate_special_relocatable.
+	* mips.cc (Mips_scan_relocatable_relocs::local_section_strategy):
+	Return RELOC_SPECIAL for more relocations.
+	(Symbol_visitor_check_symbols::operator()): Check for is_output_pic
+	rather then checking output_is_position_independent option.
+	(Target_mips::is_output_pic): New method.
+	(Mips_relocate_functions::get_lo16_rel_addend): Likewise.
+	(Target_mips::set_gp): Add case for relocatable link.
+	(Target_mips::relocate_special_relocatable): Add reloc_count
+	parameter.  Add support for RELA type of relocation sections.
+	Add support for more relocations.  Remove unused code.
+
+Upstream-Status: Backport
+Signed-off-by: Khem Raj <raj.khem@gmail.com>
+
+diff --git a/gold/arm.cc b/gold/arm.cc
+index ff472ea..c675065 100644
+--- a/gold/arm.cc
++++ b/gold/arm.cc
+@@ -2341,6 +2341,7 @@ class Target_arm : public Sized_target<32, big_endian>
+ 			       unsigned int sh_type,
+ 			       const unsigned char* preloc_in,
+ 			       size_t relnum,
++			       size_t reloc_count,
+ 			       Output_section* output_section,
+ 			       typename elfcpp::Elf_types<32>::Elf_Off
+                                  offset_in_output_section,
+@@ -10428,6 +10429,7 @@ Target_arm<big_endian>::relocate_special_relocatable(
+     unsigned int sh_type,
+     const unsigned char* preloc_in,
+     size_t relnum,
++    size_t,
+     Output_section* output_section,
+     typename elfcpp::Elf_types<32>::Elf_Off offset_in_output_section,
+     unsigned char* view,
+diff --git a/gold/mips.cc b/gold/mips.cc
+index 95bf6db..52edeac 100644
+--- a/gold/mips.cc
++++ b/gold/mips.cc
+@@ -2858,12 +2858,45 @@ class Mips_scan_relocatable_relocs :
+   local_section_strategy(unsigned int r_type, Relobj* object)
+   {
+     if (Classify_reloc::sh_type == elfcpp::SHT_RELA)
+-      return Relocatable_relocs::RELOC_ADJUST_FOR_SECTION_RELA;
++      {
++        switch (r_type)
++          {
++          case elfcpp::R_MIPS_GPREL32:
++          case elfcpp::R_MIPS_GPREL16:
++          case elfcpp::R_MIPS_LITERAL:
++          case elfcpp::R_MICROMIPS_GPREL16:
++          case elfcpp::R_MICROMIPS_GPREL7_S2:
++          case elfcpp::R_MICROMIPS_LITERAL:
++          case elfcpp::R_MIPS16_GPREL:
++            return Relocatable_relocs::RELOC_SPECIAL;
++
++          default:
++            return Relocatable_relocs::RELOC_ADJUST_FOR_SECTION_RELA;
++          }
++      }
+     else
+       {
+         switch (r_type)
+           {
+           case elfcpp::R_MIPS_26:
++          case elfcpp::R_MIPS_HI16:
++          case elfcpp::R_MIPS_LO16:
++          case elfcpp::R_MIPS_GOT16:
++          case elfcpp::R_MIPS_GPREL32:
++          case elfcpp::R_MIPS_GPREL16:
++          case elfcpp::R_MIPS_LITERAL:
++          case elfcpp::R_MICROMIPS_26_S1:
++          case elfcpp::R_MICROMIPS_HI16:
++          case elfcpp::R_MICROMIPS_LO16:
++          case elfcpp::R_MICROMIPS_GOT16:
++          case elfcpp::R_MICROMIPS_GPREL16:
++          case elfcpp::R_MICROMIPS_GPREL7_S2:
++          case elfcpp::R_MICROMIPS_LITERAL:
++          case elfcpp::R_MIPS16_26:
++          case elfcpp::R_MIPS16_HI16:
++          case elfcpp::R_MIPS16_LO16:
++          case elfcpp::R_MIPS16_GOT16:
++          case elfcpp::R_MIPS16_GPREL:
+             return Relocatable_relocs::RELOC_SPECIAL;
+ 
+           default:
+@@ -3048,7 +3081,7 @@ class Symbol_visitor_check_symbols
+         // stub.
+         if (parameters->options().relocatable())
+           {
+-            if (!parameters->options().output_is_position_independent())
++            if (!this->target_->is_output_pic())
+               mips_sym->set_pic();
+           }
+         else if (mips_sym->has_nonpic_branches())
+@@ -3411,6 +3444,7 @@ class Target_mips : public Sized_target<size, big_endian>
+                                unsigned int sh_type,
+                                const unsigned char* preloc_in,
+                                size_t relnum,
++                               size_t reloc_count,
+                                Output_section* output_section,
+                                typename elfcpp::Elf_types<size>::Elf_Off
+                                  offset_in_output_section,
+@@ -3596,6 +3630,11 @@ class Target_mips : public Sized_target<size, big_endian>
+   is_output_n64() const
+   { return size == 64; }
+ 
++  // Whether the output contains position independent code.
++  bool
++  is_output_pic() const
++  { return (this->processor_specific_flags() & elfcpp::EF_MIPS_PIC) != 0; }
++
+   // Whether the output uses NEWABI.  This is valid only after
+   // merge_obj_e_flags() is called.
+   bool
+@@ -4294,6 +4333,52 @@ class Mips_relocate_functions : public Relocate_functions<size, big_endian>
+   }
+ 
+  public:
++  // Find partnering LO16 relocation and extract addend from the instruction.
++  // Return true on success or false if the LO16 could not be found.
++
++  static bool
++  get_lo16_rel_addend(unsigned int sh_type, const unsigned char* prelocs,
++                      size_t relnum, size_t reloc_count,
++                      unsigned int hi16_r_type, unsigned int hi16_r_sym,
++                      unsigned char* view, Mips_address* addend)
++  {
++    gold_assert(sh_type == elfcpp::SHT_REL);
++
++    typedef typename Mips_reloc_types<elfcpp::SHT_REL, size, big_endian>::Reloc
++        Reltype;
++    const int reloc_size =
++        Mips_classify_reloc<elfcpp::SHT_REL, size, big_endian>::reloc_size;
++
++    // Start finding lo16 part from the next relocation.
++    prelocs += reloc_size;
++    for (size_t i = relnum + 1; i < reloc_count; ++i, prelocs += reloc_size)
++      {
++        Reltype reloc(prelocs);
++        unsigned int r_sym = Mips_classify_reloc<elfcpp::SHT_REL, size,
++                                                 big_endian>::get_r_sym(&reloc);
++        unsigned int r_type = Mips_classify_reloc<elfcpp::SHT_REL, size,
++                                                  big_endian>::
++                                                  get_r_type(&reloc);
++
++        if (hi16_r_sym == r_sym
++            && is_matching_lo16_reloc(hi16_r_type, r_type))
++          {
++            Mips_address offset = reloc.get_r_offset();
++            view += offset;
++
++            mips_reloc_unshuffle(view, r_type, false);
++            Valtype32* wv = reinterpret_cast<Valtype32*>(view);
++            Valtype32 val = elfcpp::Swap<32, big_endian>::readval(wv);
++            mips_reloc_shuffle(view, r_type, false);
++
++            *addend = Bits<16>::sign_extend32(val & 0xffff);
++            return true;
++          }
++      }
++
++    return false;
++  }
++
+   //   R_MIPS16_26 is used for the mips16 jal and jalx instructions.
+   //   Most mips16 instructions are 16 bits, but these instructions
+   //   are 32 bits.
+@@ -8438,6 +8523,23 @@ Target_mips<size, big_endian>::set_gp(Layout* layout, Symbol_table* symtab)
+                                       0, false, false));
+       this->gp_ = gp;
+     }
++
++  if (parameters->options().relocatable())
++    {
++      // If gp is NULL, set it to the default value.
++      if (gp == NULL)
++        gp = static_cast<Sized_symbol<size>*>(symtab->define_as_constant(
++                                      "_gp", NULL, Symbol_table::PREDEFINED,
++                                      MIPS_GP_OFFSET, 0,
++                                      elfcpp::STT_OBJECT,
++                                      elfcpp::STB_GLOBAL,
++                                      elfcpp::STV_DEFAULT,
++                                      0, false, false));
++      // Don't add _gp to the final symtab, because the value of the _gp symbol
++      // will be stored into .reginfo/.MIPS.options section.
++      gp->set_symtab_index(-1U);
++      this->gp_ = gp;
++    }
+ }
+ 
+ // Set the dynamic symbol indexes.  INDEX is the index of the first
+@@ -8576,7 +8678,6 @@ Target_mips<size, big_endian>::make_plt_entry(Symbol_table* symtab,
+   this->plt_->add_entry(gsym, r_type);
+ }
+ 
+-
+ // Get the .MIPS.stubs section, creating it if necessary.
+ 
+ template<int size, bool big_endian>
+@@ -10221,35 +10322,48 @@ Target_mips<size, big_endian>::relocate_special_relocatable(
+     unsigned int sh_type,
+     const unsigned char* preloc_in,
+     size_t relnum,
++    size_t reloc_count,
+     Output_section* output_section,
+     typename elfcpp::Elf_types<size>::Elf_Off offset_in_output_section,
+     unsigned char* view,
+-    Mips_address view_address,
++    Mips_address,
+     section_size_type,
+     unsigned char* preloc_out)
+ {
+-  // We can only handle REL type relocation sections.
+-  gold_assert(sh_type == elfcpp::SHT_REL);
+-
+-  typedef typename Reloc_types<elfcpp::SHT_REL, size, big_endian>::Reloc
+-    Reltype;
+-  typedef typename Reloc_types<elfcpp::SHT_REL, size, big_endian>::Reloc_write
+-    Reltype_write;
+-
+   typedef Mips_relocate_functions<size, big_endian> Reloc_funcs;
+-
+   const Mips_address invalid_address = static_cast<Mips_address>(0) - 1;
+ 
+   Mips_relobj<size, big_endian>* object =
+     Mips_relobj<size, big_endian>::as_mips_relobj(relinfo->object);
+   const unsigned int local_count = object->local_symbol_count();
+ 
+-  Reltype reloc(preloc_in);
+-  Reltype_write reloc_write(preloc_out);
++  unsigned int r_sym;
++  unsigned int r_type;
++  Mips_address r_addend;
++  Mips_address offset;
+ 
+-  elfcpp::Elf_types<32>::Elf_WXword r_info = reloc.get_r_info();
+-  const unsigned int r_sym = elfcpp::elf_r_sym<size>(r_info);
+-  const unsigned int r_type = elfcpp::elf_r_type<size>(r_info);
++  if (sh_type == elfcpp::SHT_RELA)
++    {
++      const Relatype rela(preloc_in);
++      offset = rela.get_r_offset();
++      r_sym = Mips_classify_reloc<elfcpp::SHT_RELA, size, big_endian>::
++          get_r_sym(&rela);
++      r_type = Mips_classify_reloc<elfcpp::SHT_RELA, size, big_endian>::
++          get_r_type(&rela);
++      r_addend = rela.get_r_addend();
++    }
++  else if (sh_type == elfcpp::SHT_REL)
++    {
++      const Reltype rel(preloc_in);
++      offset = rel.get_r_offset();
++      r_sym = Mips_classify_reloc<elfcpp::SHT_REL, size, big_endian>::
++          get_r_sym(&rel);
++      r_type = Mips_classify_reloc<elfcpp::SHT_REL, size, big_endian>::
++          get_r_type(&rel);
++      r_addend = 0;
++    }
++  else
++    gold_unreachable();
+ 
+   // Get the new symbol index.
+   // We only use RELOC_SPECIAL strategy in local relocations.
+@@ -10270,7 +10384,6 @@ Target_mips<size, big_endian>::relocate_special_relocatable(
+   // Get the new offset--the location in the output section where
+   // this relocation should be applied.
+ 
+-  Mips_address offset = reloc.get_r_offset();
+   Mips_address new_offset;
+   if (offset_in_output_section != invalid_address)
+     new_offset = offset + offset_in_output_section;
+@@ -10285,19 +10398,6 @@ Target_mips<size, big_endian>::relocate_special_relocatable(
+       new_offset = new_sot_offset;
+     }
+ 
+-  // In an object file, r_offset is an offset within the section.
+-  // In an executable or dynamic object, generated by
+-  // --emit-relocs, r_offset is an absolute address.
+-  if (!parameters->options().relocatable())
+-    {
+-      new_offset += view_address;
+-      if (offset_in_output_section != invalid_address)
+-        new_offset -= offset_in_output_section;
+-    }
+-
+-  reloc_write.put_r_offset(new_offset);
+-  reloc_write.put_r_info(elfcpp::elf_r_info<32>(new_symndx, r_type));
+-
+   // Handle the reloc addend.
+   // The relocation uses a section symbol in the input file.
+   // We are adjusting it to use a section symbol in the output
+@@ -10306,23 +10406,127 @@ Target_mips<size, big_endian>::relocate_special_relocatable(
+   // file to refer to that same address.  This adjustment to
+   // the addend is the same calculation we use for a simple
+   // absolute relocation for the input section symbol.
+-  Valtype calculated_value = 0;
++  Valtype x = 0;
+   const Symbol_value<size>* psymval = object->local_symbol(r_sym);
+-
++  bool extract_addend = sh_type == elfcpp::SHT_REL;
+   unsigned char* paddend = view + offset;
+   typename Reloc_funcs::Status reloc_status = Reloc_funcs::STATUS_OKAY;
++
++  Reloc_funcs::mips_reloc_unshuffle(paddend, r_type, false);
+   switch (r_type)
+     {
+     case elfcpp::R_MIPS_26:
+-      reloc_status = Reloc_funcs::rel26(paddend, object, psymval,
+-          offset_in_output_section, true, 0, sh_type == elfcpp::SHT_REL, NULL,
+-          false /*TODO(sasa): cross mode jump*/, r_type, this->jal_to_bal(),
+-          false, &calculated_value);
++    case elfcpp::R_MICROMIPS_26_S1:
++    case elfcpp::R_MIPS16_26:
++      gold_assert(extract_addend);
++      reloc_status = Reloc_funcs::rel26(paddend, object, psymval, new_offset,
++                                        true, 0, true, NULL, false, r_type,
++                                        false, false, &x);
++      break;
++
++    case elfcpp::R_MIPS_HI16:
++    case elfcpp::R_MIPS_GOT16:
++    case elfcpp::R_MICROMIPS_HI16:
++    case elfcpp::R_MICROMIPS_GOT16:
++    case elfcpp::R_MIPS16_HI16:
++    case elfcpp::R_MIPS16_GOT16:
++      {
++        gold_assert(extract_addend);
++        Valtype32* wv = reinterpret_cast<Valtype32*>(paddend);
++        Valtype32 val = elfcpp::Swap<32, big_endian>::readval(wv);
++        Valtype addend_lo;
++
++        bool found = Reloc_funcs::get_lo16_rel_addend(sh_type, preloc_in,
++                                                      relnum, reloc_count,
++                                                      r_type, r_sym, view,
++                                                      &addend_lo);
++        if (!found)
++          {
++            gold_error(_("%s: Can't find matching LO16 reloc for relocation %u "
++                         "against local symbol %u at 0x%lx in section %s"),
++                       object->name().c_str(), r_type, r_sym,
++                       (unsigned long) offset,
++                       object->section_name(relinfo->data_shndx).c_str());
++            return;
++          }
++
++        Valtype addend = ((val & 0xffff) << 16) + addend_lo;
++        Valtype value = psymval->value(object, addend);
++        x = ((value + 0x8000) >> 16) & 0xffff;
++        val = Bits<32>::bit_select32(val, x, 0xffff);
++
++        elfcpp::Swap<32, big_endian>::writeval(wv, val);
++        reloc_status = Reloc_funcs::STATUS_OKAY;
++        break;
++      }
++
++    case elfcpp::R_MIPS_LO16:
++    case elfcpp::R_MICROMIPS_LO16:
++    case elfcpp::R_MIPS16_LO16:
++      {
++        gold_assert(extract_addend);
++        Valtype32* wv = reinterpret_cast<Valtype32*>(paddend);
++        Valtype32 val = elfcpp::Swap<32, big_endian>::readval(wv);
++        Valtype addend = Bits<16>::sign_extend32(val & 0xffff);
++
++        x = psymval->value(object, addend);
++        val = Bits<32>::bit_select32(val, x, 0xffff);
++
++        elfcpp::Swap<32, big_endian>::writeval(wv, val);
++        reloc_status = Reloc_funcs::STATUS_OKAY;
++        break;
++      }
++
++    case elfcpp::R_MIPS_GPREL16:
++    case elfcpp::R_MIPS_LITERAL:
++    case elfcpp::R_MICROMIPS_GPREL16:
++    case elfcpp::R_MICROMIPS_GPREL7_S2:
++    case elfcpp::R_MICROMIPS_LITERAL:
++    case elfcpp::R_MIPS16_GPREL:
++      reloc_status = Reloc_funcs::relgprel(paddend, object, psymval,
++                                           this->gp_value(), r_addend,
++                                           extract_addend, true, r_type,
++                                           !extract_addend, &x);
++      break;
++
++    case elfcpp::R_MIPS_GPREL32:
++      reloc_status = Reloc_funcs::relgprel32(paddend, object, psymval,
++                                             this->gp_value(), r_addend,
++                                             extract_addend, !extract_addend,
++                                             &x);
+       break;
+ 
+     default:
+       gold_unreachable();
+     }
++  Reloc_funcs::mips_reloc_shuffle(paddend, r_type, false);
++
++  if (sh_type == elfcpp::SHT_RELA)
++    {
++      typedef typename Mips_reloc_types<elfcpp::SHT_RELA, size,
++                                        big_endian>::Reloc_write Relatype_write;
++      Relatype rela(preloc_in);
++      Relatype_write rela_write(preloc_out);
++
++      rela_write.put_r_offset(new_offset);
++      Mips_classify_reloc<elfcpp::SHT_RELA, size, big_endian>::
++          put_r_info(&rela_write, &rela, new_symndx);
++      Mips_classify_reloc<elfcpp::SHT_RELA, size, big_endian>::
++          put_r_addend(&rela_write, x);
++    }
++  else if (sh_type == elfcpp::SHT_REL)
++    {
++      typedef typename Mips_reloc_types<elfcpp::SHT_REL, size,
++                                        big_endian>::Reloc_write Reltype_write;
++      Reltype rel(preloc_in);
++      Reltype_write rel_write(preloc_out);
++
++      rel_write.put_r_offset(new_offset);
++      Mips_classify_reloc<elfcpp::SHT_REL, size, big_endian>::
++          put_r_info(&rel_write, &rel, new_symndx);
++    }
++  else
++    gold_unreachable();
+ 
+   // Report any errors.
+   switch (reloc_status)
+@@ -10330,11 +10534,11 @@ Target_mips<size, big_endian>::relocate_special_relocatable(
+     case Reloc_funcs::STATUS_OKAY:
+       break;
+     case Reloc_funcs::STATUS_OVERFLOW:
+-      gold_error_at_location(relinfo, relnum, reloc.get_r_offset(),
++      gold_error_at_location(relinfo, relnum, offset,
+                              _("relocation overflow"));
+       break;
+     case Reloc_funcs::STATUS_BAD_RELOC:
+-      gold_error_at_location(relinfo, relnum, reloc.get_r_offset(),
++      gold_error_at_location(relinfo, relnum, offset,
+         _("unexpected opcode while processing relocation"));
+       break;
+     default:
+diff --git a/gold/target-reloc.h b/gold/target-reloc.h
+index c8b86c6..536118e 100644
+--- a/gold/target-reloc.h
++++ b/gold/target-reloc.h
+@@ -767,7 +767,8 @@ relocate_relocs(
+ 	  Sized_target<size, big_endian>* target =
+ 	    parameters->sized_target<size, big_endian>();
+ 	  target->relocate_special_relocatable(relinfo, Classify_reloc::sh_type,
+-					       prelocs, i, output_section,
++					       prelocs, i, reloc_count,
++					       output_section,
+ 					       offset_in_output_section,
+ 					       view, view_address,
+ 					       view_size, pwrite);
+diff --git a/gold/target.h b/gold/target.h
+index 5ca8435..e43623a 100644
+--- a/gold/target.h
++++ b/gold/target.h
+@@ -993,6 +993,7 @@ class Sized_target : public Target
+ 			       unsigned int /* sh_type */,
+ 			       const unsigned char* /* preloc_in */,
+ 			       size_t /* relnum */,
++			       size_t /* reloc_count */,
+ 			       Output_section* /* output_section */,
+ 			       typename elfcpp::Elf_types<size>::Elf_Off

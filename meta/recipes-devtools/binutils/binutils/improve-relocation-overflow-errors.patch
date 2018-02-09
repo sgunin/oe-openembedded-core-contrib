@@ -1,0 +1,74 @@
+This patch improves relocation overflow errors.
+Depends on https://sourceware.org/ml/binutils/2017-03/msg00146.html.
+
+Regards,
+Vladimir
+
+ChangeLog -
+
+	* mips.cc (Target_mips::Relocate::relocate): Improve relocation
+	overflow error message.
+	(Target_mips::relocate_special_relocatable): Likewise.
+	(Mips_relocate_functions::rel26): Don't print relocation overflow
+	error message.
+Upstream-Status: Backport
+Signed-off-by: Khem Raj <raj.khem@gmail.com>
+
+diff --git a/gold/mips.cc b/gold/mips.cc
+index 10dea9e7..bd9bac0 100644
+--- a/gold/mips.cc
++++ b/gold/mips.cc
+@@ -4676,15 +4676,9 @@ class Mips_relocate_functions : public Relocate_functions<size, big_endian>
+       }
+     x = psymval->value(object, x) >> shift;
+ 
+-    if (!calculate_only && !local && !gsym->is_weak_undefined())
+-      {
+-        if ((x >> 26) != ((address + 4) >> (26 + shift)))
+-          {
+-            gold_error(_("relocation truncated to fit: %u against '%s'"),
+-                       r_type, gsym->name());
+-            return This::STATUS_OVERFLOW;
+-          }
+-      }
++    if (!calculate_only && !local && !gsym->is_weak_undefined()
++        && ((x >> 26) != ((address + 4) >> (26 + shift))))
++      return This::STATUS_OVERFLOW;
+ 
+     val = Bits<32>::bit_select32(val, x, 0x03ffffff);
+ 
+@@ -10510,7 +10504,9 @@ Target_mips<size, big_endian>::relocate_special_relocatable(
+       break;
+     case Reloc_funcs::STATUS_OVERFLOW:
+       gold_error_at_location(relinfo, relnum, offset,
+-                             _("relocation overflow"));
++                             _("relocation overflow: "
++                               "%u against local symbol %u in %s"),
++                             r_type, r_sym, object->name().c_str());
+       break;
+     case Reloc_funcs::STATUS_BAD_RELOC:
+       gold_error_at_location(relinfo, relnum, offset,
+@@ -12391,8 +12387,21 @@ Target_mips<size, big_endian>::Relocate::relocate(
+     case Reloc_funcs::STATUS_OKAY:
+       break;
+     case Reloc_funcs::STATUS_OVERFLOW:
+-      gold_error_at_location(relinfo, relnum, r_offset,
+-                             _("relocation overflow"));
++      if (gsym == NULL)
++        gold_error_at_location(relinfo, relnum, r_offset,
++                               _("relocation overflow: "
++                                 "%u against local symbol %u in %s"),
++                               r_type, r_sym, object->name().c_str());
++      else if (gsym->is_defined() && gsym->source() == Symbol::FROM_OBJECT)
++        gold_error_at_location(relinfo, relnum, r_offset,
++                               _("relocation overflow: "
++                                 "%u against '%s' defined in %s"),
++                               r_type, gsym->demangled_name().c_str(),
++                               gsym->object()->name().c_str());
++      else
++        gold_error_at_location(relinfo, relnum, r_offset,
++                               _("relocation overflow: %u against '%s'"),
++                               r_type, gsym->demangled_name().c_str());
+       break;
+     case Reloc_funcs::STATUS_BAD_RELOC:
+       gold_error_at_location(relinfo, relnum, r_offset,
