@@ -2,13 +2,13 @@ require gcc-common.inc
 
 # Third digit in PV should be incremented after a minor release
 
-PV = "6.3.0"
+PV = "6.4.1"
 
 # BINV should be incremented to a revision after a minor gcc release
 
-BINV = "6.3.0"
+BINV = "6.4.1"
 
-FILESEXTRAPATHS =. "${FILE_DIRNAME}/gcc-6.3:${FILE_DIRNAME}/gcc-6.3/backport:"
+FILESEXTRAPATHS =. "${FILE_DIRNAME}/gcc-6.4:${FILE_DIRNAME}/gcc-6.4/backport:"
 
 DEPENDS =+ "mpfr gmp libmpc zlib"
 NATIVEDEPS = "mpfr-native gmp-native libmpc-native zlib-native"
@@ -24,10 +24,13 @@ LIC_FILES_CHKSUM = "\
 "
 
 
-BASEURI ?= "${GNU_MIRROR}/gcc/gcc-${PV}/gcc-${PV}.tar.bz2"
+#BASEURI ?= "${GNU_MIRROR}/gcc/gcc-${PV}/gcc-${PV}.tar.bz2"
 #SRCREV = "bd9a826d5448db11d29d2ec5884e7e679066f140"
 #BASEURI ?= "git://github.com/gcc-mirror/gcc;branch=gcc-6-branch;protocol=git"
 #BASEURI ?= "ftp://sourceware.org/pub/gcc/snapshots/6.2.0-RC-20160815/gcc-6.2.0-RC-20160815.tar.bz2"
+
+BASEURI ?= "git://github.com/hjl-tools/gcc.git;branch=hjl/indirect/gcc-6-branch/master;protocol=git"
+SRCREV = "ec9350eeb3d5975e5fe269b6facee3e7b917cc6a"
 
 SRC_URI = "\
            ${BASEURI} \
@@ -41,7 +44,6 @@ SRC_URI = "\
            file://0008-missing-execinfo_h.patch \
            file://0009-c99-snprintf.patch \
            file://0010-gcc-poison-system-directories.patch \
-           file://0011-gcc-poison-dir-extend.patch \
            file://0012-gcc-4.3.3-SYSROOT_CFLAGS_FOR_TARGET.patch \
            file://0013-64-bit-multilib-hack.patch \
            file://0014-optional-libstdc.patch \
@@ -80,18 +82,16 @@ SRC_URI = "\
            file://0047-libgcc_s-Use-alias-for-__cpu_indicator_init-instead-.patch \
            file://0048-sync-gcc-stddef.h-with-musl.patch \
            file://0054_all_nopie-all-flags.patch \
-           file://0055-unwind_h-glibc26.patch \
            ${BACKPORTS} \
 "
 BACKPORTS = "\
            file://CVE-2016-6131.patch \
-           file://ubsan-fix-check-empty-string.patch \
 "
 SRC_URI[md5sum] = "677a7623c7ef6ab99881bc4e048debb6"
 SRC_URI[sha256sum] = "f06ae7f3f790fbf0f018f6d40e844451e6bc3b7bc96e128e63b09825c1f8b29f"
 
-S = "${TMPDIR}/work-shared/gcc-${PV}-${PR}/gcc-${PV}"
-#S = "${TMPDIR}/work-shared/gcc-${PV}-${PR}/git"
+#S = "${TMPDIR}/work-shared/gcc-${PV}-${PR}/gcc-${PV}"
+S = "${TMPDIR}/work-shared/gcc-${PV}-${PR}/git"
 B = "${WORKDIR}/gcc-${PV}/build.${HOST_SYS}.${TARGET_SYS}"
 
 # Language Overrides
