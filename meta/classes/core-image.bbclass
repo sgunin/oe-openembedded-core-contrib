@@ -37,18 +37,18 @@
 # - stateless-rootfs    - systemctl-native not run, image populated by systemd at runtime
 # - splash              - bootup splash screen
 #
-FEATURE_PACKAGES_x11 = "packagegroup-core-x11"
-FEATURE_PACKAGES_x11-base = "packagegroup-core-x11-base"
-FEATURE_PACKAGES_x11-sato = "packagegroup-core-x11-sato"
-FEATURE_PACKAGES_tools-debug = "packagegroup-core-tools-debug"
-FEATURE_PACKAGES_eclipse-debug = "packagegroup-core-eclipse-debug"
-FEATURE_PACKAGES_tools-profile = "packagegroup-core-tools-profile"
-FEATURE_PACKAGES_tools-testapps = "packagegroup-core-tools-testapps"
-FEATURE_PACKAGES_tools-sdk = "packagegroup-core-sdk packagegroup-core-standalone-sdk-target"
-FEATURE_PACKAGES_nfs-server = "packagegroup-core-nfs-server"
-FEATURE_PACKAGES_nfs-client = "packagegroup-core-nfs-client"
-FEATURE_PACKAGES_ssh-server-dropbear = "packagegroup-core-ssh-dropbear"
-FEATURE_PACKAGES_ssh-server-openssh = "packagegroup-core-ssh-openssh"
+FEATURE_PACKAGES_x11 = "${LIB32_PREFIX}packagegroup-core-x11"
+FEATURE_PACKAGES_x11-base = "${LIB32_PREFIX}packagegroup-core-x11-base"
+FEATURE_PACKAGES_x11-sato = "${LIB32_PREFIX}packagegroup-core-x11-sato"
+FEATURE_PACKAGES_tools-debug = "${LIB32_PREFIX}packagegroup-core-tools-debug"
+FEATURE_PACKAGES_eclipse-debug = "${LIB32_PREFIX}packagegroup-core-eclipse-debug"
+FEATURE_PACKAGES_tools-profile = "${LIB32_PREFIX}packagegroup-core-tools-profile"
+FEATURE_PACKAGES_tools-testapps = "${LIB32_PREFIX}packagegroup-core-tools-testapps"
+FEATURE_PACKAGES_tools-sdk = "${LIB32_PREFIX}packagegroup-core-sdk ${LIB32_PREFIX}packagegroup-core-standalone-sdk-target"
+FEATURE_PACKAGES_nfs-server = "${LIB32_PREFIX}packagegroup-core-nfs-server"
+FEATURE_PACKAGES_nfs-client = "${LIB32_PREFIX}packagegroup-core-nfs-client"
+FEATURE_PACKAGES_ssh-server-dropbear = "${LIB32_PREFIX}packagegroup-core-ssh-dropbear"
+FEATURE_PACKAGES_ssh-server-openssh = "${LIB32_PREFIX}packagegroup-core-ssh-openssh"
 FEATURE_PACKAGES_hwcodecs = "${MACHINE_HWCODECS}"
 
 
@@ -62,8 +62,8 @@ IMAGE_FEATURES_REPLACES_ssh-server-openssh = "ssh-server-dropbear"
 MACHINE_HWCODECS ??= ""
 
 CORE_IMAGE_BASE_INSTALL = '\
-    packagegroup-core-boot \
-    packagegroup-base-extended \
+    ${LIB32_PREFIX}packagegroup-core-boot \
+    ${LIB32_PREFIX}packagegroup-base-extended \
     \
     ${CORE_IMAGE_EXTRA_INSTALL} \
     '

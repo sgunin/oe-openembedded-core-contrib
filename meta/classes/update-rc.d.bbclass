@@ -1,6 +1,8 @@
 UPDATERCPN ?= "${PN}"
 
-DEPENDS_append_class-target = "${@bb.utils.contains('DISTRO_FEATURES', 'sysvinit', ' update-rc.d initscripts', '', d)}"
+# This is needed otherwise e.g. allarch run-postinst will
+# depend on initscripts instead of lib32-initscripts
+DEPENDS_append_class-target = "${@bb.utils.contains('DISTRO_FEATURES', 'sysvinit', ' ${LIB32_PREFIX}update-rc.d ${LIB32_PREFIX}initscripts', '', d)}"
 
 UPDATERCD = "update-rc.d"
 UPDATERCD_class-cross = ""
