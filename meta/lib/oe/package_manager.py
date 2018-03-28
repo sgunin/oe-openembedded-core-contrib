@@ -356,21 +356,8 @@ class OpkgPkgsList(PkgsList):
 
 
 class DpkgPkgsList(PkgsList):
-
     def list_pkgs(self):
-        cmd = [bb.utils.which(os.getenv('PATH'), "dpkg-query"),
-               "--admindir=%s/var/lib/dpkg" % self.rootfs_dir,
-               "-W"]
-
-        cmd.append("-f=Package: ${Package}\nArchitecture: ${PackageArch}\nVersion: ${Version}\nFile: ${Package}_${Version}_${Architecture}.deb\nDepends: ${Depends}\nRecommends: ${Recommends}\nProvides: ${Provides}\n\n")
-
-        try:
-            cmd_output = subprocess.check_output(cmd, stderr=subprocess.STDOUT).strip().decode("utf-8")
-        except subprocess.CalledProcessError as e:
-            bb.fatal("Cannot get the installed packages list. Command '%s' "
-                     "returned %d:\n%s" % (' '.join(cmd), e.returncode, e.output.decode("utf-8")))
-
-        return opkg_query(cmd_output)
+        return DpkgPM(self.d, self.rootfs_dir, self.d.getVar('PACKAGE_ARCHS'), self.d.getVar('DPKG_ARCH')).list_installed()
 
 
 class PackageManager(object, metaclass=ABCMeta):
@@ -1741,7 +1728,19 @@ class DpkgPM(OpkgDpkgPM):
                      "returned %d:\n%s" % (cmd, e.returncode, e.output.decode("utf-8")))
 
     def list_installed(self):
-        return DpkgPkgsList(self.d, self.target_rootfs).list_pkgs()
+        cmd = [bb.utils.which(os.getenv('PATH'), "dpkg-query"),
+               "--admindir=%s" % self.admindir,
+               "-W"]
+
+        cmd.append("-f=Package: ${Package}\nArchitecture: ${PackageArch}\nVersion: ${Version}\nFile: ${Package}_${Version}_${Architecture}.deb\nDepends: ${Depends}\nRecommends: ${Recommends}\nProvides: ${Provides}\n\n")
+
+        try:
+            cmd_output = subprocess.check_output(cmd, stderr=subprocess.STDOUT).strip().decode("utf-8")
+        except subprocess.CalledProcessError as e:
+            bb.fatal("Cannot get the installed packages list. Command '%s' "
+                     "returned %d:\n%s" % (' '.join(cmd), e.returncode, e.output.decode("utf-8")))
+
+        return opkg_query(cmd_output)
 
     def package_info(self, pkg):
         """
