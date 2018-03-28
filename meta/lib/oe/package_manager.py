@@ -1515,6 +1515,7 @@ class OpkgPM(OpkgDpkgPM):
 class DpkgPM(OpkgDpkgPM):
     def __init__(self, d, target_rootfs, archs, base_archs, apt_conf_dir=None, deb_repo_workdir="oe-rootfs-repo", filterbydependencies=True):
         super(DpkgPM, self).__init__(d, target_rootfs)
+        self.admindir = target_rootfs + '/var/lib/dpkg'
         self.deploy_dir = oe.path.join(self.d.getVar('WORKDIR'), deb_repo_workdir)
 
         create_packages_dir(self.d, self.deploy_dir, d.getVar("DEPLOY_DIR_DEB"), "package_write_deb", filterbydependencies)
@@ -1599,10 +1600,10 @@ class DpkgPM(OpkgDpkgPM):
             os.environ['APT_CONFIG'] = self.apt_conf_file
             cmd = "%s purge %s" % (self.apt_get_cmd, ' '.join(pkgs))
         else:
-            cmd = "%s --admindir=%s/var/lib/dpkg --instdir=%s" \
+            cmd = "%s --admindir=%s --instdir=%s" \
                   " -P --force-depends --force-script-chrootless %s" % \
                   (bb.utils.which(os.getenv('PATH'), "dpkg"),
-                   self.target_rootfs, self.target_rootfs, ' '.join(pkgs))
+                   self.admindir, self.target_rootfs, ' '.join(pkgs))
 
         try:
             subprocess.check_output(cmd.split(), stderr=subprocess.STDOUT)
@@ -1716,19 +1717,17 @@ class DpkgPM(OpkgDpkgPM):
                         line = re.sub(r"#APTCONF#", self.apt_conf_dir, line)
                         apt_conf.write(line + "\n")
 
-        target_dpkg_dir = "%s/var/lib/dpkg" % self.target_rootfs
-        bb.utils.mkdirhier(os.path.join(target_dpkg_dir, "info"))
+        bb.utils.mkdirhier(os.path.join(self.admindir, "info"))
+        bb.utils.mkdirhier(os.path.join(self.admindir, "updates"))
 
-        bb.utils.mkdirhier(os.path.join(target_dpkg_dir, "updates"))
-
-        if not os.path.exists(os.path.join(target_dpkg_dir, "status")):
-            open(os.path.join(target_dpkg_dir, "status"), "w+").close()
-        if not os.path.exists(os.path.join(target_dpkg_dir, "available")):
-            open(os.path.join(target_dpkg_dir, "available"), "w+").close()
+        if not os.path.exists(os.path.join(self.admindir, "status")):
+            open(os.path.join(self.admindir, "status"), "w+").close()
+        if not os.path.exists(os.path.join(self.admindir, "available")):
+            open(os.path.join(self.admindir, "available"), "w+").close()
 
     def remove_packaging_data(self):
         bb.utils.remove(self.target_rootfs + self.d.getVar('opkglibdir'), True)
-        bb.utils.remove(self.target_rootfs + "/var/lib/dpkg/", True)
+        bb.utils.remove(self.admindir, True)
 
     def fix_broken_dependencies(self):
         os.environ['APT_CONFIG'] = self.apt_conf_file
@@ -1779,7 +1778,7 @@ class DpkgPM(OpkgDpkgPM):
         if not bad_recommendations:
             return
 
-        status_file = self.target_rootfs + "/var/lib/dpkg/status"
+        status_file = os.path.join(self.admindir, "status")
 
         with open(status_file + ".tmp", "w") as status:
             for pkg in bad_recommendations.split():
