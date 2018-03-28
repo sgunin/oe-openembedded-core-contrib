@@ -625,7 +625,7 @@ class DpkgRootfs(DpkgOpkgRootfs):
         deb_pre_process_cmds = self.d.getVar('DEB_PREPROCESS_COMMANDS')
         deb_post_process_cmds = self.d.getVar('DEB_POSTPROCESS_COMMANDS')
 
-        alt_dir = self.d.expand("${IMAGE_ROOTFS}/var/lib/dpkg/alternatives")
+        alt_dir = self.d.expand("${IMAGE_ROOTFS}${localstatedir}/lib/dpkg/alternatives")
         bb.utils.mkdirhier(alt_dir)
 
         # update PM index files
@@ -661,7 +661,7 @@ class DpkgRootfs(DpkgOpkgRootfs):
         if self.progress_reporter:
             self.progress_reporter.next_stage()
 
-        self._setup_dbg_rootfs(['/var/lib/dpkg'])
+        self._setup_dbg_rootfs([self.d.getVar('localstatedir') + '/lib/dpkg'])
 
         self.pm.fix_broken_dependencies()
 
@@ -675,12 +675,12 @@ class DpkgRootfs(DpkgOpkgRootfs):
         return ['DEPLOY_DIR_DEB', 'DEB_SDK_ARCH', 'APTCONF_TARGET', 'APT_ARGS', 'DPKG_ARCH', 'DEB_PREPROCESS_COMMANDS', 'DEB_POSTPROCESS_COMMANDS']
 
     def _get_delayed_postinsts(self):
-        status_file = self.image_rootfs + "/var/lib/dpkg/status"
+        status_file = self.image_rootfs + self.d.getVar('localstatedir') + '/lib/dpkg/status'
         return self._get_delayed_postinsts_common(status_file)
 
     def _save_postinsts(self):
         dst_postinst_dir = self.d.expand("${IMAGE_ROOTFS}${sysconfdir}/deb-postinsts")
-        src_postinst_dir = self.d.expand("${IMAGE_ROOTFS}/var/lib/dpkg/info")
+        src_postinst_dir = self.d.expand("${IMAGE_ROOTFS}${localstatedir}/lib/dpkg/info")
         return self._save_postinsts_common(dst_postinst_dir, src_postinst_dir)
 
     def _log_check(self):
