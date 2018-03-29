@@ -1,0 +1,75 @@
+From e0c050305e68d0b5eb6c4a6c523fe754ec6e91e0 Mon Sep 17 00:00:00 2001
+From: Andreas Oberritter <obi@opendreambox.org>
+Date: Thu, 29 Mar 2018 15:17:50 +0200
+Subject: [PATCH] update-alternatives: Allow to override altdir from
+ environment
+
+This helps generating SDKs with Yocto, where the natively built
+update-alternatives doesn't know about the location of the SDK's
+alternatives database.
+
+Signed-off-by: Andreas Oberritter <obi@opendreambox.org>
+---
+ utils/Makefile.am           |  1 +
+ utils/update-alternatives.c | 22 +++++++++++++++++++++-
+ 2 files changed, 22 insertions(+), 1 deletion(-)
+
+diff --git a/utils/Makefile.am b/utils/Makefile.am
+index c16a21b1a..2f3efdeb3 100644
+--- a/utils/Makefile.am
++++ b/utils/Makefile.am
+@@ -27,6 +27,7 @@ update_alternatives_SOURCES = \
+ update_alternatives_CPPFLAGS = \
+ 	-DALT_TMP_EXT=\".dpkg-tmp\" \
+ 	-DADMINDIR_ENVVAR=\"DPKG_ADMINDIR\" \
++	-DALTDIR_ENVVAR=\"DPKG_ALTDIR\" \
+ 	-DINSTDIR_ENVVAR=\"DPKG_ROOT\" \
+ 	$(AM_CPPFLAGS)
+ 
+diff --git a/utils/update-alternatives.c b/utils/update-alternatives.c
+index 5b398e3f0..d094ed7ab 100644
+--- a/utils/update-alternatives.c
++++ b/utils/update-alternatives.c
+@@ -50,7 +50,7 @@
+ 
+ #define PROGNAME "update-alternatives"
+ 
+-static const char *altdir = SYSCONFDIR "/alternatives";
++static const char *altdir;
+ static const char *instdir;
+ static const char *admdir;
+ 
+@@ -401,6 +401,25 @@ instdir_init(void)
+ 	return "";
+ }
+ 
++static const char *
++altdir_init(void)
++{
++	const char *dpkg_altdir;
++	size_t length;
++
++	dpkg_altdir = getenv(ALTDIR_ENVVAR);
++	if (dpkg_altdir == NULL)
++		dpkg_altdir = SYSCONFDIR "/alternatives";
++
++	/* If instdir is set and altdir is below instdir, treat altdir
++	 * as relative. */
++	length = strlen(instdir);
++	if (strncmp(dpkg_altdir, instdir, length) == 0)
++		dpkg_altdir += length;
++
++	return dpkg_altdir;
++}
++
+ static const char *
+ admindir_init(void)
+ {
+@@ -2647,6 +2666,7 @@ main(int argc, char **argv)
+ 	textdomain(PACKAGE);
+ 
+ 	instdir = instdir_init();
++	altdir = altdir_init();
+ 	admdir = admindir_init();
+ 
+ 	if (setvbuf(stdout, NULL, _IONBF, 0))

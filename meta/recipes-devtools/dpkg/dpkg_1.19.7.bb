@@ -13,6 +13,7 @@ SRC_URI = "${DEBIAN_MIRROR}/main/d/${BPN}/${BPN}_${PV}.tar.xz \
            file://0007-dpkg-deb-build.c-Remove-usage-of-clamp-mtime-in-tar.patch \
            file://0001-dpkg-Support-muslx32-build.patch \
            file://0007-update-alternatives-disable-logging.patch \
+           file://0001-update-alternatives-Allow-to-override-altdir-from-en.patch \
            file://pager.patch \
            "
 SRC_URI_append_class-native = " \
