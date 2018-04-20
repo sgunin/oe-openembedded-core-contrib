@@ -9,13 +9,13 @@ CLEANBROKEN = "1"
 RULES = "1000"
 
 do_compile() {
-    echo > Makefile; ALL="all: "; for i in `seq -w 1 ${RULES}`; do echo -e "R$i:\n\techo $i > foo.txt" >> Makefile; ALL="$ALL R$i"; done; echo ${ALL} >> Makefile
+    echo > Makefile; ALL="all: "; for i in `seq -w 1 ${RULES}`; do echo -e "R$i:\n\techo $i > foo.txt\n\tln foo.txt foo.txt.$i\n\tcp foo.txt.$i foo.txt.$i.copy" >> Makefile; ALL="$ALL R$i"; done; echo ${ALL} >> Makefile
 }
 
 do_install() {
     oe_runmake all
     cat foo.txt
-    mv foo.txt ${D}
+    mv foo.txt.* ${D}
 }
 
 FILES_${PN} = "/"
