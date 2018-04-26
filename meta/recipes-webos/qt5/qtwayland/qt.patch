@@ -1,0 +1,91 @@
+From 7c530fc16626fb63eb4b5991476a45b9e747d3aa Mon Sep 17 00:00:00 2001
+From: Martin Jansa <martin.jansa@lge.com>
+Date: Mon, 26 Feb 2018 19:45:51 +0000
+Subject: [PATCH] WIP: qt 5.11 compatibility
+
+Signed-off-by: Martin Jansa <martin.jansa@lge.com>
+---
+ src/client/qwaylanddnd.cpp    | 7 -------
+ src/client/qwaylanddnd_p.h    | 2 --
+ src/client/qwaylandwindow.cpp | 4 ++--
+ src/client/qwaylandwindow_p.h | 4 ++--
+ 4 files changed, 4 insertions(+), 13 deletions(-)
+
+diff --git a/src/client/qwaylanddnd.cpp b/src/client/qwaylanddnd.cpp
+index 94a2687..e51325e 100644
+--- a/src/client/qwaylanddnd.cpp
++++ b/src/client/qwaylanddnd.cpp
+@@ -62,13 +62,6 @@ QWaylandDrag::~QWaylandDrag()
+ {
+ }
+ 
+-QMimeData * QWaylandDrag::platformDropData()
+-{
+-    if (drag())
+-        return drag()->mimeData();
+-    return 0;
+-}
+-
+ void QWaylandDrag::startDrag()
+ {
+     bool cancel = false;
+diff --git a/src/client/qwaylanddnd_p.h b/src/client/qwaylanddnd_p.h
+index 1d1b277..d8ccc02 100644
+--- a/src/client/qwaylanddnd_p.h
++++ b/src/client/qwaylanddnd_p.h
+@@ -60,8 +60,6 @@ public:
+     QWaylandDrag(QWaylandDisplay *display);
+     ~QWaylandDrag();
+ 
+-    QMimeData *platformDropData() Q_DECL_OVERRIDE;
+-
+     void updateTarget(const QString &mimeType);
+     void setResponse(const QPlatformDragQtResponse &response);
+     void finishDrag(const QPlatformDropQtResponse &response);
+diff --git a/src/client/qwaylandwindow.cpp b/src/client/qwaylandwindow.cpp
+index 6d27473..e2097f5 100644
+--- a/src/client/qwaylandwindow.cpp
++++ b/src/client/qwaylandwindow.cpp
+@@ -73,7 +73,7 @@ QWaylandWindow::QWaylandWindow(QWindow *window)
+     : QObject()
+     , QPlatformWindow(window)
+     , mScreen(QWaylandScreen::waylandScreenFromWindow(window))
+-    , mDisplay(mScreen->display())
++//    , mDisplay(mScreen->display())
+     , mShellSurface(0)
+     , mSubSurfaceWindow(0)
+     , mWindowDecoration(0)
+@@ -688,7 +688,7 @@ void QWaylandWindow::handleMouseEventWithDecoration(QWaylandInputDevice *inputDe
+ void QWaylandWindow::setMouseCursor(QWaylandInputDevice *device, Qt::CursorShape shape)
+ {
+     if (m_cursorShape != shape || device->serial() > device->cursorSerial()) {
+-        device->setCursor(shape, mScreen);
++        //device->setCursor(shape, mScreen);
+         m_cursorShape = shape;
+     }
+ }
+diff --git a/src/client/qwaylandwindow_p.h b/src/client/qwaylandwindow_p.h
+index cee6f6f..601f19a 100644
+--- a/src/client/qwaylandwindow_p.h
++++ b/src/client/qwaylandwindow_p.h
+@@ -129,7 +129,7 @@ public:
+     QWaylandDisplay *display() const { return mDisplay; }
+     QWaylandShellSurface *shellSurface() const;
+     QWaylandSubSurface *subSurfaceWindow() const;
+-    QWaylandScreen *screen() const { return mScreen; }
++    QPlatformScreen *screen() const { return mScreen; }
+ 
+     void handleContentOrientationChange(Qt::ScreenOrientation orientation);
+     void setOrientationMask(Qt::ScreenOrientations mask);
+@@ -194,7 +194,7 @@ public slots:
+     void requestResize();
+ 
+ protected:
+-    QWaylandScreen *mScreen;
++    QPlatformScreen *mScreen;
+     QWaylandDisplay *mDisplay;
+     QWaylandShellSurface *mShellSurface;
+     QWaylandSubSurface *mSubSurfaceWindow;
+-- 
+1.9.1
+

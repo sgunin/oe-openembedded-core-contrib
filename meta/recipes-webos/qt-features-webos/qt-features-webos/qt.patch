@@ -1,0 +1,76 @@
+---
+ tools/generate_qmap/generate_qmap.cpp | 35 +++++++++++++++++++++++++++++++----
+ tools/generate_qmap/generate_qmap.pro |  2 +-
+ 2 files changed, 32 insertions(+), 5 deletions(-)
+
+diff --git a/tools/generate_qmap/generate_qmap.cpp b/tools/generate_qmap/generate_qmap.cpp
+index 0ec03d1..2df5834 100644
+--- a/tools/generate_qmap/generate_qmap.cpp
++++ b/tools/generate_qmap/generate_qmap.cpp
+@@ -18,7 +18,35 @@
+ #include <QDataStream>
+ #include <QDebug>
+ 
+-#include <QtPlatformSupport/private/qevdevkeyboardhandler_p.h>
++namespace QEvdevKeyboardMap {
++    const quint32 FileMagic = 0x514d4150; // 'QMAP'
++
++    struct Mapping {
++        quint16 keycode;
++        quint16 unicode;
++        quint32 qtcode;
++        quint8 modifiers;
++        quint8 flags;
++        quint16 special;
++
++    };
++
++    struct Composing {
++        quint16 first;
++        quint16 second;
++        quint16 result;
++    };
++}
++
++inline QDataStream &operator<<(QDataStream &ds, const QEvdevKeyboardMap::Mapping &m)
++{
++    return ds << m.keycode << m.unicode << m.qtcode << m.modifiers << m.flags << m.special;
++}
++
++inline QDataStream &operator<<(QDataStream &ds, const QEvdevKeyboardMap::Composing &c)
++{
++    return ds << c.first << c.second << c.result;
++}
+ 
+ //HACK : to use evdev default keymap which is private static variable
+ //Change to the class name for local usage QEvdevKeyboardHandler -> WebOSKeymapHandler
+@@ -26,11 +54,10 @@
+ class WebOSKeymapHandler
+ {
+ public:
+-    static const QEvdevKeyboardMap::Mapping s_keymap_default[];
+-    static const QEvdevKeyboardMap::Composing s_keycompose_default[];
++    static const QEvdevKeyboardMap::Mapping s_keymap_default[0];
++    static const QEvdevKeyboardMap::Composing s_keycompose_default[0];
+ };
+ #define QEvdevKeyboardHandler WebOSKeymapHandler
+-#include <QtPlatformSupport/private/qevdevkeyboard_defaultmap_p.h>
+ 
+ #include "webos_keymap_p.h"
+ 
+diff --git a/tools/generate_qmap/generate_qmap.pro b/tools/generate_qmap/generate_qmap.pro
+index 0825651..4d84906 100644
+--- a/tools/generate_qmap/generate_qmap.pro
++++ b/tools/generate_qmap/generate_qmap.pro
+@@ -20,7 +20,7 @@ CONFIG += no_module_headers internal_module
+ 
+ TARGET = generate_qmap
+ CONFIG += console warn_off
+-QT = core platformsupport-private
++QT = core
+ 
+ SOURCES += generate_qmap.cpp
+ 
+-- 
+1.9.1
+

@@ -1,0 +1,169 @@
+From f71dd7f1a74437b0f62c718ee30e53a0e4788d26 Mon Sep 17 00:00:00 2001
+From: Valery Volgutov <valery.volgutov@lge.com>
+Date: Mon, 22 Jan 2018 12:54:08 +0300
+Subject: [PATCH] QtWayland compile error fix on Qt 5.9
+
+:Release Notes:
+
+:Detailed Notes:
+!!! Need to change meta-qt5 !!!
+============================================================
+meta-qt5/classes/qmake5_base.bbclass
+============================================================
+-    CMD="${OE_QMAKE_QMAKE} -makefile -o Makefile ${OE_QMAKE_DEBUG_OUTPUT} ${OE_QMAKE_RECURSIVE} $QMAKE_VARSUBST_PRE $AFTER $PROFILES $QMAKE_VARSUBST_POST -- $QMAKE_VARSUBST_CONFIGURE"
+-    ${OE_QMAKE_QMAKE} -makefile -o Makefile ${OE_QMAKE_DEBUG_OUTPUT} ${OE_QMAKE_RECURSIVE} $QMAKE_VARSUBST_PRE $AFTER $PROFILES $QMAKE_VARSUBST_POST -- $QMAKE_VARSUBST_CONFIGURE || die "Error calling $CMD"
++    CMD="${OE_QMAKE_QMAKE} -makefile -o Makefile ${OE_QMAKE_DEBUG_OUTPUT} ${OE_QMAKE_RECURSIVE} $QMAKE_VARSUBST_PRE $AFTER $PROFILES $QMAKE_VARSUBST_POST"
++    ${OE_QMAKE_QMAKE} -makefile -o Makefile ${OE_QMAKE_DEBUG_OUTPUT} ${OE_QMAKE_RECURSIVE} $QMAKE_VARSUBST_PRE $AFTER $PROFILES $QMAKE_VARSUBST_POST || die "Error calling $CMD"
+============================================================
+============================================================
+
+:Testing Performed:
+
+:QA Notes:
+
+:Issues Addressed:
+[PLAT-49438] Fix compile own Qt components on Qt 5.9
+
+Change-Id: I9728c41910be3a9245849ccda4c21d6c811ef500
+---
+ src/client/client.pro                               | 14 +++++++++++++-
+ src/client/qwaylandintegration.cpp                  | 12 +++++++++---
+ .../client/wayland-egl/qwaylandeglwindow.cpp        |  6 +++++-
+ .../client/wayland-egl/qwaylandglcontext.cpp        | 21 ++++++++++++++++++---
+ .../client/wayland-egl/qwaylandglcontext.h          |  6 ++++--
+ 5 files changed, 49 insertions(+), 10 deletions(-)
+
+diff --git a/src/client/client.pro b/src/client/client.pro
+index 13bcd6f..14a2e30 100644
+--- a/src/client/client.pro
++++ b/src/client/client.pro
+@@ -1,6 +1,18 @@
+ TARGET = QtWaylandClient
++
+ QT += core-private gui-private
+-QT_FOR_PRIVATE += platformsupport-private
++
++equals(QT_MAJOR_VERSION,5) {
++    lessThan(QT_MINOR_VERSION, 8) {
++        QT_FOR_PRIVATE += platformsupport-private
++    }
++    else {
++        QT += egl_support-private
++        QT += fontdatabase_support-private
++        QT += eventdispatcher_support-private
++        QT += theme_support-private
++    }
++}
+ 
+ MODULE=waylandclient
+ MODULE_PLUGIN_TYPES = wayland-graphics-integration-client wayland-decoration-client wayland-inputdevice-integration
+diff --git a/src/client/qwaylandintegration.cpp b/src/client/qwaylandintegration.cpp
+index df9e7d9..1496260 100644
+--- a/src/client/qwaylandintegration.cpp
++++ b/src/client/qwaylandintegration.cpp
+@@ -53,9 +53,15 @@
+ #include "qwaylandscreen_p.h"
+ #include "qwaylandcursor_p.h"
+ 
+-#include "QtPlatformSupport/private/qgenericunixfontdatabase_p.h"
+-#include <QtPlatformSupport/private/qgenericunixeventdispatcher_p.h>
+-#include <QtPlatformSupport/private/qgenericunixthemes_p.h>
++#if (QT_VERSION < QT_VERSION_CHECK(5, 8, 0))
++    #include "QtPlatformSupport/private/qgenericunixfontdatabase_p.h"
++    #include <QtPlatformSupport/private/qgenericunixeventdispatcher_p.h>
++    #include <QtPlatformSupport/private/qgenericunixthemes_p.h>
++#else
++    #include "QtFontDatabaseSupport/private/qgenericunixfontdatabase_p.h"
++    #include <QtEventDispatcherSupport/private/qgenericunixeventdispatcher_p.h>
++    #include <QtThemeSupport/private/qgenericunixthemes_p.h>
++#endif
+ 
+ #include <QtGui/private/qguiapplication_p.h>
+ 
+diff --git a/src/hardwareintegration/client/wayland-egl/qwaylandeglwindow.cpp b/src/hardwareintegration/client/wayland-egl/qwaylandeglwindow.cpp
+index 524902a..7f2c83b 100644
+--- a/src/hardwareintegration/client/wayland-egl/qwaylandeglwindow.cpp
++++ b/src/hardwareintegration/client/wayland-egl/qwaylandeglwindow.cpp
+@@ -44,7 +44,11 @@
+ #include <QtWaylandClient/private/qwaylandscreen_p.h>
+ #include "qwaylandglcontext.h"
+ 
+-#include <QtPlatformSupport/private/qeglconvenience_p.h>
++#if (QT_VERSION < QT_VERSION_CHECK(5, 8, 0))
++    #include <QtPlatformSupport/private/qeglconvenience_p.h>
++#else
++    #include <QtEglSupport/private/qeglconvenience_p.h>
++#endif
+ 
+ #include <QDebug>
+ #include <QtGui/QWindow>
+diff --git a/src/hardwareintegration/client/wayland-egl/qwaylandglcontext.cpp b/src/hardwareintegration/client/wayland-egl/qwaylandglcontext.cpp
+index 3c09b62..cc15216 100644
+--- a/src/hardwareintegration/client/wayland-egl/qwaylandglcontext.cpp
++++ b/src/hardwareintegration/client/wayland-egl/qwaylandglcontext.cpp
+@@ -46,11 +46,15 @@
+ #include <QtWaylandClient/private/qwaylandabstractdecoration_p.h>
+ #include <QtWaylandClient/private/qwaylandintegration_p.h>
+ #include "qwaylandeglwindow.h"
+-
+ #include "qtwaylandclienttracer.h"
+-
+ #include <QDebug>
+-#include <QtPlatformSupport/private/qeglconvenience_p.h>
++
++#if (QT_VERSION < QT_VERSION_CHECK(5, 8, 0))
++    #include <QtPlatformSupport/private/qeglconvenience_p.h>
++#else
++    #include <QtEglSupport/private/qeglconvenience_p.h>
++#endif
++
+ #include <QtGui/private/qopenglcontext_p.h>
+ #include <QtGui/private/qopengltexturecache_p.h>
+ #include <QtGui/private/qguiapplication_p.h>
+@@ -545,6 +549,17 @@ void (*QWaylandGLContext::getProcAddress(const QByteArray &procName)) ()
+     return eglGetProcAddress(procName.constData());
+ }
+ 
++#if (QT_VERSION > QT_VERSION_CHECK(5, 7, 0))
++QFunctionPointer QWaylandGLContext::getProcAddress(const char *procName)
++{
++    QFunctionPointer proc = (QFunctionPointer) eglGetProcAddress(procName);
++    if (!proc)
++        proc = (QFunctionPointer) dlsym(RTLD_DEFAULT, procName);
++
++    return proc;
++}
++#endif
++
+ EGLConfig QWaylandGLContext::eglConfig() const
+ {
+     return m_config;
+diff --git a/src/hardwareintegration/client/wayland-egl/qwaylandglcontext.h b/src/hardwareintegration/client/wayland-egl/qwaylandglcontext.h
+index eb05411..1ab7706 100644
+--- a/src/hardwareintegration/client/wayland-egl/qwaylandglcontext.h
++++ b/src/hardwareintegration/client/wayland-egl/qwaylandglcontext.h
+@@ -43,10 +43,9 @@
+ #define QWAYLANDGLCONTEXT_H
+ 
+ #include <QtWaylandClient/private/qwaylanddisplay_p.h>
+-
+ #include <qpa/qplatformopenglcontext.h>
+-
+ #include "qwaylandeglinclude.h"
++#include <QtGlobal>
+ 
+ QT_BEGIN_NAMESPACE
+ 
+@@ -74,6 +73,9 @@ public:
+ 
+     void (*getProcAddress(const QByteArray &procName)) ();
+ 
++#if (QT_VERSION > QT_VERSION_CHECK(5, 7, 0))
++    QFunctionPointer getProcAddress(const char *procName);
++#endif
+     QSurfaceFormat format() const { return m_format; }
+ 
+     EGLConfig eglConfig() const;
+-- 
+1.9.1
+

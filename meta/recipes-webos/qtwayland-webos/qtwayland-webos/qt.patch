@@ -1,0 +1,57 @@
+From 109b1503ed8ae4d09e764292ca23e1450931c3bc Mon Sep 17 00:00:00 2001
+From: Martin Jansa <martin.jansa@lge.com>
+Date: Mon, 26 Feb 2018 20:08:14 +0000
+Subject: [PATCH] WIP: qt 5.11 compatibility
+
+---
+ .../platforms/webos-wayland-egl/webosplatformwindow.cpp  | 16 +---------------
+ .../platforms/webos-wayland-egl/webosplatformwindow_p.h  |  1 -
+ 2 files changed, 1 insertion(+), 16 deletions(-)
+
+diff --git a/src/plugins/platforms/webos-wayland-egl/webosplatformwindow.cpp b/src/plugins/platforms/webos-wayland-egl/webosplatformwindow.cpp
+index 3c87a23..6b2f5b6 100644
+--- a/src/plugins/platforms/webos-wayland-egl/webosplatformwindow.cpp
++++ b/src/plugins/platforms/webos-wayland-egl/webosplatformwindow.cpp
+@@ -86,20 +86,6 @@ bool WebOSPlatformWindow::setWindowStateInternal(Qt::WindowState state)
+     return true;
+ }
+ 
+-void WebOSPlatformWindow::setWindowState(Qt::WindowState state)
+-{
+-    setWindowStateInternal(state);
+-
+-    WebOSShellSurface *ss = webOSShellSurfaceFor(window());
+-    if (ss)
+-        ss->setState(state);
+-
+-    // If client is Qt::WindowNoState, it is assumed that
+-    // client wants to change its own geometry by itself
+-    if (state == Qt::WindowNoState)
+-        m_hasOwnSize = true;
+-}
+-
+ void WebOSPlatformWindow::setGeometry(const QRect &rect)
+ {
+     bool initialize = false;
+@@ -169,5 +155,5 @@ void WebOSPlatformWindow::restoreMouseCursor(QWaylandInputDevice *device)
+ 
+     //Do not use qt's setCursor here. Cause App's window cursor haven't chagned,
+     //it will not affect current cursor shape, that is same shape.
+-    mScreen->waylandCursor()->changeCursor(cp, window());
++    //mScreen->waylandCursor()->changeCursor(cp, window());
+ }
+diff --git a/src/plugins/platforms/webos-wayland-egl/webosplatformwindow_p.h b/src/plugins/platforms/webos-wayland-egl/webosplatformwindow_p.h
+index 2397dac..c3fe415 100644
+--- a/src/plugins/platforms/webos-wayland-egl/webosplatformwindow_p.h
++++ b/src/plugins/platforms/webos-wayland-egl/webosplatformwindow_p.h
+@@ -27,7 +27,6 @@ class WebOSPlatformWindow : public QWaylandEglWindow
+ {
+ public:
+     WebOSPlatformWindow(QWindow *window);
+-    void setWindowState(Qt::WindowState state) Q_DECL_OVERRIDE;
+     void setGeometry(const QRect &rect) Q_DECL_OVERRIDE;
+ 
+ private:
+-- 
+1.9.1
+

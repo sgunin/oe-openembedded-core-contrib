@@ -1,0 +1,36 @@
+From 6483b2c78977e59418e7c1279eda9977ef1fb935 Mon Sep 17 00:00:00 2001
+From: Martin Jansa <martin.jansa@lge.com>
+Date: Tue, 30 Jan 2018 21:55:50 +0000
+Subject: [PATCH] examples: build qwindow-compositor only when examples and
+ wayland-compositor are in CONFIG
+
+:Issues Addressed:
+[PLAT-49438] Fix compile own Qt components on Qt 5.9
+
+Change-Id: I9728c41910be3a9245849ccda4c21d6c811ef501
+---
+ examples/wayland/wayland.pro | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+
+diff --git a/examples/wayland/wayland.pro b/examples/wayland/wayland.pro
+index d633fb9..794b5f9 100644
+--- a/examples/wayland/wayland.pro
++++ b/examples/wayland/wayland.pro
+@@ -1,7 +1,8 @@
+ TEMPLATE=subdirs
+ 
+ #Only build compositor examples if we are building
+-#the QtCompositor API
++#the QtCompositor API and examples
++contains(CONFIG, examples) {
+ contains(CONFIG, wayland-compositor) {
+     SUBDIRS += qwindow-compositor
+ 
+@@ -11,3 +12,4 @@ contains(CONFIG, wayland-compositor) {
+ 
+     SUBDIRS += server-buffer
+ }
++}
+-- 
+1.9.1
+
