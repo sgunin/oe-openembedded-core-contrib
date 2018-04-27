@@ -6,9 +6,7 @@ inherit qmake5
 PACKAGECONFIG_OPENSSL ?= "openssl"
 
 PACKAGECONFIG[examples] = ""
-PACKAGECONFIG[tests] = ""
 EXTRA_QMAKEVARS_PRE += "${@bb.utils.contains('PACKAGECONFIG', 'examples', 'QT_BUILD_PARTS+=examples', '', d)}"
-EXTRA_QMAKEVARS_PRE += "${@bb.utils.contains('PACKAGECONFIG', 'tests', 'QT_BUILD_PARTS+=tests', '', d)}"
 
 # we don't want conflicts with qt4
 OE_QMAKE_PATH_HEADERS = "${OE_QMAKE_PATH_QT_HEADERS}"
@@ -33,6 +31,13 @@ python __anonymous() {
         tarch = d.getVar("QT_PACKAGES_ARCH", True) or ''
         if tarch:
             d.setVar("PACKAGE_ARCH", tarch)
+}
+
+# Regenerate header files when they are included in source tarball
+# Otherwise cmake files don't set PRIVATE_HEADERS correctly
+do_configure_prepend() {
+    rm -rf ${S}/include
+    mkdir -p ${S}/.git || true
 }
 
 # Many examples come with libraries installed outside of standard libdir,
@@ -90,42 +95,32 @@ FILES_${PN}-qmldesigner += " \
     ${OE_QMAKE_PATH_QML}/*/*/*/designer \
 "
 
-# qmlplugins 1-4 levels of subdirs qmldir + *{.so,*.qmltypes,*.qml,*.qmlc,*.js,*.jsc}
+# qmlplugins 1-4 levels of subdirs qmldir + *{.so,*.qmltypes,*.qml,*js}
 FILES_${PN}-qmlplugins = " \
     ${OE_QMAKE_PATH_QML}/*.qmltypes \
     ${OE_QMAKE_PATH_QML}/*/*${SOLIBSDEV} \
     ${OE_QMAKE_PATH_QML}/*/qmldir \
     ${OE_QMAKE_PATH_QML}/*/*.qmltypes \
     ${OE_QMAKE_PATH_QML}/*/*.qml \
-    ${OE_QMAKE_PATH_QML}/*/*.qmlc \
     ${OE_QMAKE_PATH_QML}/*/*.js \
-    ${OE_QMAKE_PATH_QML}/*/*.jsc \
-    ${OE_QMAKE_PATH_QML}/*/*.png \
     ${OE_QMAKE_PATH_QML}/*/*/*${SOLIBSDEV} \
     ${OE_QMAKE_PATH_QML}/*/*/qmldir \
     ${OE_QMAKE_PATH_QML}/*/*/*.qmltypes \
     ${OE_QMAKE_PATH_QML}/*/*/*.qml \
-    ${OE_QMAKE_PATH_QML}/*/*/*.qmlc \
     ${OE_QMAKE_PATH_QML}/*/*/*.js \
-    ${OE_QMAKE_PATH_QML}/*/*/*.jsc \
-    ${OE_QMAKE_PATH_QML}/*/*/*.png \
     ${OE_QMAKE_PATH_QML}/*/*/*/*${SOLIBSDEV} \
     ${OE_QMAKE_PATH_QML}/*/*/*/qmldir \
     ${OE_QMAKE_PATH_QML}/*/*/*/images \
     ${OE_QMAKE_PATH_QML}/*/*/*/*.qmltypes \
     ${OE_QMAKE_PATH_QML}/*/*/*/*.qml \
-    ${OE_QMAKE_PATH_QML}/*/*/*/*.qmlc \
     ${OE_QMAKE_PATH_QML}/*/*/*/*.js \
-    ${OE_QMAKE_PATH_QML}/*/*/*/*.jsc \
     ${OE_QMAKE_PATH_QML}/*/*/*/*.png \
     ${OE_QMAKE_PATH_QML}/*/*/*/*.metainfo \
     ${OE_QMAKE_PATH_QML}/*/*/*/*/*${SOLIBSDEV} \
     ${OE_QMAKE_PATH_QML}/*/*/*/*/qmldir \
     ${OE_QMAKE_PATH_QML}/*/*/*/*/*.qmltypes \
     ${OE_QMAKE_PATH_QML}/*/*/*/*/*.qml \
-    ${OE_QMAKE_PATH_QML}/*/*/*/*/*.qmlc \
     ${OE_QMAKE_PATH_QML}/*/*/*/*/*.js \
-    ${OE_QMAKE_PATH_QML}/*/*/*/*/*.jsc \
     ${OE_QMAKE_PATH_QML}/*/*/*/*/*/*.png \
     ${OE_QMAKE_PATH_IMPORTS}/*.qmltypes \
     ${OE_QMAKE_PATH_IMPORTS}/*/*${SOLIBSDEV} \

@@ -18,25 +18,15 @@ DEPENDS += "qtbase qtdeclarative icu ruby-native sqlite3 glib-2.0 libxslt gperf-
 ARM_INSTRUCTION_SET_armv4 = "arm"
 ARM_INSTRUCTION_SET_armv5 = "arm"
 
-# https://bugzilla.yoctoproject.org/show_bug.cgi?id=9474
-# https://bugs.webkit.org/show_bug.cgi?id=159880
-# JSC JIT can build on ARMv7 with -marm, but doesn't work on runtime.
-# Upstream only tests regularly the JSC JIT on ARMv7 with Thumb2 (-mthumb).
-ARM_INSTRUCTION_SET_armv7a = "thumb"
-ARM_INSTRUCTION_SET_armv7r = "thumb"
-ARM_INSTRUCTION_SET_armv7ve = "thumb"
-
-# Patches from https://github.com/meta-qt5/qtwebkit/commits/b5.10
-# 5.10.meta-qt5.1
+# Patches from https://github.com/meta-qt5/qtwebkit/commits/b5.6
+# 5.6.meta-qt5.1
 SRC_URI += "\
     file://0001-qtwebkit-fix-QA-issue-bad-RPATH.patch \
-    file://0002-Exclude-backtrace-API-for-non-glibc-libraries.patch \
+    file://0002-Remove-TEXTREL-tag-in-x86.patch \
+    file://0003-Exclude-backtrace-API-for-non-glibc-libraries.patch \
 "
 
-PACKAGECONFIG ??= "gstreamer qtlocation qtmultimedia qtsensors qtwebchannel \
-    ${@bb.utils.contains('DISTRO_FEATURES', 'x11', 'libxcomposite libxrender', '', d)} \
-    fontconfig \
-"
+PACKAGECONFIG ??= "gstreamer qtlocation qtmultimedia qtsensors qtwebchannel"
 PACKAGECONFIG[gstreamer] = "OE_GSTREAMER_ENABLED,,gstreamer1.0 gstreamer1.0-plugins-base"
 PACKAGECONFIG[gstreamer010] = "OE_GSTREAMER010_ENABLED,,gstreamer gst-plugins-base"
 PACKAGECONFIG[qtlocation] = "OE_QTLOCATION_ENABLED,,qtlocation"
@@ -44,9 +34,6 @@ PACKAGECONFIG[qtmultimedia] = "OE_QTMULTIMEDIA_ENABLED,,qtmultimedia"
 PACKAGECONFIG[qtsensors] = "OE_QTSENSORS_ENABLED,,qtsensors"
 PACKAGECONFIG[qtwebchannel] = "OE_QTWEBCHANNEL_ENABLED,,qtwebchannel"
 PACKAGECONFIG[libwebp] = "OE_LIBWEBP_ENABLED,,libwebp"
-PACKAGECONFIG[libxcomposite] = "OE_LIBXCOMPOSITE_ENABLED,,libxcomposite"
-PACKAGECONFIG[libxrender] = "OE_LIBXRENDER_ENABLED,,libxrender"
-PACKAGECONFIG[fontconfig] = "OE_FONTCONFIG_ENABLED,,fontconfig"
 
 do_configure_prepend() {
     export QMAKE_CACHE_EVAL="CONFIG+=${PACKAGECONFIG_CONFARGS}"
@@ -65,16 +52,7 @@ do_configure_prepend() {
     sed -e 's/\s\(qtHaveModule(webchannel)\)/ OE_QTWEBCHANNEL_ENABLED:\1/' -i ${S}/Source/WebKit2/WebKit2.pri
     # disable libwebp test if it isn't enabled by PACKAGECONFIG
     sed -e 's/\s\(config_libwebp: \)/ OE_LIBWEBP_ENABLED:\1/' -i ${S}/Tools/qmake/mkspecs/features/features.prf
-    # disable libxcomposite test if it isn't enabled by PACKAGECONFIG
-    sed -e 's/\s\(config_libXcomposite: \)/ OE_LIBXCOMPOSITE_ENABLED:\1/' -i ${S}/Tools/qmake/mkspecs/features/features.prf
-    # disable libxrender test if it isn't enabled by PACKAGECONFIG
-    sed -e 's/\s\(config_libXrender: \)/ OE_LIBXRENDER_ENABLED:\1/' -i ${S}/Tools/qmake/mkspecs/features/features.prf
-    # disable fontconfig test if it isn't enabled by PACKAGECONFIG
-    sed -e 's/\s\(config_fontconfig: \)/ OE_FONTCONFIG_ENABLED:\1/' -i ${S}/Tools/qmake/mkspecs/features/features.prf
 }
-
-# Forcibly enable ICU, so qtbase doesn't need it.
-EXTRA_QMAKEVARS_PRE += "QT_CONFIG+=icu"
 
 # qtwebkit gets terribly big when linking with all debug info, disable by default
 QTWEBKIT_DEBUG = "QMAKE_CFLAGS+=-g0 QMAKE_CXXFLAGS+=-g0"
@@ -95,6 +73,4 @@ PACKAGES_remove = "${PN}-examples-dev ${PN}-examples-staticdev ${PN}-examples-db
 RUBY_SYS = "${@ '${BUILD_SYS}'.replace('i486', 'i386').replace('i586', 'i386').replace('i686', 'i386') }"
 export RUBYLIB="${STAGING_DATADIR_NATIVE}/rubygems:${STAGING_LIBDIR_NATIVE}/ruby:${STAGING_LIBDIR_NATIVE}/ruby/${RUBY_SYS}"
 
-QT_MODULE_BRANCH = "5.9"
-
-SRCREV = "bd0657f98aff85b9f06d85a8cf4da6a27f61a56e"
+SRCREV = "95a78c9f04d9a3f954477855f84180ced556a480"

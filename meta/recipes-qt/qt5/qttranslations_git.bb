@@ -1,9 +1,12 @@
 require qt5.inc
 require qt5-git.inc
 
-LICENSE = "GPL-3.0 & The-Qt-Company-GPL-Exception-1.0 | The-Qt-Company-Commercial"
+LICENSE = "(LGPL-2.1 & The-Qt-Company-Qt-LGPL-Exception-1.1 | LGPL-3.0)"
 LIC_FILES_CHKSUM = " \
-    file://LICENSE.GPL3-EXCEPT;md5=763d8c535a234d9a3fb682c7ecb6c073 \
+    file://LICENSE.LGPLv21;md5=4bfd28363f541b10d9f024181b8df516 \
+    file://LICENSE.LGPLv3;md5=e0459b45c5c4840b353141a8bbed91f0 \
+    file://LICENSE.GPLv3;md5=88e2b9117e6be406b5ed6ee4ca99a705 \
+    file://LGPL_EXCEPTION.txt;md5=9625233da42f9e0ce9d63651a9d97654 \
 "
 
 DEPENDS += "qtbase qttools-native"
@@ -22,6 +25,7 @@ PACKAGES =. " \
     ${PN}-qtwebsockets \
     ${PN}-qtwebengine \
     ${PN}-qtxmlpatterns \
+    ${PN}-qtconfig \
     ${PN}-qtquick1 \
     ${PN}-qtscript \
     ${PN}-qtserialport \
@@ -82,6 +86,10 @@ FILES_${PN}-qtxmlpatterns = " \
     ${OE_QMAKE_PATH_TRANSLATIONS}/qtxmlpatterns_*.qm \
 "
 
+FILES_${PN}-qtconfig = " \
+    ${OE_QMAKE_PATH_TRANSLATIONS}/qtconfig_*.qm \
+"
+
 FILES_${PN}-qtquick1 = " \
     ${OE_QMAKE_PATH_TRANSLATIONS}/qtquick1_*.qm \
 "
@@ -106,4 +114,4 @@ FILES_${PN}-qt = " \
     ${OE_QMAKE_PATH_TRANSLATIONS}/qt_*.qm \
 "
 
-SRCREV = "c3486e072ebc704f9c82c005044143b07bb88f12"
+SRCREV = "df316bf7e6508ae1360247feb08780a77ea4210e"
