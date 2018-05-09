@@ -142,7 +142,7 @@ fi
 mount -n -o remount,$rootmode /
 if test "$rootmode" = rw
 then
-	ln -sf /proc/mounts /dev/mtab
+	ln -sf /proc/self/mounts /dev/mtab
 fi
 
 : exit 0

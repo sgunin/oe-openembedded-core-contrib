@@ -132,7 +132,7 @@ do_install () {
 	install -m 0644 ${WORKDIR}/host.conf ${D}${sysconfdir}/host.conf
 	install -m 0644 ${WORKDIR}/motd ${D}${sysconfdir}/motd
 
-	ln -sf /proc/mounts ${D}${sysconfdir}/mtab
+	ln -sf ${@oe.path.relative('${sysconfdir}', '/proc/self/mounts')} ${D}${sysconfdir}/mtab
 }
 
 DISTRO_VERSION[vardepsexclude] += "DATE"
