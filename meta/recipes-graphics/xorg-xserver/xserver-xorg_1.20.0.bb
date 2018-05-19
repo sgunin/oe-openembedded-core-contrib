@@ -6,8 +6,8 @@ SRC_URI += "file://musl-arm-inb-outb.patch \
             file://0003-Remove-check-for-useSIGIO-option.patch \
             file://0001-xf86pciBus.c-use-Intel-ddx-only-for-pre-gen4-hardwar.patch \
             "
-SRC_URI[md5sum] = "3e47777ff034a331aed2322b078694a8"
-SRC_URI[sha256sum] = "a732502f1db000cf36a376cd0c010ffdbf32ecdd7f1fa08ba7f5bdf9601cc197"
+SRC_URI[md5sum] = "c1ca1ea0a905ea788da03c77cc38b06e"
+SRC_URI[sha256sum] = "9d967d185f05709274ee0c4f861a4672463986e550ca05725ce27974f550d3e6"
 
 # These extensions are now integrated into the server, so declare the migration
 # path for in-place upgrades.
