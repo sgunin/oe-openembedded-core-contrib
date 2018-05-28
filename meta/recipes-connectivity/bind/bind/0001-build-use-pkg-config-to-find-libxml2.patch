@@ -15,11 +15,11 @@ Signed-off-by: Kai Kang <kai.kang@windriver.com>
  configure.in | 23 +++--------------------
  1 file changed, 3 insertions(+), 20 deletions(-)
 
-diff --git a/configure.in b/configure.in
-index 4da73a4..6f2a754 100644
---- a/configure.in
-+++ b/configure.in
-@@ -2282,26 +2282,9 @@ case "$use_libxml2" in
+Index: bind-9.12.1/configure.in
+===================================================================
+--- bind-9.12.1.orig/configure.in
++++ bind-9.12.1/configure.in
+@@ -2569,26 +2569,9 @@ case "$use_libxml2" in
  		DST_LIBXML2_INC=""
  		;;
  	auto|yes)
@@ -49,6 +49,3 @@ index 4da73a4..6f2a754 100644
  		fi
  		;;
  esac
--- 
-2.1.4
-
