@@ -1,6 +1,8 @@
 require libtool-${PV}.inc
 
-RDEPENDS_${PN} += "bash"
+VIRTUAL-RUNTIME_bash ?= "bash"
+RDEPENDS_${PN}_append_class-target = " ${VIRTUAL-RUNTIME_bash}"
+RDEPENDS_${PN}_remove = "bash"
 
 #
 # We want the results of libtool-cross preserved - don't stage anything ourselves.
