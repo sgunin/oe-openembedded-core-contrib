@@ -9,12 +9,12 @@
 ##################################################################
 
 IMAGE_BASENAME ?= "${PN}"
-IMAGE_VERSION_SUFFIX ?= "-${DATETIME}"
+IMAGE_VERSION_SUFFIX ?= "-${PKGE}-${PKGV}-${PKGR}-${DATETIME}"
 IMAGE_VERSION_SUFFIX[vardepsexclude] += "DATETIME SOURCE_DATE_EPOCH"
-IMAGE_NAME ?= "${IMAGE_LINK_NAME}${IMAGE_VERSION_SUFFIX}"
-IMAGE_LINK_NAME ?= "${IMAGE_BASENAME}${IMAGE_MACHINE_SUFFIX}${IMAGE_NAME_SUFFIX}"
+IMAGE_NAME ?= "${IMAGE_BASENAME}${IMAGE_MACHINE_SUFFIX}${IMAGE_NAME_SUFFIX}"
+IMAGE_LINK_NAME ?= "${IMAGE_NAME}${IMAGE_VERSION_SUFFIX}"
 
-# This needs to stay in sync with IMAGE_LINK_NAME, but with INITRAMFS_IMAGE instead of IMAGE_BASENAME
+# This needs to stay in sync with IMAGE_NAME, but with INITRAMFS_IMAGE instead of IMAGE_BASENAME
 # and without ${IMAGE_NAME_SUFFIX} which all initramfs images should set to empty
 INITRAMFS_IMAGE_NAME ?= "${@['${INITRAMFS_IMAGE}${IMAGE_MACHINE_SUFFIX}', ''][d.getVar('INITRAMFS_IMAGE') == '']}"
 
