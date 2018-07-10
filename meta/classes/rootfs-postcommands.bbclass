@@ -270,7 +270,7 @@ python write_image_manifest () {
         if manifest_link != manifest_name:
             if os.path.lexists(manifest_link):
                 os.remove(manifest_link)
-            os.symlink(os.path.basename(manifest_name), manifest_link)
+            os.link(manifest_name, manifest_link)
 }
 
 # Can be used to create /etc/timestamp during image construction to give a reasonably
@@ -343,7 +343,7 @@ python write_image_test_data() {
         if testdata_link != testdata_name:
             if os.path.lexists(testdata_link):
                 os.remove(testdata_link)
-            os.symlink(os.path.basename(testdata_name), testdata_link)
+            os.link(testdata_name, testdata_link)
 }
 write_image_test_data[vardepsexclude] += "TOPDIR"
 
