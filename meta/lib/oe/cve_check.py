@@ -177,15 +177,15 @@ def cve_check_merge_jsons(output, data):
 
     output["package"].append(data["package"][0])
 
-def update_symlinks(target_path, link_path):
+def update_links(target_path, link_path):
     """
-    Update a symbolic link link_path to point to target_path.
+    Update a link link_path to point to target_path.
     Remove the link and recreate it if exist and is different.
     """
     if link_path != target_path and os.path.exists(target_path):
         if os.path.exists(os.path.realpath(link_path)):
             os.remove(link_path)
-        os.symlink(os.path.basename(target_path), link_path)
+        os.link(target_path, link_path)
 
 
 def convert_cve_version(version):
