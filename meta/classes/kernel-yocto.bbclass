@@ -322,6 +322,7 @@ addtask kernel_configme before do_configure after do_patch
 
 python do_kernel_configcheck() {
     import re, string, sys
+    import subprocess
 
     # if KMETA isn't set globally by a recipe using this routine, we need to
     # set the default to 'meta'. Otherwise, kconf_check is not passed a valid
@@ -333,10 +334,10 @@ python do_kernel_configcheck() {
     pathprefix = "export PATH=%s:%s; " % (d.getVar('PATH'), "${S}/scripts/util/")
 
     cmd = d.expand("scc --configs -o ${S}/.kernel-meta")
-    ret, configs = oe.utils.getstatusoutput("%s%s" % (pathprefix, cmd))
+    configs = subprocess.getoutput("%s%s" % (pathprefix, cmd))
 
     cmd = d.expand("cd ${S}; kconf_check --report -o ${S}/%s/cfg/ ${B}/.config ${S} %s" % (kmeta,configs))
-    ret, result = oe.utils.getstatusoutput("%s%s" % (pathprefix, cmd))
+    result = subprocess.getoutput("%s%s" % (pathprefix, cmd))
 
     config_check_visibility = int(d.getVar("KCONF_AUDIT_LEVEL") or 0)
     bsp_check_visibility = int(d.getVar("KCONF_BSP_AUDIT_LEVEL") or 0)
