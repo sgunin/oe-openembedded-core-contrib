@@ -23,7 +23,9 @@ SRC_URI = "http://dev.gentoo.org/~blueness/${BPN}/${BP}.tar.gz \
 SRC_URI[md5sum] = "6ca08c0e14380f87df8e8aceac123671"
 SRC_URI[sha256sum] = "49c2d04105cad2526302627e040fa24b1916a9a3e059539bc8bb919b973890af"
 
-inherit autotools update-rc.d qemu pkgconfig distro_features_check
+inherit autotools update-rc.d qemu pkgconfig distro_features_check multilib_script
+
+MULTILIB_SCRIPTS = "${PN}-dev:${datadir}/pkgconfig/udev.pc"
 
 CONFLICT_DISTRO_FEATURES = "systemd"
 
@@ -65,7 +67,7 @@ PACKAGES =+ "eudev-hwdb"
 
 
 FILES_${PN} += "${libexecdir} ${base_libdir}/udev ${bindir}/udevadm"
-FILES_${PN}-dev = "${datadir}/pkgconfig/udev.pc \
+FILES_${PN}-dev = "${datadir}/pkgconfig/udev.pc* \
                    ${includedir}/libudev.h ${libdir}/libudev.so \
                    ${includedir}/udev.h ${libdir}/libudev.la \
                    ${libdir}/libudev.a ${libdir}/pkgconfig/libudev.pc"
