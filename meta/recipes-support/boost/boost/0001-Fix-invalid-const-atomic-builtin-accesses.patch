@@ -1,0 +1,44 @@
+From bc08c8be95e989ad3f428c8a5c494c9fc863aeb1 Mon Sep 17 00:00:00 2001
+From: Khem Raj <raj.khem@gmail.com>
+Date: Tue, 28 Aug 2018 21:39:59 -0700
+Subject: [PATCH] Fix invalid const atomic builtin accesses
+
+Clang fixed a signature issue with builtin atomic functions wrongly
+allowing const-qualified arguments. This change removes the invalid
+const qualifiers from those calls.
+
+Fixes:
+boost/atomic/detail/ops_gcc_x86_dcas.hpp:408:16: error: address argument
+to atomic builtin cannot be const-qualified ('const volatile
+boost::atomics::detail::gcc_dcas_x86_64::storage_type *' (aka 'const
+volatile unsigned __int128 *') invalid)
+        return __sync_val_compare_and_swap(&storage, value, value);
+
+Upstream-Status: Submitted [https://github.com/boostorg/atomic/pull/17]
+Signed-off-by: Khem Raj <raj.khem@gmail.com>
+---
+ boost/atomic/detail/ops_gcc_x86_dcas.hpp | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/boost/atomic/detail/ops_gcc_x86_dcas.hpp b/boost/atomic/detail/ops_gcc_x86_dcas.hpp
+index 4dacc66fe2..12bf9ae818 100644
+--- a/boost/atomic/detail/ops_gcc_x86_dcas.hpp
++++ b/boost/atomic/detail/ops_gcc_x86_dcas.hpp
+@@ -119,7 +119,7 @@ struct gcc_dcas_x86
+         }
+     }
+ 
+-    static BOOST_FORCEINLINE storage_type load(storage_type const volatile& storage, memory_order) BOOST_NOEXCEPT
++    static BOOST_FORCEINLINE storage_type load(storage_type volatile& storage, memory_order) BOOST_NOEXCEPT
+     {
+         storage_type value;
+ 
+@@ -399,7 +399,7 @@ struct gcc_dcas_x86_64
+         );
+     }
+ 
+-    static BOOST_FORCEINLINE storage_type load(storage_type const volatile& storage, memory_order) BOOST_NOEXCEPT
++    static BOOST_FORCEINLINE storage_type load(storage_type volatile& storage, memory_order) BOOST_NOEXCEPT
+     {
+ #if defined(__clang__)
+ 
