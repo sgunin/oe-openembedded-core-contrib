@@ -1,14 +1,19 @@
-dist/threads/t/join.t: adjust ps option
+From 797f99b30288732a3453c8c9dda80baa6f361f8a Mon Sep 17 00:00:00 2001
+From: Hongxu Jia <hongxu.jia@windriver.com>
+Date: Tue, 1 Jul 2014 15:51:53 +0800
+Subject: [PATCH] dist/threads/t/join.t: adjust ps option
 
 The ps's option '-f' is not supported by busybox in oe.
 
 Upstream-Status: Inappropriate
 Signed-off-by: Hongxu Jia <hongxu.jia@windriver.com>
+
 ---
  dist/threads/t/join.t | 6 +++---
  1 file changed, 3 insertions(+), 3 deletions(-)
 
 diff --git a/dist/threads/t/join.t b/dist/threads/t/join.t
+index 2272e07..1d4b0e1 100644
 --- a/dist/threads/t/join.t
 +++ b/dist/threads/t/join.t
 @@ -118,7 +118,7 @@ if ($^O eq 'linux') {
@@ -33,6 +38,3 @@ diff --git a/dist/threads/t/join.t b/dist/threads/t/join.t
      }
  } else {
      skip("\$0 check: only on Linux");
--- 
-1.8.1.2
-

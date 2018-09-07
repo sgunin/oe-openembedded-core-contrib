@@ -1,9 +1,13 @@
-perl: add archlib_exp variable used to generate ARCHLIB_EXP in config.h
-    
+From 65f6394798170eb1d328ab34e3cb5b2403d05d1f Mon Sep 17 00:00:00 2001
+From: Tom Zanussi <tom.zanussi@intel.com>
+Date: Tue, 9 Oct 2012 19:48:24 -0500
+Subject: [PATCH] perl: add archlib_exp variable used to generate ARCHLIB_EXP
+ in config.h
+
 perl.c uses an ARCHLIB_EXP define to generate compile-time code that
 adds the archlibexp path to @INC during run-time initialization of a
 new perl interpreter.
-    
+
 Because we've changed this value in a temporary way to make it
 possible to use ExtUtils::Embed in the target build (the temporary
 value in config.sh gets re-stripped out during packaging), the
@@ -14,22 +18,26 @@ the others in config.sh).
 
 This creates an unmodified version called archlib_exp that gets used
 by a modified config_h.SH to get the correct value into config.h
-    
+
 This patch uses an unmodified version of archlibexp called
 archlib_exp, introduced to config.sh, which is used to generate the
 correct value of ARCHLIB_EXP into config.h
-  
+
 See YOCTO #3099 for more info.
 
 Upstream-Status:Inappropriate [embedded specific]
 
 Signed-off-by: Tom Zanussi <tom.zanussi@intel.com>
 
-Index: perl-5.24.1/config_h.SH
-===================================================================
---- perl-5.24.1.orig/config_h.SH
-+++ perl-5.24.1/config_h.SH
-@@ -1434,7 +1434,7 @@ sed <<!GROK!THIS! >$CONFIG_H -e 's!^#und
+---
+ config_h.SH | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/config_h.SH b/config_h.SH
+index e9b144f..594e7e5 100755
+--- a/config_h.SH
++++ b/config_h.SH
+@@ -1434,7 +1434,7 @@ sed <<!GROK!THIS! >$CONFIG_H -e 's!^#undef\(.*/\)\*!/\*#define\1 \*!' -e 's!^#un
   *	in programs that are not prepared to deal with ~ expansion at run-time.
   */
  #$d_archlib ARCHLIB "$archlib"		/**/

@@ -1,7 +1,7 @@
-From def4aa3817f98aae625e601b791ef068276f05d5 Mon Sep 17 00:00:00 2001
+From 30e7d8d6deee25eaa998523b91b87ae769babd87 Mon Sep 17 00:00:00 2001
 From: Dominic Hargreaves <dom@earth.li>
 Date: Mon, 17 May 2010 13:23:07 +0300
-Subject: Point users to Debian packages of deprecated core modules
+Subject: [PATCH] Point users to Debian packages of deprecated core modules
 
 Bug-Debian: http://bugs.debian.org/747628
 
@@ -15,7 +15,7 @@ warnings will still be useful, so modify them slightly to point to the
 separate packages instead.
 
 Patch-Name: debian/deprecate-with-apt.diff
-Upstream-Status: Pending
+
 ---
  lib/deprecate.pm | 15 ++++++++++++++-
  1 file changed, 14 insertions(+), 1 deletion(-)

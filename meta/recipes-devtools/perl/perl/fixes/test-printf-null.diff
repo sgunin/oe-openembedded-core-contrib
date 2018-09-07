@@ -1,0 +1,67 @@
+From 6ed5aa97af1ad9123ccd836fb5d12c94d8b14128 Mon Sep 17 00:00:00 2001
+From: Niko Tyni <ntyni@debian.org>
+Date: Sat, 24 Mar 2018 16:49:06 +0200
+Subject: Fix pointer to integer cast in null_printf check
+
+Quoting James Cowgill in https://bugs.debian.org/893601
+
+> I recently noticed a build failure in the "mrs" package which embeds the
+> perl interpreter. The strange part was that the error looked completely
+> generic but only failed on 32-bit for some reason. I traced this to the
+> value of the PRINTF_FORMAT_NULL_OK config,h option in perl which is
+> defined on 32-bit, but not defined on 64-bit architectures. This is a
+> bug because this check detects the behavior of the compiler and should
+> be the same on all architectures with the same GCC version.
+>
+> The underlying bug is that the check for this warning causes GCC to emit
+> an unrelated warning on 64-bit arches which tricks the check into not
+> defining PRINTF_FORMAT_NULL_OK.
+>
+> The line which causes the warning is:
+>  int null_printf (char* pat,...) { return (int)pat; }
+>
+> GCC complains about the pointer to integer cast of the wrong size but
+> only on 64-bits. I've attached a patch to fix this by casting through
+> intptr_t first.
+
+(Also includes a dependency fix from upstream commit 3bddea5a1c1a7721899d5e24f49e9ef21bec9eed)
+
+Bug: https://github.com/perl5-metaconfig/metaconfig/pull/53
+Bug-Debian: https://bugs.debian.org/893601
+Origin: upstream, https://github.com/perl5-metaconfig/metaconfig/commit/16e38bb83cd44f36aea3c39f90903f640fac3572
+Patch-Name: fixes/test-printf-null.diff
+---
+ regen-configure/U/modified/d_attribut.U | 12 ++++++++++--
+ 1 file changed, 10 insertions(+), 2 deletions(-)
+
+diff --git a/regen-configure/U/modified/d_attribut.U b/regen-configure/U/modified/d_attribut.U
+index 8f71d4b08d..86fe17319f 100644
+--- a/regen-configure/U/modified/d_attribut.U
++++ b/regen-configure/U/modified/d_attribut.U
+@@ -24,7 +24,8 @@
+ 	d_attribute_nonnull d_attribute_noreturn d_attribute_pure \
+ 	d_attribute_unused d_attribute_warn_unused_result \
+ 	d_printf_format_null: \
+-	    Myread Oldconfig cat cc ccflags rm Setvar contains i_stdlib run
++	    Myread Oldconfig cat cc ccflags rm Setvar contains i_stdlib run \
++	    i_inttypes
+ ?MAKE:	-pick add $@ %<
+ ?S:d_attribute_format:
+ ?S:	This variable conditionally defines HASATTRIBUTE_FORMAT, which
+@@ -159,8 +160,15 @@ $cat >attrib.c <<EOCP
+ #ifdef I_STDLIB
+ #include <stdlib.h>
+ #endif
++#$i_inttypes I_INTTYPES
++#ifdef I_INTTYPES
++#include <inttypes.h>
++#endif
++#ifndef INTPTR_MAX
++#define intptr_t int
++#endif
+ int null_printf (char* pat,...) __attribute__((__format__(__printf__,1,2)));
+-int null_printf (char* pat,...) { return (int)pat; }
++int null_printf (char* pat,...) { return (int)(intptr_t)pat; }
+ int main () { exit(null_printf(NULL)); }
+ EOCP
+ 	if $cc $ccflags -o attrib attrib.c >attrib.out 2>&1 ; then

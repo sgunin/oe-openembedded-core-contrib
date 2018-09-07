@@ -1,3 +1,8 @@
+From 3b24de5c5ff7060e9ef33ddd809fd8082690291e Mon Sep 17 00:00:00 2001
+From: Richard Purdie <richard@openedhand.com>
+Date: Sun, 27 May 2007 21:04:11 +0000
+Subject: [PATCH] perl: 5.8.7 -> 5.8.8 (from OE)
+
 Upstream-Status:Inappropriate [embedded specific]
 
 We need ld in the fake config library, but it's not included by default. So
@@ -5,9 +10,15 @@ expand the number of items included. While this works it indicates that the
 rest of the config items are not being picked up and/or are being picked up
 from the host. More investigation needed.
 
---- perl-5.8.8/configpm	2007/04/20 09:48:05	1.1
-+++ perl-5.8.8/configpm	2007/04/20 09:57:12
-@@ -2,7 +2,7 @@
+---
+ configpm | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/configpm b/configpm
+index 877bff1..156ea58 100755
+--- a/configpm
++++ b/configpm
+@@ -37,7 +37,7 @@ EOF
  use strict;
  use vars qw(%Config $Config_SH_expanded);
  

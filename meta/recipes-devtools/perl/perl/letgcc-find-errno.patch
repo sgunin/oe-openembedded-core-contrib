@@ -1,3 +1,8 @@
+From a0dde0eec4676f13ce4653f14c5d3e7b818d9387 Mon Sep 17 00:00:00 2001
+From: Richard Purdie <richard@openedhand.com>
+Date: Sun, 27 May 2007 21:04:11 +0000
+Subject: [PATCH] perl: 5.8.7 -> 5.8.8 (from OE)
+
 Upstream-Status:Inappropriate [embedded specific]
 
 This removes all the logic that perl uses to locate an appropriate
@@ -10,12 +15,16 @@ external toolchain since perl will search in ${STAGING_INCDIR} for
 errno.h (when using gcc) and that isn't where it's located - its
 wherever the external toolchain keeps it's headers.
 
-Index: perl-5.12.3/ext/Errno/Errno_pm.PL
-===================================================================
---- perl-5.12.3.orig/ext/Errno/Errno_pm.PL
-+++ perl-5.12.3/ext/Errno/Errno_pm.PL
-@@ -17,8 +17,18 @@ unlink "Errno.tmp" if -f "Errno.tmp";
- open OUT, ">Errno.tmp" or die "Cannot open Errno.tmp: $!";
+---
+ ext/Errno/Errno_pm.PL | 16 +++++++++++++---
+ 1 file changed, 13 insertions(+), 3 deletions(-)
+
+diff --git a/ext/Errno/Errno_pm.PL b/ext/Errno/Errno_pm.PL
+index 4464706..560d2ef 100644
+--- a/ext/Errno/Errno_pm.PL
++++ b/ext/Errno/Errno_pm.PL
+@@ -16,8 +16,18 @@ unlink "Errno.tmp" if -f "Errno.tmp";
+ open OUT, '>', 'Errno.tmp' or die "Cannot open Errno.tmp: $!";
  select OUT;
  my $file;
 -my @files = get_files();
@@ -35,7 +44,7 @@ Index: perl-5.12.3/ext/Errno/Errno_pm.PL
      # MinGW complains "warning: #pragma system_header ignored outside include
      # file" if the header files are processed individually, so include them
      # all in .c file and process that instead.
-@@ -53,7 +63,7 @@ sub process_file {
+@@ -52,7 +62,7 @@ sub process_file {
          chomp($file = `cygpath -w "$file"`);
      }
  

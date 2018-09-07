@@ -4,40 +4,67 @@ require perl.inc
 DEPENDS = "db grep-native gdbm zlib virtual/crypt"
 
 # Pick up patches from debian
-# http://ftp.de.debian.org/debian/pool/main/p/perl/perl_5.22.0-1.debian.tar.xz
+# http://ftp.de.debian.org/debian/pool/main/p/perl/perl_5.26.2-6.debian.tar.xz
+#file://debian/hppa_opmini_optimize_workaround.diff
+#file://debian/hurd-softupdates.diff
+#file://debian/no_packlist_perllocal.diff
+#file://debian/prune_libs.diff
+#file://debian/sh4_op_optimize_workaround.diff
+#file://debian/writable_site_dirs.diff
 SRC_URI += " \
-	file://debian/cpan_definstalldirs.diff \
-	file://debian/db_file_ver.diff \
-	file://debian/doc_info.diff \
-	file://debian/enc2xs_inc.diff \
-	file://debian/errno_ver.diff \
-	file://debian/libperl_embed_doc.diff \
-	file://debian/fixes/respect_umask.diff \
-	file://debian/writable_site_dirs.diff \
-	file://debian/extutils_set_libperl_path.diff \
-	file://debian/no_packlist_perllocal.diff \
-	file://debian/prefix_changes.diff \
-	file://debian/instmodsh_doc.diff \
-	file://debian/ld_run_path.diff \
-	file://debian/libnet_config_path.diff \
-	file://debian/mod_paths.diff \
-	file://debian/prune_libs.diff \
-	file://debian/fixes/net_smtp_docs.diff \
-	file://debian/perlivp.diff \
-	file://debian/squelch-locale-warnings.diff \
-	file://debian/skip-upstream-git-tests.diff \
-	file://debian/skip-kfreebsd-crash.diff \
-	file://debian/fixes/document_makemaker_ccflags.diff \
-	file://debian/find_html2text.diff \
-	file://debian/perl5db-x-terminal-emulator.patch \
-	file://debian/cpan-missing-site-dirs.diff \
-	file://debian/fixes/memoize_storable_nstore.diff \
-	file://debian/regen-skip.diff \
-"
+        file://debian/cpan_definstalldirs.diff \
+        file://debian/cpan-missing-site-dirs.diff \
+        file://debian/db_file_ver.diff \
+        file://debian/deprecate-with-apt.diff \
+        file://debian/doc_info.diff \
+        file://debian/enc2xs_inc.diff \
+        file://debian/errno_ver.diff \
+        file://debian/extutils_set_libperl_path.diff \
+        file://debian/fakeroot.diff \
+        file://debian/find_html2text.diff \
+        file://debian/hppa_op_optimize_workaround.diff \
+        file://debian/installman-utf8.diff \
+        file://debian/instmodsh_doc.diff \
+        file://debian/kfreebsd-softupdates.diff \
+        file://debian/ld_run_path.diff \
+        file://debian/libnet_config_path.diff \
+        file://debian/libperl_embed_doc.diff \
+        file://debian/makemaker-manext.diff \
+        file://debian/makemaker-pasthru.diff \
+        file://debian/mod_paths.diff \
+        file://debian/patchlevel.diff \
+        file://debian/perl5db-x-terminal-emulator.patch \
+        file://debian/perldoc-pager.diff \
+        file://debian/perlivp.diff \
+        file://debian/squelch-locale-warnings.diff \
+        file://fixes/autodie-scope.diff \
+        file://fixes/cpan_web_link.diff \
+        file://fixes/CVE-2018-12015-Archive-Tar-directory-traversal.diff \
+        file://fixes/CVE-2018-6797-testcase.diff \
+        file://fixes/document_makemaker_ccflags.diff \
+        file://fixes/encode-alias-regexp.diff \
+        file://fixes/extutils_file_path_compat.diff \
+        file://fixes/extutils_makemaker_reproducible.diff \
+        file://fixes/file_path_chmod_race.diff \
+        file://fixes/file_path_hurd_errno.diff \
+        file://fixes/getopt-long-2.diff \
+        file://fixes/getopt-long-3.diff \
+        file://fixes/getopt-long-4.diff \
+        file://fixes/json-pp-example.diff \
+        file://fixes/math_complex_doc_angle_units.diff \
+        file://fixes/math_complex_doc_great_circle.diff \
+        file://fixes/math_complex_doc_see_also.diff \
+        file://fixes/memoize-pod.diff \
+        "
 
+#file://Makefile.SH.patch
+#file://perl-PathTools-don-t-filter-out-blib-from-INC.patch
+#file://perl-fix-conflict-between-skip_all-and-END.patch
+#file://perl-test-customized.patch
+#file://CVE-2017-12883.patch
+#file://CVE-2017-12837.patch
 SRC_URI += " \
         file://Makefile.patch \
-        file://Makefile.SH.patch \
         file://installperl.patch \
         file://perl-archlib-exp.patch \
         file://perl-dynloader.patch \
@@ -59,12 +86,8 @@ SRC_URI += " \
         file://t-run-switches.t-perl5-perl.patch \
         file://ext-ODBM_File-hints-linux.pl-link-libgdbm_compat.patch \
         file://ext-ODBM_File-t-odbm.t-fix-the-path-of-dbmt_common.p.patch \
-        file://perl-PathTools-don-t-filter-out-blib-from-INC.patch \
         file://perl-errno-generation-gcc5.patch \
-        file://perl-fix-conflict-between-skip_all-and-END.patch \
-        file://perl-test-customized.patch \
         file://perl-5.26.1-guard_old_libcrypt_fix.patch \
-        file://CVE-2018-12015.patch \
 "
 
 # Fix test case issues
@@ -73,8 +96,8 @@ SRC_URI_append_class-target = " \
             file://test/ext-DynaLoader-t-DynaLoader.t-fix-calling-dl_findfil.patch \
            "
 
-SRC_URI[md5sum] = "04622bc4d3941dc7eb571c52b7c02993"
-SRC_URI[sha256sum] = "7f080287ff64750270689843ae945f02159a33cb8f2fc910248c15befba5db84"
+SRC_URI[md5sum] = "1fa1b53eeff76aa37b17bfc9b2771671"
+SRC_URI[sha256sum] = "0f8c0fb1b0db4681adb75c3ba0dd77a0472b1b359b9e80efd79fc27b4352132c"
 
 inherit perlnative siteinfo
 
@@ -340,7 +363,7 @@ python split_perl_packages () {
 }
 
 PACKAGES_DYNAMIC += "^perl-module-.*(?<!\-native)$"
-PACKAGES_DYNAMIC_class-nativesdk = "^nativesdk-perl-module-.*"
+PACKAGES_DYNAMIC_class-nativesdk += "^nativesdk-perl-module-.*"
 
 RPROVIDES_perl-lib = "perl-lib"
 

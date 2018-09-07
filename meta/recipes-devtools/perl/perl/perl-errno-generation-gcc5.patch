@@ -1,3 +1,8 @@
+From 1fc92ffc9e8aa08d6edc27766c2dd398cba633c3 Mon Sep 17 00:00:00 2001
+From: Hongxu Jia <hongxu.jia@windriver.com>
+Date: Fri, 23 Oct 2015 10:18:07 -0700
+Subject: [PATCH] Perl: Use CC version not $Config(gccversion)
+
 Upstream-Status:Inappropriate [embedded specific]
 
 The upstream code assumes that the compiler version used to compiler miniperl/perl-native
@@ -9,15 +14,16 @@ Jeremy Puhlman <jpuhlman@mvista.com>
 
 Fix spaces in brackets while running $CC --version
 Signed-off-by: Hongxu Jia <hongxu.jia@windriver.com>
+
 ---
  ext/Errno/Errno_pm.PL | 6 +++++-
  1 file changed, 5 insertions(+), 1 deletion(-)
 
 diff --git a/ext/Errno/Errno_pm.PL b/ext/Errno/Errno_pm.PL
-index 1fd29d0..7976ea2 100644
+index 560d2ef..d894a44 100644
 --- a/ext/Errno/Errno_pm.PL
 +++ b/ext/Errno/Errno_pm.PL
-@@ -224,9 +224,13 @@ sub write_errno_pm {
+@@ -231,9 +231,13 @@ sub write_errno_pm {
  
      {	# BeOS (support now removed) did not enter this block
      # invoke CPP and read the output
@@ -32,6 +38,3 @@ index 1fd29d0..7976ea2 100644
  	    # GCC 5.0 interleaves expanded macros with line numbers breaking
  	    # each line into multiple lines. RT#123784
  	    $inhibit_linemarkers = ' -P';
--- 
-1.9.1
-

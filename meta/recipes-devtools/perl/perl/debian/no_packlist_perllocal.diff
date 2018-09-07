@@ -1,19 +1,18 @@
-From 240f2f4aeb3850bc0c5370b9fbc3909573bed9b3 Mon Sep 17 00:00:00 2001
+From 4962548d377555dbcf22c34037179d482482c908 Mon Sep 17 00:00:00 2001
 From: Brendan O'Dea <bod@debian.org>
 Date: Tue, 8 Mar 2005 19:30:38 +1100
 Subject: Don't install .packlist or perllocal.pod for perl or vendor
 
 Patch-Name: debian/no_packlist_perllocal.diff
-Upstream-Status: Pending
 ---
  cpan/ExtUtils-MakeMaker/lib/ExtUtils/MM_Unix.pm | 35 +++----------------------
  1 file changed, 3 insertions(+), 32 deletions(-)
 
 diff --git a/cpan/ExtUtils-MakeMaker/lib/ExtUtils/MM_Unix.pm b/cpan/ExtUtils-MakeMaker/lib/ExtUtils/MM_Unix.pm
-index 570a631..391dc22 100644
+index c3f5553961..5f9673e6f6 100644
 --- a/cpan/ExtUtils-MakeMaker/lib/ExtUtils/MM_Unix.pm
 +++ b/cpan/ExtUtils-MakeMaker/lib/ExtUtils/MM_Unix.pm
-@@ -2122,11 +2122,6 @@ pure_perl_install :: all
+@@ -2227,11 +2227,6 @@ pure_perl_install :: all
  };
  
      push @m,
@@ -25,7 +24,7 @@ index 570a631..391dc22 100644
  q{		"$(INST_LIB)" "$(DESTINSTALLPRIVLIB)" \
  		"$(INST_ARCHLIB)" "$(DESTINSTALLARCHLIB)" \
  		"$(INST_BIN)" "$(DESTINSTALLBIN)" \
-@@ -2158,10 +2153,6 @@ q{		"$(INST_LIB)" "$(DESTINSTALLSITELIB)" \
+@@ -2263,10 +2258,6 @@ q{		"$(INST_LIB)" "$(DESTINSTALLSITELIB)" \
  pure_vendor_install :: all
  	$(NOECHO) umask 022; $(MOD_INSTALL) \
  };
@@ -36,7 +35,7 @@ index 570a631..391dc22 100644
  
      push @m,
  q{		"$(INST_LIB)" "$(DESTINSTALLVENDORLIB)" \
-@@ -2187,37 +2178,19 @@ doc_vendor_install :: all
+@@ -2292,37 +2283,19 @@ doc_vendor_install :: all
  
      push @m, q{
  doc_perl_install :: all
@@ -44,7 +43,7 @@ index 570a631..391dc22 100644
 -	-$(NOECHO) umask 022; $(MKPATH) "$(DESTINSTALLARCHLIB)"
 -	-$(NOECHO) umask 022; $(DOC_INSTALL) \
 -		"Module" "$(NAME)" \
--		"installed into" $(INSTALLPRIVLIB) \
+-		"installed into" "$(INSTALLPRIVLIB)" \
 -		LINKTYPE "$(LINKTYPE)" \
 -		VERSION "$(VERSION)" \
 -		EXE_FILES "$(EXE_FILES)" \
@@ -57,7 +56,7 @@ index 570a631..391dc22 100644
 +	-$(NOECHO) umask 02; $(MKPATH) "$(DESTINSTALLSITEARCH)"
  	-$(NOECHO) umask 02; $(DOC_INSTALL) \
  		"Module" "$(NAME)" \
- 		"installed into" $(INSTALLSITELIB) \
+ 		"installed into" "$(INSTALLSITELIB)" \
  		LINKTYPE "$(LINKTYPE)" \
  		VERSION "$(VERSION)" \
  		EXE_FILES "$(EXE_FILES)" \
@@ -69,7 +68,7 @@ index 570a631..391dc22 100644
 -	-$(NOECHO) umask 022; $(MKPATH) "$(DESTINSTALLARCHLIB)"
 -	-$(NOECHO) umask 022; $(DOC_INSTALL) \
 -		"Module" "$(NAME)" \
--		"installed into" $(INSTALLVENDORLIB) \
+-		"installed into" "$(INSTALLVENDORLIB)" \
 -		LINKTYPE "$(LINKTYPE)" \
 -		VERSION "$(VERSION)" \
 -		EXE_FILES "$(EXE_FILES)" \
@@ -77,7 +76,7 @@ index 570a631..391dc22 100644
  
  } unless $self->{NO_PERLLOCAL};
  
-@@ -2226,13 +2199,11 @@ uninstall :: uninstall_from_$(INSTALLDIRS)dirs
+@@ -2331,13 +2304,11 @@ uninstall :: uninstall_from_$(INSTALLDIRS)dirs
  	$(NOECHO) $(NOOP)
  
  uninstall_from_perldirs ::

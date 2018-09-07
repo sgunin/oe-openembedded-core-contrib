@@ -1,18 +1,19 @@
-From fb8bdbb4bf56382de099e62c2564286b9dfda46d Mon Sep 17 00:00:00 2001
+From 8683b38412c01e4a28cfd145a0e386c0b68a022d Mon Sep 17 00:00:00 2001
 From: Brendan O'Dea <bod@debian.org>
 Date: Tue, 8 Mar 2005 19:30:38 +1100
-Subject: Note that libperl-dev package is required for embedded linking
+Subject: [PATCH] Note that libperl-dev package is required for embedded
+ linking
 
 Bug-Debian: http://bugs.debian.org/186778
 
 Patch-Name: debian/libperl_embed_doc.diff
-Upstream-Status: Pending
+
 ---
  lib/ExtUtils/Embed.pm | 3 +++
  1 file changed, 3 insertions(+)
 
 diff --git a/lib/ExtUtils/Embed.pm b/lib/ExtUtils/Embed.pm
-index 3f983c1..0ec8a67 100644
+index b26bf73..d4b662f 100644
 --- a/lib/ExtUtils/Embed.pm
 +++ b/lib/ExtUtils/Embed.pm
 @@ -296,6 +296,9 @@ and extensions in your C/C++ applications.

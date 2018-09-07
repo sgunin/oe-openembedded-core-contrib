@@ -1,4 +1,4 @@
-From ba4ed0b5b7baad5353c1e65b655f41d45e01c990 Mon Sep 17 00:00:00 2001
+From 5052f9386314655457523b322d9d0acef8d171bc Mon Sep 17 00:00:00 2001
 From: Robert Yang <liezhi.yang@windriver.com>
 Date: Mon, 22 Jun 2015 20:00:11 -0700
 Subject: [PATCH] ext/ODBM_File/hints/linux.pl: link libgdbm_compat
@@ -15,9 +15,10 @@ always have libgdbm_compat.
 Upstream-Status:Inappropriate [embedded specific]
 
 Signed-off-by: Robert Yang <liezhi.yang@windriver.com>
+
 ---
- ext/ODBM_File/hints/linux.pl |    6 ------
- 1 file changed, 6 deletions(-)
+ ext/ODBM_File/hints/linux.pl | 8 +-------
+ 1 file changed, 1 insertion(+), 7 deletions(-)
 
 diff --git a/ext/ODBM_File/hints/linux.pl b/ext/ODBM_File/hints/linux.pl
 index 204bba0..9271b45 100644

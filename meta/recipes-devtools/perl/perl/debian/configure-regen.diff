@@ -1,0 +1,128 @@
+From c4aff15e74aa3e49190893bd18c8a07221806cd3 Mon Sep 17 00:00:00 2001
+From: Niko Tyni <ntyni@debian.org>
+Date: Sat, 14 Oct 2017 17:47:09 +0300
+Subject: Regenerate Configure et al. after probe unit changes
+
+The config_h.SH reordering seems unavoidable but one time only, and also
+propagates to uconfig.h.
+
+Patch-Name: debian/configure-regen.diff
+Bug-Debian: https://bugs.debian.org/762638
+---
+ Configure   | 14 ++++++++++----
+ config_h.SH | 14 +++++++-------
+ uconfig.h   | 16 ++++++++--------
+ 3 files changed, 25 insertions(+), 19 deletions(-)
+
+diff --git a/Configure b/Configure
+index bdcfaf17ef..47e2d3d4ed 100755
+--- a/Configure
++++ b/Configure
+@@ -1497,8 +1497,7 @@ archname=''
+ usereentrant='undef'
+ : List of libraries we want.
+ : If anyone needs extra -lxxx, put those in a hint file.
+-libswanted="cl pthread socket bind inet nsl ndbm gdbm dbm db malloc dl ld"
+-libswanted="$libswanted sun m crypt sec util c cposix posix ucb bsd BSD"
++libswanted='gdbm gdbm_compat db dl m c crypt'
+ : We probably want to search /usr/shlib before most other libraries.
+ : This is only used by the lib/ExtUtils/MakeMaker.pm routine extliblist.
+ glibpth=`echo " $glibpth " | sed -e 's! /usr/shlib ! !'`
+@@ -11127,8 +11126,15 @@ $cat >attrib.c <<EOCP
+ #ifdef I_STDLIB
+ #include <stdlib.h>
+ #endif
++#$i_inttypes I_INTTYPES
++#ifdef I_INTTYPES
++#include <inttypes.h>
++#endif
++#ifndef INTPTR_MAX
++#define intptr_t int
++#endif
+ int null_printf (char* pat,...) __attribute__((__format__(__printf__,1,2)));
+-int null_printf (char* pat,...) { return (int)pat; }
++int null_printf (char* pat,...) { return (int)(intptr_t)pat; }
+ int main () { exit(null_printf(NULL)); }
+ EOCP
+ 	if $cc $ccflags -o attrib attrib.c >attrib.out 2>&1 ; then
+@@ -24254,7 +24260,7 @@ sunos*X4*)
+     ;;
+ *) case "$usedl" in
+     $define|true|[yY]*)
+-	    set X `echo " $libs " | sed -e 's@ -lndbm @ @' -e 's@ -lgdbm @ @' -e 's@ -lgdbm_compat @ @' -e 's@ -ldbm @ @' -e 's@ -ldb @ @'`
++	    set X `echo " $libs " | sed -e 's@ -lgdbm @ @' -e 's@ -lgdbm_compat @ @' -e 's@ -ldb @ @'`
+ 	    shift
+ 	    perllibs="$*"
+ 	    ;;
+diff --git a/config_h.SH b/config_h.SH
+index e9b144f02b..a294c29cb0 100755
+--- a/config_h.SH
++++ b/config_h.SH
+@@ -571,6 +571,13 @@ sed <<!GROK!THIS! >$CONFIG_H -e 's!^#undef\(.*/\)\*!/\*#define\1 \*!' -e 's!^#un
+  */
+ #$d_strcoll HAS_STRCOLL	/**/
+ 
++/* USE_STRUCT_COPY:
++ *	This symbol, if defined, indicates that this C compiler knows how
++ *	to copy structures.  If undefined, you'll need to use a block copy
++ *	routine of some sort instead.
++ */
++#$d_strctcpy	USE_STRUCT_COPY	/**/
++
+ /* HAS_STRTOD:
+  *	This symbol, if defined, indicates that the strtod routine is
+  *	available to provide better numeric string conversion than atof().
+@@ -2175,13 +2182,6 @@ sed <<!GROK!THIS! >$CONFIG_H -e 's!^#undef\(.*/\)\*!/\*#define\1 \*!' -e 's!^#un
+ #$d_statblks USE_STAT_BLOCKS 	/**/
+ #endif
+ 
+-/* USE_STRUCT_COPY:
+- *	This symbol, if defined, indicates that this C compiler knows how
+- *	to copy structures.  If undefined, you'll need to use a block copy
+- *	routine of some sort instead.
+- */
+-#$d_strctcpy	USE_STRUCT_COPY	/**/
+-
+ /* HAS_STRERROR:
+  *	This symbol, if defined, indicates that the strerror routine is
+  *	available to translate error numbers to strings. See the writeup
+diff --git a/uconfig.h b/uconfig.h
+index 6832f6f73d..a5cd2dd44e 100644
+--- a/uconfig.h
++++ b/uconfig.h
+@@ -536,6 +536,13 @@
+  */
+ /*#define HAS_STRCOLL	/ **/
+ 
++/* USE_STRUCT_COPY:
++ *	This symbol, if defined, indicates that this C compiler knows how
++ *	to copy structures.  If undefined, you'll need to use a block copy
++ *	routine of some sort instead.
++ */
++/*#define	USE_STRUCT_COPY	/ **/
++
+ /* HAS_STRTOD:
+  *	This symbol, if defined, indicates that the strtod routine is
+  *	available to provide better numeric string conversion than atof().
+@@ -2140,13 +2147,6 @@
+ /*#define USE_STAT_BLOCKS 	/ **/
+ #endif
+ 
+-/* USE_STRUCT_COPY:
+- *	This symbol, if defined, indicates that this C compiler knows how
+- *	to copy structures.  If undefined, you'll need to use a block copy
+- *	routine of some sort instead.
+- */
+-/*#define	USE_STRUCT_COPY	/ **/
+-
+ /* HAS_STRERROR:
+  *	This symbol, if defined, indicates that the strerror routine is
+  *	available to translate error numbers to strings. See the writeup
+@@ -5354,6 +5354,6 @@
+ #endif
+ 
+ /* Generated from:
+- * a0cea6273c16c1c5d8625665c84bda01926ce960c26873d4e5596b5b02a53e92 config_h.SH
++ * 28ca1428da5d95db9e1c446562e21f67c6f2d4094eed684418c6854460c8a926 config_h.SH
+  * b1c042726e6a17692921b6947c4e7c196c5c0cee011667ba719b15af7c31e669 uconfig.sh
+  * ex: set ro: */

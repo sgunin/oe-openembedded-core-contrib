@@ -1,3 +1,8 @@
+From fecf0890f5951d49b9c3da9afe5c9da778ef2175 Mon Sep 17 00:00:00 2001
+From: Nitin A Kamble <nitin.a.kamble@intel.com>
+Date: Fri, 1 Jul 2011 11:51:15 -0700
+Subject: [PATCH] perl: Fix package qa rpath warnings.
+
 Upstream-Status:Inappropriate [embedded specific]
 Signed-off-by: Nitin A Kamble <nitin.a.kamble@intel.com>
 2011/07/01
@@ -6,15 +11,19 @@ Fix these Package QA warnings before they are converted into fetal errors:
 
 WARNING: QA Issue: package perl-module-compress contains bad RPATH /build_disk/poky_build/build0/tmp/sysroots/qemux86/usr/lib in file /build_disk/poky_build/build0/tmp/work/i586-poky-linux/perl-5.12.3-r1/packages-split/perl-module-compress/usr/lib/perl/5.12.3/auto/Compress/Raw/Zlib/Zlib.so
 
-This fixes this warning for perl recipe as well as libxml-parser-perl recipe. 
-It is a fix to MakeMaker within perl, so all such perl recipes will get 
+This fixes this warning for perl recipe as well as libxml-parser-perl recipe.
+It is a fix to MakeMaker within perl, so all such perl recipes will get
 fixed with this perl fix.
 
-Index: perl-5.24.1/cpan/ExtUtils-MakeMaker/lib/ExtUtils/Liblist/Kid.pm
-===================================================================
---- perl-5.24.1.orig/cpan/ExtUtils-MakeMaker/lib/ExtUtils/Liblist/Kid.pm
-+++ perl-5.24.1/cpan/ExtUtils-MakeMaker/lib/ExtUtils/Liblist/Kid.pm
-@@ -57,6 +57,7 @@ sub _unix_os2_ext {
+---
+ cpan/ExtUtils-MakeMaker/lib/ExtUtils/Liblist/Kid.pm | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/cpan/ExtUtils-MakeMaker/lib/ExtUtils/Liblist/Kid.pm b/cpan/ExtUtils-MakeMaker/lib/ExtUtils/Liblist/Kid.pm
+index 4491989..114e401 100644
+--- a/cpan/ExtUtils-MakeMaker/lib/ExtUtils/Liblist/Kid.pm
++++ b/cpan/ExtUtils-MakeMaker/lib/ExtUtils/Liblist/Kid.pm
+@@ -58,6 +58,7 @@ sub _unix_os2_ext {
      my ( $found ) = 0;
  
      # Debian-specific: don't use LD_RUN_PATH for standard dirs

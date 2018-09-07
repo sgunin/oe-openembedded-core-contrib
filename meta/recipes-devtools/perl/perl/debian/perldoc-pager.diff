@@ -1,0 +1,29 @@
+From f5eda24c66e1ad55e963c0df4f2e150a5f1a7df7 Mon Sep 17 00:00:00 2001
+From: Niko Tyni <ntyni@debian.org>
+Date: Fri, 13 Oct 2017 11:59:34 +0300
+Subject: [PATCH] Fix perldoc terminal escapes when sensible-pager is less
+
+This is a temporary fix while upstream is reworking the
+pager handling.
+
+Bug: https://rt.cpan.org/Public/Bug/Display.html?id=120229
+Bug-Debian: https://bugs.debian.org/870340
+Patch-Name: debian/perldoc-pager.diff
+
+---
+ cpan/Pod-Perldoc/lib/Pod/Perldoc/ToTerm.pm | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/cpan/Pod-Perldoc/lib/Pod/Perldoc/ToTerm.pm b/cpan/Pod-Perldoc/lib/Pod/Perldoc/ToTerm.pm
+index 9501d63..a5aedf6 100644
+--- a/cpan/Pod-Perldoc/lib/Pod/Perldoc/ToTerm.pm
++++ b/cpan/Pod-Perldoc/lib/Pod/Perldoc/ToTerm.pm
+@@ -32,7 +32,7 @@ sub pager_configuration {
+   # do not modify anything on Windows or DOS
+   return if ( $perldoc->is_mswin32 || $perldoc->is_dos );
+ 
+-  if ( $pager =~ /less/ ) {
++  if ( $pager =~ /sensible-pager|less/ ) {
+     $self->_maybe_modify_environment('LESS');
+   }
+   elsif ( $pager =~ /more/ ) {

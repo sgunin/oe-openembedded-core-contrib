@@ -1,0 +1,55 @@
+From 59b2f127b56999b3373f6e9855402120ae4b66ab Mon Sep 17 00:00:00 2001
+From: Niko Tyni <ntyni@debian.org>
+Date: Mon, 16 Oct 2017 01:56:02 +0300
+Subject: regen-configure: rename filexp.U to filexp_path.U, phase 1
+
+The renaming placates t/porting/checkcase.t and matches dist upstream.
+
+It is done in two phases because git-dpm cannot currently handle git
+renames properly (i.e. use the --no-renames git-format-patch option
+to make the patches compatible with dpkg source format 3.0 (quilt)).
+
+We therefore copy first and delete afterwards.
+
+Patch-Name: fixes/rename-filexp.U-phase1.diff
+---
+ regen-configure/dist/U/filexp_path.U | 30 ++++++++++++++++++++++++++++++
+ 1 file changed, 30 insertions(+)
+ create mode 100644 regen-configure/dist/U/filexp_path.U
+
+diff --git a/regen-configure/dist/U/filexp_path.U b/regen-configure/dist/U/filexp_path.U
+new file mode 100644
+index 0000000000..ea88a34c23
+--- /dev/null
++++ b/regen-configure/dist/U/filexp_path.U
+@@ -0,0 +1,30 @@
++?RCS: $Id: filexp.U 1 2006-08-24 12:32:52Z rmanfredi $
++?RCS:
++?RCS: Copyright (c) 1991-1997, 2004-2006, Raphael Manfredi
++?RCS:
++?RCS: You may redistribute only under the terms of the Artistic Licence,
++?RCS: as specified in the README file that comes with the distribution.
++?RCS: You may reuse parts of this distribution only within the terms of
++?RCS: that same Artistic Licence; a copy of which may be found at the root
++?RCS: of the source tree for dist 4.0.
++?RCS:
++?RCS: $Log: filexp.U,v $
++?RCS: Revision 3.0  1993/08/18  12:08:08  ram
++?RCS: Baseline for dist 3.0 netwide release.
++?RCS:
++?MAKE:filexp: privlib
++?MAKE:	-pick add $@ %<
++?S:filexp:
++?S:	This symbol contains the full pathname of the filexp script, in case we
++?S:	are saving the script for posterity.
++?S:.
++: must not allow self reference
++case "$privlib" in
++  /*)
++	filexp=$privlib/filexp
++	;;
++  *)
++	filexp=`pwd`/filexp
++	;;
++esac
++

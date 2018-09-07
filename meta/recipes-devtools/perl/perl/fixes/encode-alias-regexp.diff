@@ -1,0 +1,27 @@
+From cd21384376d32eaf01141cea24b09a35aadc13dc Mon Sep 17 00:00:00 2001
+From: Dan Kogai <dankogai+github@gmail.com>
+Date: Tue, 9 Jan 2018 14:39:26 +0900
+Subject: [PATCH] fix https://github.com/dankogai/p5-encode/issues/127
+
+Bug-Debian: https://bugs.debian.org/880085
+Bug: https://github.com/dankogai/p5-encode/issues/127
+Origin: backport, https://github.com/dankogai/p5-encode/commit/7609648146d4742b9e92861a0497892eff891f20
+Patch-Name: fixes/encode-alias-regexp.diff
+
+---
+ cpan/Encode/lib/Encode/Alias.pm | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/cpan/Encode/lib/Encode/Alias.pm b/cpan/Encode/lib/Encode/Alias.pm
+index 0a25256..5b184e0 100644
+--- a/cpan/Encode/lib/Encode/Alias.pm
++++ b/cpan/Encode/lib/Encode/Alias.pm
+@@ -270,7 +270,7 @@ sub init_aliases {
+     define_alias( qr/\bUTF-8$/i => '"utf-8-strict"' );
+ 
+     # At last, Map white space and _ to '-'
+-    define_alias( qr/^(\S+)[\s_]+(.*)$/i => '"$1-$2"' );
++    define_alias( qr/^([^\s_]+)[\s_]+([^\s_]*)$/i => '"$1-$2"' );
+ }
+ 
+ 1;

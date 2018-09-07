@@ -1,4 +1,7 @@
-make_ext.pl: fix regenerate makefile failed while $cc changed
+From aaa19ebf42f6bc9f82f34985f956afe447e72c8c Mon Sep 17 00:00:00 2001
+From: Hongxu Jia <hongxu.jia@windriver.com>
+Date: Thu, 24 Jul 2014 09:57:17 +0800
+Subject: [PATCH] make_ext.pl: fix regenerate makefile failed while $cc changed
 
 While $cc changed, the existance of 'xdefine' caused makefile
 regeneration failed.
@@ -6,15 +9,16 @@ regeneration failed.
 Upstream-Status: Pending
 
 Signed-off-by: Hongxu Jia <hongxu.jia@windriver.com>
+
 ---
  make_ext.pl | 4 ++++
  1 file changed, 4 insertions(+)
 
-Index: perl-5.24.1/make_ext.pl
-===================================================================
---- perl-5.24.1.orig/make_ext.pl
-+++ perl-5.24.1/make_ext.pl
-@@ -335,6 +335,10 @@ sub build_extension {
+diff --git a/make_ext.pl b/make_ext.pl
+index 80d8f68..823efe0 100644
+--- a/make_ext.pl
++++ b/make_ext.pl
+@@ -336,6 +336,10 @@ sub build_extension {
                  print "Deleting non-Cross makefile\n";
                  close $mfh or die "close $makefile: $!";
                  _unlink($makefile);

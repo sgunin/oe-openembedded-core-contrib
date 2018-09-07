@@ -1,0 +1,27 @@
+From e309e7edaad1621e517967e67e81454a2035f034 Mon Sep 17 00:00:00 2001
+From: Kenichi Ishigaki <ishigaki@cpan.org>
+Date: Sat, 27 Aug 2016 22:59:58 +0900
+Subject: [PATCH] fix RT-92793: bug in SYNOPSIS
+
+Bug-Debian: https://bugs.debian.org/871837
+Bug: https://rt.cpan.org/Public/Bug/Display.html?id=92793
+Origin: backport, https://github.com/makamaka/JSON-PP/commit/e4da34595ae4cd36e58940f06640f0bf2c40976b
+Patch-Name: fixes/json-pp-example.diff
+
+---
+ cpan/JSON-PP/lib/JSON/PP.pm | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/cpan/JSON-PP/lib/JSON/PP.pm b/cpan/JSON-PP/lib/JSON/PP.pm
+index 9337ce9..ff0e88a 100644
+--- a/cpan/JSON-PP/lib/JSON/PP.pm
++++ b/cpan/JSON-PP/lib/JSON/PP.pm
+@@ -1613,7 +1613,7 @@ JSON::PP - JSON::XS compatible pure-Perl module.
+ 
+  # OO-interface
+ 
+- $coder = JSON::PP->new->ascii->pretty->allow_nonref;
++ $json = JSON::PP->new->ascii->pretty->allow_nonref;
+  
+  $json_text   = $json->encode( $perl_scalar );
+  $perl_scalar = $json->decode( $json_text );

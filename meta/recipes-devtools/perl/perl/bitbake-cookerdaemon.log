@@ -1,0 +1,149 @@
+--- Starting bitbake server pid 12649 at 2018-07-05 21:16:13.428575 ---
+Started bitbake server pid 12649
+DEBUG: Found bblayers.conf (/var/build/build-timo-perl-5.28.0/conf/bblayers.conf)
+DEBUG: Adding layer /home/ttorling/Projects/openembedded-core/meta
+DEBUG: CONF /home/ttorling/Projects/openembedded-core/meta/conf/bitbake.conf:746: including conf/abi_version.conf
+DEBUG: CONF /home/ttorling/Projects/openembedded-core/meta/conf/bitbake.conf:747: including conf/site.conf
+DEBUG: CONF file 'conf/site.conf' not found
+DEBUG: CONF /home/ttorling/Projects/openembedded-core/meta/conf/bitbake.conf:748: including conf/auto.conf
+DEBUG: CONF file 'conf/auto.conf' not found
+DEBUG: CONF /home/ttorling/Projects/openembedded-core/meta/conf/bitbake.conf:749: including conf/local.conf
+DEBUG: CONF /home/ttorling/Projects/openembedded-core/meta/conf/bitbake.conf:750: including conf/multiconfig/default.conf
+DEBUG: CONF /home/ttorling/Projects/openembedded-core/meta/conf/bitbake.conf:751: including conf/machine/qemux86.conf
+DEBUG: CONF /home/ttorling/Projects/openembedded-core/meta/conf/machine/qemux86.conf:10: including conf/machine/include/qemu.inc
+DEBUG: CONF /home/ttorling/Projects/openembedded-core/meta/conf/machine/qemux86.conf:11: including conf/machine/include/tune-i586.inc
+DEBUG: CONF /home/ttorling/Projects/openembedded-core/meta/conf/machine/include/tune-i586.inc:3: including conf/machine/include/x86/arch-x86.inc
+DEBUG: CONF /home/ttorling/Projects/openembedded-core/meta/conf/machine/qemux86.conf:12: including conf/machine/include/qemuboot-x86.inc
+DEBUG: CONF /home/ttorling/Projects/openembedded-core/meta/conf/bitbake.conf:752: including conf/machine-sdk/x86_64.conf
+DEBUG: CONF /home/ttorling/Projects/openembedded-core/meta/conf/bitbake.conf:753: including conf/distro/nodistro.conf
+DEBUG: CONF file 'conf/distro/nodistro.conf' not found
+DEBUG: CONF /home/ttorling/Projects/openembedded-core/meta/conf/bitbake.conf:754: including conf/distro/defaultsetup.conf
+DEBUG: CONF /home/ttorling/Projects/openembedded-core/meta/conf/distro/defaultsetup.conf:1: including conf/distro/include/default-providers.inc
+DEBUG: CONF /home/ttorling/Projects/openembedded-core/meta/conf/distro/defaultsetup.conf:2: including conf/distro/include/default-versions.inc
+DEBUG: CONF /home/ttorling/Projects/openembedded-core/meta/conf/distro/defaultsetup.conf:3: including conf/distro/include/default-distrovars.inc
+DEBUG: CONF /home/ttorling/Projects/openembedded-core/meta/conf/distro/defaultsetup.conf:4: including conf/distro/include/world-broken.inc
+DEBUG: CONF /home/ttorling/Projects/openembedded-core/meta/conf/distro/defaultsetup.conf:7: including conf/distro/include/tcmode-default.inc
+DEBUG: CONF /home/ttorling/Projects/openembedded-core/meta/conf/distro/defaultsetup.conf:10: including conf/distro/include/tclibc-glibc.inc
+DEBUG: CONF /home/ttorling/Projects/openembedded-core/meta/conf/distro/defaultsetup.conf:12: including conf/distro/include/uninative-flags.inc
+DEBUG: CONF /home/ttorling/Projects/openembedded-core/meta/conf/bitbake.conf:755: including conf/documentation.conf
+DEBUG: CONF /home/ttorling/Projects/openembedded-core/meta/conf/bitbake.conf:756: including conf/licenses.conf
+DEBUG: CONF /home/ttorling/Projects/openembedded-core/meta/conf/bitbake.conf:757: including conf/sanity.conf
+DEBUG: Inheriting /home/ttorling/Projects/openembedded-core/meta/classes/base.bbclass (from configuration INHERITs:0)
+DEBUG: Inheriting /home/ttorling/Projects/openembedded-core/meta/classes/patch.bbclass (from /home/ttorling/Projects/openembedded-core/meta/classes/base.bbclass:4)
+DEBUG: Inheriting /home/ttorling/Projects/openembedded-core/meta/classes/terminal.bbclass (from /home/ttorling/Projects/openembedded-core/meta/classes/patch.bbclass:11)
+DEBUG: Inheriting /home/ttorling/Projects/openembedded-core/meta/classes/staging.bbclass (from /home/ttorling/Projects/openembedded-core/meta/classes/base.bbclass:5)
+DEBUG: Inheriting /home/ttorling/Projects/openembedded-core/meta/classes/mirrors.bbclass (from /home/ttorling/Projects/openembedded-core/meta/classes/base.bbclass:7)
+DEBUG: Inheriting /home/ttorling/Projects/openembedded-core/meta/classes/utils.bbclass (from /home/ttorling/Projects/openembedded-core/meta/classes/base.bbclass:8)
+DEBUG: Inheriting /home/ttorling/Projects/openembedded-core/meta/classes/utility-tasks.bbclass (from /home/ttorling/Projects/openembedded-core/meta/classes/base.bbclass:9)
+DEBUG: Inheriting /home/ttorling/Projects/openembedded-core/meta/classes/metadata_scm.bbclass (from /home/ttorling/Projects/openembedded-core/meta/classes/base.bbclass:10)
+DEBUG: Inheriting /home/ttorling/Projects/openembedded-core/meta/classes/logging.bbclass (from /home/ttorling/Projects/openembedded-core/meta/classes/base.bbclass:11)
+DEBUG: Inheriting /home/ttorling/Projects/openembedded-core/meta/classes/package_ipk.bbclass (from configuration INHERITs:0)
+DEBUG: Inheriting /home/ttorling/Projects/openembedded-core/meta/classes/package.bbclass (from /home/ttorling/Projects/openembedded-core/meta/classes/package_ipk.bbclass:1)
+DEBUG: Inheriting /home/ttorling/Projects/openembedded-core/meta/classes/packagedata.bbclass (from /home/ttorling/Projects/openembedded-core/meta/classes/package.bbclass:41)
+DEBUG: Inheriting /home/ttorling/Projects/openembedded-core/meta/classes/chrpath.bbclass (from /home/ttorling/Projects/openembedded-core/meta/classes/package.bbclass:42)
+DEBUG: Inheriting /home/ttorling/Projects/openembedded-core/meta/classes/insane.bbclass (from /home/ttorling/Projects/openembedded-core/meta/classes/package.bbclass:45)
+DEBUG: Inheriting /home/ttorling/Projects/openembedded-core/meta/classes/buildstats.bbclass (from configuration INHERITs:0)
+DEBUG: Inheriting /home/ttorling/Projects/openembedded-core/meta/classes/image-mklibs.bbclass (from configuration INHERITs:0)
+DEBUG: Inheriting /home/ttorling/Projects/openembedded-core/meta/classes/linuxloader.bbclass (from /home/ttorling/Projects/openembedded-core/meta/classes/image-mklibs.bbclass:5)
+DEBUG: Inheriting /home/ttorling/Projects/openembedded-core/meta/classes/image-prelink.bbclass (from configuration INHERITs:0)
+DEBUG: Inheriting /home/ttorling/Projects/openembedded-core/meta/classes/debian.bbclass (from configuration INHERITs:0)
+DEBUG: Inheriting /home/ttorling/Projects/openembedded-core/meta/classes/devshell.bbclass (from configuration INHERITs:0)
+DEBUG: Inheriting /home/ttorling/Projects/openembedded-core/meta/classes/sstate.bbclass (from configuration INHERITs:0)
+DEBUG: Inheriting /home/ttorling/Projects/openembedded-core/meta/classes/license.bbclass (from configuration INHERITs:0)
+DEBUG: Inheriting /home/ttorling/Projects/openembedded-core/meta/classes/remove-libtool.bbclass (from configuration INHERITs:0)
+DEBUG: Inheriting /home/ttorling/Projects/openembedded-core/meta/classes/blacklist.bbclass (from configuration INHERITs:0)
+DEBUG: Inheriting /home/ttorling/Projects/openembedded-core/meta/classes/sanity.bbclass (from configuration INHERITs:0)
+DEBUG: Clearing SRCREV cache due to cache policy of: clear
+DEBUG: Using cache in '/var/build/build-timo-perl-5.28.0/cache/local_file_checksum_cache.dat'
+DEBUG: Using cache in '/var/build/build-timo-perl-5.28.0/cache/bb_codeparser.dat'
+Entering server connection loop
+Accepting [<socket.socket fd=7, family=AddressFamily.AF_UNIX, type=SocketKind.SOCK_STREAM, proto=0, laddr=bitbake.sock>]
+Connecting Client
+Running command ['setFeatures', [2]]
+Running command ['updateConfig', {'abort': True, 'force': False, 'invalidate_stamp': None, 'verbose': False, 'debug': 0, 'dry_run': False, 'dump_signatures': [], 'debug_domains': [], 'extra_assume_provided': [], 'profile': False, 'prefile': [], 'postfile': [], 'server_timeout': None}, {'HTTP_PROXY': 'http://proxy-us.intel.com:911/', 'USER': 'ttorling', 'FTP_PROXY': 'http://proxy.jf.intel.com:1080/', 'PWD': '/home/ttorling/Projects/openembedded-core/meta/recipes-devtools/perl/perl', 'HOME': '/home/ttorling', 'BBPATH': '/var/build/build-timo-perl-5.28.0', 'https_proxy': 'https://proxy-us.intel.com:912/', 'http_proxy': 'http://proxy-us.intel.com:911/', 'BB_ENV_EXTRAWHITE': 'ALL_PROXY BBPATH_EXTRA BB_NO_NETWORK BB_NUMBER_THREADS BB_SETSCENE_ENFORCE BB_SRCREV_POLICY DISTRO FTPS_PROXY FTP_PROXY GIT_PROXY_COMMAND HTTPS_PROXY HTTP_PROXY MACHINE NO_PROXY PARALLEL_MAKE SCREENDIR SDKMACHINE SOCKS5_PASSWD SOCKS5_USER SSH_AGENT_PID SSH_AUTH_SOCK STAMPS_DIR TCLIBC TCMODE all_proxy ftp_proxy ftps_proxy http_proxy https_proxy no_proxy ', 'ALL_PROXY': 'socks://proxy-us.intel.com:1080/', 'no_proxy': '*.jf.intel.com,*.ostc.intel.com,*.devtools.intel.com, certificates.intel.com', 'NO_PROXY': '*.jf.intel.com,*.ostc.intel.com,*.devtools.intel.com, certificates.intel.com', 'GIT_PROXY_COMMAND': '/usr/bin/oe-git-proxy', 'HTTPS_PROXY': 'https://proxy-us.intel.com:912/', 'TERM': 'xterm-256color', 'SHELL': '/bin/bash', 'all_proxy': 'socks://proxy-us.intel.com:1080/', 'LOGNAME': 'ttorling', 'PATH': '/home/ttorling/Projects/openembedded-core/scripts:/home/ttorling/Projects/bitbake/bin:/usr/libexec/python3-sphinx:/usr/lib64/ccache:/usr/local/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/home/ttorling/.local/bin:/home/ttorling/bin', 'ftp_proxy': 'http://proxy-us.intel.com:1080/', 'LC_ALL': 'en_US.UTF-8', 'LS_COLORS': 'no=00:fi=00:di=34:ow=34;40:ln=35:pi=30;44:so=35;44:do=35;44:bd=33;44:cd=37;44:or=05;37;41:mi=05;37;41:ex=01;31:*.cmd=01;31:*.exe=01;31:*.com=01;31:*.bat=01;31:*.reg=01;31:*.app=01;31:*.txt=32:*.org=32:*.md=32:*.mkd=32:*.h=32:*.hpp=32:*.c=32:*.C=32:*.cc=32:*.cpp=32:*.cxx=32:*.objc=32:*.cl=32:*.sh=32:*.bash=32:*.csh=32:*.zsh=32:*.el=32:*.vim=32:*.java=32:*.pl=32:*.pm=32:*.py=32:*.rb=32:*.hs=32:*.php=32:*.htm=32:*.html=32:*.shtml=32:*.erb=32:*.haml=32:*.xml=32:*.rdf=32:*.css=32:*.sass=32:*.scss=32:*.less=32:*.js=32:*.coffee=32:*.man=32:*.0=32:*.1=32:*.2=32:*.3=32:*.4=32:*.5=32:*.6=32:*.7=32:*.8=32:*.9=32:*.l=32:*.n=32:*.p=32:*.pod=32:*.tex=32:*.go=32:*.sql=32:*.csv=32:*.bmp=33:*.cgm=33:*.dl=33:*.dvi=33:*.emf=33:*.eps=33:*.gif=33:*.jpeg=33:*.jpg=33:*.JPG=33:*.mng=33:*.pbm=33:*.pcx=33:*.pdf=33:*.pgm=33:*.png=33:*.PNG=33:*.ppm=33:*.pps=33:*.ppsx=33:*.ps=33:*.svg=33:*.svgz=33:*.tga=33:*.tif=33:*.tiff=33:*.xbm=33:*.xcf=33:*.xpm=33:*.xwd=33:*.xwd=33:*.yuv=33:*.aac=33:*.au=33:*.flac=33:*.m4a=33:*.mid=33:*.midi=33:*.mka=33:*.mp3=33:*.mpa=33:*.mpeg=33:*.mpg=33:*.ogg=33:*.opus=33:*.ra=33:*.wav=33:*.anx=33:*.asf=33:*.avi=33:*.axv=33:*.flc=33:*.fli=33:*.flv=33:*.gl=33:*.m2v=33:*.m4v=33:*.mkv=33:*.mov=33:*.MOV=33:*.mp4=33:*.mp4v=33:*.mpeg=33:*.mpg=33:*.nuv=33:*.ogm=33:*.ogv=33:*.ogx=33:*.qt=33:*.rm=33:*.rmvb=33:*.swf=33:*.vob=33:*.webm=33:*.wmv=33:*.doc=31:*.docx=31:*.rtf=31:*.odt=31:*.dot=31:*.dotx=31:*.ott=31:*.xls=31:*.xlsx=31:*.ods=31:*.ots=31:*.ppt=31:*.pptx=31:*.odp=31:*.otp=31:*.fla=31:*.psd=31:*.7z=1;35:*.apk=1;35:*.arj=1;35:*.bin=1;35:*.bz=1;35:*.bz2=1;35:*.cab=1;35:*.deb=1;35:*.dmg=1;35:*.gem=1;35:*.gz=1;35:*.iso=1;35:*.jar=1;35:*.msi=1;35:*.rar=1;35:*.rpm=1;35:*.tar=1;35:*.tbz=1;35:*.tbz2=1;35:*.tgz=1;35:*.tx=1;35:*.war=1;35:*.xpi=1;35:*.xz=1;35:*.z=1;35:*.Z=1;35:*.zip=1;35:*.ANSI-30-black=30:*.ANSI-01;30-brblack=01;30:*.ANSI-31-red=31:*.ANSI-01;31-brred=01;31:*.ANSI-32-green=32:*.ANSI-01;32-brgreen=01;32:*.ANSI-33-yellow=33:*.ANSI-01;33-bryellow=01;33:*.ANSI-34-blue=34:*.ANSI-01;34-brblue=01;34:*.ANSI-35-magenta=35:*.ANSI-01;35-brmagenta=01;35:*.ANSI-36-cyan=36:*.ANSI-01;36-brcyan=01;36:*.ANSI-37-white=37:*.ANSI-01;37-brwhite=01;37:*.log=01;32:*~=01;32:*#=01;32:*.bak=01;33:*.BAK=01;33:*.old=01;33:*.OLD=01;33:*.org_archive=01;33:*.off=01;33:*.OFF=01;33:*.dist=01;33:*.DIST=01;33:*.orig=01;33:*.ORIG=01;33:*.swp=01;33:*.swo=01;33:*,v=01;33:*.gpg=34:*.gpg=34:*.pgp=34:*.asc=34:*.3des=34:*.aes=34:*.enc=34:*.sqlite=34:', 'SSH_CONNECTION': '10.254.107.201 59657 10.54.74.39 22', 'LANG': 'en_US.UTF-8', 'HISTCONTROL': 'ignoredups', 'GUESTFISH_RESTORE': '\\e[0m', 'HOSTNAME': 'chiron.jf.intel.com', 'OLDPWD': '/home/ttorling/Projects/openembedded-core/meta/recipes-devtools/perl/perl/debian', 'GUESTFISH_INIT': '\\e[1;34m', 'XDG_SESSION_ID': '4715', 'GUESTFISH_PS1': '\\[\\e[1;32m\\]><fs>\\[\\e[0;31m\\] ', 'SELINUX_ROLE_REQUESTED': '', 'SSH_CLIENT': '10.254.107.201 59657 22', 'SELINUX_LEVEL_REQUESTED': '', 'XDG_DATA_DIRS': '/home/ttorling/.local/share/flatpak/exports/share:/var/lib/flatpak/exports/share:/usr/local/share:/usr/share', 'LOADEDMODULES': 'python-sphinx/python3-sphinx', 'BUILDDIR': '/var/build/build-timo-perl-5.28.0', 'SSH_TTY': '/dev/pts/5', 'MAIL': '/var/spool/mail/ttorling', 'SOCKS_PROXY': 'socks://proxy-us.intel.com:1080/', 'socks_proxy': 'socks://proxy-us.intel.com:1080/', 'SELINUX_USE_CURRENT_RANGE': '', 'SHLVL': '1', 'MODULEPATH': '/etc/scl/modulefiles:/usr/share/Modules/modulefiles:/etc/modulefiles:/usr/share/modulefiles', 'DBUS_SESSION_BUS_ADDRESS': 'unix:path=/run/user/1000/bus', 'XDG_RUNTIME_DIR': '/run/user/1000', '_LMFILES_': '/usr/share/modulefiles/python-sphinx/python3-sphinx', 'GUESTFISH_OUTPUT': '\\e[0m', 'MODULESHOME': '/usr/share/Modules', 'HISTSIZE': '1000', 'LESSOPEN': '||/usr/bin/lesspipe.sh %s', 'BASH_FUNC_module%%': '() {  eval `/usr/bin/modulecmd bash $*`\n}', 'BASH_FUNC_scl%%': '() {  if [ "$1" = "load" -o "$1" = "unload" ]; then\n eval "module $@";\n else\n /usr/bin/scl "$@";\n fi\n}', '_': '/home/ttorling/Projects/bitbake/bin/bitbake'}, ['/home/ttorling/Projects/bitbake/bin/bitbake', 'perl-native', '-c', 'cleanall']]
+Running command ['getVariable', 'BBINCLUDELOGS']
+Running command ['getVariable', 'BBINCLUDELOGS_LINES']
+Running command ['getSetVariable', 'BB_CONSOLELOG']
+Running command ['getUIHandlerNum']
+Running command ['setEventMask', 1, 20, {}, ['bb.runqueue.runQueueExitWait', 'bb.event.LogExecTTY', 'logging.LogRecord', 'bb.build.TaskFailed', 'bb.build.TaskBase', 'bb.event.ParseStarted', 'bb.event.ParseProgress', 'bb.event.ParseCompleted', 'bb.event.CacheLoadStarted', 'bb.event.CacheLoadProgress', 'bb.event.CacheLoadCompleted', 'bb.command.CommandFailed', 'bb.command.CommandExit', 'bb.command.CommandCompleted', 'bb.cooker.CookerExit', 'bb.event.MultipleProviders', 'bb.event.NoProvider', 'bb.runqueue.sceneQueueTaskStarted', 'bb.runqueue.runQueueTaskStarted', 'bb.runqueue.runQueueTaskFailed', 'bb.runqueue.sceneQueueTaskFailed', 'bb.event.BuildBase', 'bb.build.TaskStarted', 'bb.build.TaskSucceeded', 'bb.build.TaskFailedSilent', 'bb.build.TaskProgress', 'bb.event.ProcessStarted', 'bb.event.ProcessProgress', 'bb.event.ProcessFinished']]
+Running command ['setConfig', 'cmd', 'cleanall']
+Running command ['buildTargets', ['perl-native'], 'cleanall']
+Connecting Client
+Disconnecting Client
+No timeout, exiting.
+Exiting
+--- Starting bitbake server pid 12671 at 2018-07-05 21:16:22.503888 ---
+Started bitbake server pid 12671
+DEBUG: Found bblayers.conf (/var/build/build-timo-perl-5.28.0/conf/bblayers.conf)
+DEBUG: Adding layer /home/ttorling/Projects/openembedded-core/meta
+DEBUG: CONF /home/ttorling/Projects/openembedded-core/meta/conf/bitbake.conf:746: including conf/abi_version.conf
+DEBUG: CONF /home/ttorling/Projects/openembedded-core/meta/conf/bitbake.conf:747: including conf/site.conf
+DEBUG: CONF file 'conf/site.conf' not found
+DEBUG: CONF /home/ttorling/Projects/openembedded-core/meta/conf/bitbake.conf:748: including conf/auto.conf
+DEBUG: CONF file 'conf/auto.conf' not found
+DEBUG: CONF /home/ttorling/Projects/openembedded-core/meta/conf/bitbake.conf:749: including conf/local.conf
+DEBUG: CONF /home/ttorling/Projects/openembedded-core/meta/conf/bitbake.conf:750: including conf/multiconfig/default.conf
+DEBUG: CONF /home/ttorling/Projects/openembedded-core/meta/conf/bitbake.conf:751: including conf/machine/qemux86.conf
+DEBUG: CONF /home/ttorling/Projects/openembedded-core/meta/conf/machine/qemux86.conf:10: including conf/machine/include/qemu.inc
+DEBUG: CONF /home/ttorling/Projects/openembedded-core/meta/conf/machine/qemux86.conf:11: including conf/machine/include/tune-i586.inc
+DEBUG: CONF /home/ttorling/Projects/openembedded-core/meta/conf/machine/include/tune-i586.inc:3: including conf/machine/include/x86/arch-x86.inc
+DEBUG: CONF /home/ttorling/Projects/openembedded-core/meta/conf/machine/qemux86.conf:12: including conf/machine/include/qemuboot-x86.inc
+DEBUG: CONF /home/ttorling/Projects/openembedded-core/meta/conf/bitbake.conf:752: including conf/machine-sdk/x86_64.conf
+DEBUG: CONF /home/ttorling/Projects/openembedded-core/meta/conf/bitbake.conf:753: including conf/distro/nodistro.conf
+DEBUG: CONF file 'conf/distro/nodistro.conf' not found
+DEBUG: CONF /home/ttorling/Projects/openembedded-core/meta/conf/bitbake.conf:754: including conf/distro/defaultsetup.conf
+DEBUG: CONF /home/ttorling/Projects/openembedded-core/meta/conf/distro/defaultsetup.conf:1: including conf/distro/include/default-providers.inc
+DEBUG: CONF /home/ttorling/Projects/openembedded-core/meta/conf/distro/defaultsetup.conf:2: including conf/distro/include/default-versions.inc
+DEBUG: CONF /home/ttorling/Projects/openembedded-core/meta/conf/distro/defaultsetup.conf:3: including conf/distro/include/default-distrovars.inc
+DEBUG: CONF /home/ttorling/Projects/openembedded-core/meta/conf/distro/defaultsetup.conf:4: including conf/distro/include/world-broken.inc
+DEBUG: CONF /home/ttorling/Projects/openembedded-core/meta/conf/distro/defaultsetup.conf:7: including conf/distro/include/tcmode-default.inc
+DEBUG: CONF /home/ttorling/Projects/openembedded-core/meta/conf/distro/defaultsetup.conf:10: including conf/distro/include/tclibc-glibc.inc
+DEBUG: CONF /home/ttorling/Projects/openembedded-core/meta/conf/distro/defaultsetup.conf:12: including conf/distro/include/uninative-flags.inc
+DEBUG: CONF /home/ttorling/Projects/openembedded-core/meta/conf/bitbake.conf:755: including conf/documentation.conf
+DEBUG: CONF /home/ttorling/Projects/openembedded-core/meta/conf/bitbake.conf:756: including conf/licenses.conf
+DEBUG: CONF /home/ttorling/Projects/openembedded-core/meta/conf/bitbake.conf:757: including conf/sanity.conf
+DEBUG: Inheriting /home/ttorling/Projects/openembedded-core/meta/classes/base.bbclass (from configuration INHERITs:0)
+DEBUG: Inheriting /home/ttorling/Projects/openembedded-core/meta/classes/patch.bbclass (from /home/ttorling/Projects/openembedded-core/meta/classes/base.bbclass:4)
+DEBUG: Inheriting /home/ttorling/Projects/openembedded-core/meta/classes/terminal.bbclass (from /home/ttorling/Projects/openembedded-core/meta/classes/patch.bbclass:11)
+DEBUG: Inheriting /home/ttorling/Projects/openembedded-core/meta/classes/staging.bbclass (from /home/ttorling/Projects/openembedded-core/meta/classes/base.bbclass:5)
+DEBUG: Inheriting /home/ttorling/Projects/openembedded-core/meta/classes/mirrors.bbclass (from /home/ttorling/Projects/openembedded-core/meta/classes/base.bbclass:7)
+DEBUG: Inheriting /home/ttorling/Projects/openembedded-core/meta/classes/utils.bbclass (from /home/ttorling/Projects/openembedded-core/meta/classes/base.bbclass:8)
+DEBUG: Inheriting /home/ttorling/Projects/openembedded-core/meta/classes/utility-tasks.bbclass (from /home/ttorling/Projects/openembedded-core/meta/classes/base.bbclass:9)
+DEBUG: Inheriting /home/ttorling/Projects/openembedded-core/meta/classes/metadata_scm.bbclass (from /home/ttorling/Projects/openembedded-core/meta/classes/base.bbclass:10)
+DEBUG: Inheriting /home/ttorling/Projects/openembedded-core/meta/classes/logging.bbclass (from /home/ttorling/Projects/openembedded-core/meta/classes/base.bbclass:11)
+DEBUG: Inheriting /home/ttorling/Projects/openembedded-core/meta/classes/package_ipk.bbclass (from configuration INHERITs:0)
+DEBUG: Inheriting /home/ttorling/Projects/openembedded-core/meta/classes/package.bbclass (from /home/ttorling/Projects/openembedded-core/meta/classes/package_ipk.bbclass:1)
+DEBUG: Inheriting /home/ttorling/Projects/openembedded-core/meta/classes/packagedata.bbclass (from /home/ttorling/Projects/openembedded-core/meta/classes/package.bbclass:41)
+DEBUG: Inheriting /home/ttorling/Projects/openembedded-core/meta/classes/chrpath.bbclass (from /home/ttorling/Projects/openembedded-core/meta/classes/package.bbclass:42)
+DEBUG: Inheriting /home/ttorling/Projects/openembedded-core/meta/classes/insane.bbclass (from /home/ttorling/Projects/openembedded-core/meta/classes/package.bbclass:45)
+DEBUG: Inheriting /home/ttorling/Projects/openembedded-core/meta/classes/buildstats.bbclass (from configuration INHERITs:0)
+DEBUG: Inheriting /home/ttorling/Projects/openembedded-core/meta/classes/image-mklibs.bbclass (from configuration INHERITs:0)
+DEBUG: Inheriting /home/ttorling/Projects/openembedded-core/meta/classes/linuxloader.bbclass (from /home/ttorling/Projects/openembedded-core/meta/classes/image-mklibs.bbclass:5)
+DEBUG: Inheriting /home/ttorling/Projects/openembedded-core/meta/classes/image-prelink.bbclass (from configuration INHERITs:0)
+DEBUG: Inheriting /home/ttorling/Projects/openembedded-core/meta/classes/debian.bbclass (from configuration INHERITs:0)
+DEBUG: Inheriting /home/ttorling/Projects/openembedded-core/meta/classes/devshell.bbclass (from configuration INHERITs:0)
+DEBUG: Inheriting /home/ttorling/Projects/openembedded-core/meta/classes/sstate.bbclass (from configuration INHERITs:0)
+DEBUG: Inheriting /home/ttorling/Projects/openembedded-core/meta/classes/license.bbclass (from configuration INHERITs:0)
+DEBUG: Inheriting /home/ttorling/Projects/openembedded-core/meta/classes/remove-libtool.bbclass (from configuration INHERITs:0)
+DEBUG: Inheriting /home/ttorling/Projects/openembedded-core/meta/classes/blacklist.bbclass (from configuration INHERITs:0)
+DEBUG: Inheriting /home/ttorling/Projects/openembedded-core/meta/classes/sanity.bbclass (from configuration INHERITs:0)
+DEBUG: Clearing SRCREV cache due to cache policy of: clear
+DEBUG: Using cache in '/var/build/build-timo-perl-5.28.0/cache/local_file_checksum_cache.dat'
+DEBUG: Using cache in '/var/build/build-timo-perl-5.28.0/cache/bb_codeparser.dat'
+Entering server connection loop
+Accepting [<socket.socket fd=7, family=AddressFamily.AF_UNIX, type=SocketKind.SOCK_STREAM, proto=0, laddr=bitbake.sock>]
+Connecting Client
+Running command ['setFeatures', [2]]
+Running command ['updateConfig', {'abort': True, 'force': False, 'invalidate_stamp': None, 'verbose': False, 'debug': 0, 'dry_run': False, 'dump_signatures': [], 'debug_domains': [], 'extra_assume_provided': [], 'profile': False, 'prefile': [], 'postfile': [], 'server_timeout': None}, {'HTTP_PROXY': 'http://proxy-us.intel.com:911/', 'USER': 'ttorling', 'FTP_PROXY': 'http://proxy.jf.intel.com:1080/', 'PWD': '/home/ttorling/Projects/openembedded-core/meta/recipes-devtools/perl/perl', 'HOME': '/home/ttorling', 'BBPATH': '/var/build/build-timo-perl-5.28.0', 'https_proxy': 'https://proxy-us.intel.com:912/', 'http_proxy': 'http://proxy-us.intel.com:911/', 'BB_ENV_EXTRAWHITE': 'ALL_PROXY BBPATH_EXTRA BB_NO_NETWORK BB_NUMBER_THREADS BB_SETSCENE_ENFORCE BB_SRCREV_POLICY DISTRO FTPS_PROXY FTP_PROXY GIT_PROXY_COMMAND HTTPS_PROXY HTTP_PROXY MACHINE NO_PROXY PARALLEL_MAKE SCREENDIR SDKMACHINE SOCKS5_PASSWD SOCKS5_USER SSH_AGENT_PID SSH_AUTH_SOCK STAMPS_DIR TCLIBC TCMODE all_proxy ftp_proxy ftps_proxy http_proxy https_proxy no_proxy ', 'ALL_PROXY': 'socks://proxy-us.intel.com:1080/', 'no_proxy': '*.jf.intel.com,*.ostc.intel.com,*.devtools.intel.com, certificates.intel.com', 'NO_PROXY': '*.jf.intel.com,*.ostc.intel.com,*.devtools.intel.com, certificates.intel.com', 'GIT_PROXY_COMMAND': '/usr/bin/oe-git-proxy', 'HTTPS_PROXY': 'https://proxy-us.intel.com:912/', 'TERM': 'xterm-256color', 'SHELL': '/bin/bash', 'all_proxy': 'socks://proxy-us.intel.com:1080/', 'LOGNAME': 'ttorling', 'PATH': '/home/ttorling/Projects/openembedded-core/scripts:/home/ttorling/Projects/bitbake/bin:/usr/libexec/python3-sphinx:/usr/lib64/ccache:/usr/local/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/home/ttorling/.local/bin:/home/ttorling/bin', 'ftp_proxy': 'http://proxy-us.intel.com:1080/', 'LC_ALL': 'en_US.UTF-8', 'LS_COLORS': 'no=00:fi=00:di=34:ow=34;40:ln=35:pi=30;44:so=35;44:do=35;44:bd=33;44:cd=37;44:or=05;37;41:mi=05;37;41:ex=01;31:*.cmd=01;31:*.exe=01;31:*.com=01;31:*.bat=01;31:*.reg=01;31:*.app=01;31:*.txt=32:*.org=32:*.md=32:*.mkd=32:*.h=32:*.hpp=32:*.c=32:*.C=32:*.cc=32:*.cpp=32:*.cxx=32:*.objc=32:*.cl=32:*.sh=32:*.bash=32:*.csh=32:*.zsh=32:*.el=32:*.vim=32:*.java=32:*.pl=32:*.pm=32:*.py=32:*.rb=32:*.hs=32:*.php=32:*.htm=32:*.html=32:*.shtml=32:*.erb=32:*.haml=32:*.xml=32:*.rdf=32:*.css=32:*.sass=32:*.scss=32:*.less=32:*.js=32:*.coffee=32:*.man=32:*.0=32:*.1=32:*.2=32:*.3=32:*.4=32:*.5=32:*.6=32:*.7=32:*.8=32:*.9=32:*.l=32:*.n=32:*.p=32:*.pod=32:*.tex=32:*.go=32:*.sql=32:*.csv=32:*.bmp=33:*.cgm=33:*.dl=33:*.dvi=33:*.emf=33:*.eps=33:*.gif=33:*.jpeg=33:*.jpg=33:*.JPG=33:*.mng=33:*.pbm=33:*.pcx=33:*.pdf=33:*.pgm=33:*.png=33:*.PNG=33:*.ppm=33:*.pps=33:*.ppsx=33:*.ps=33:*.svg=33:*.svgz=33:*.tga=33:*.tif=33:*.tiff=33:*.xbm=33:*.xcf=33:*.xpm=33:*.xwd=33:*.xwd=33:*.yuv=33:*.aac=33:*.au=33:*.flac=33:*.m4a=33:*.mid=33:*.midi=33:*.mka=33:*.mp3=33:*.mpa=33:*.mpeg=33:*.mpg=33:*.ogg=33:*.opus=33:*.ra=33:*.wav=33:*.anx=33:*.asf=33:*.avi=33:*.axv=33:*.flc=33:*.fli=33:*.flv=33:*.gl=33:*.m2v=33:*.m4v=33:*.mkv=33:*.mov=33:*.MOV=33:*.mp4=33:*.mp4v=33:*.mpeg=33:*.mpg=33:*.nuv=33:*.ogm=33:*.ogv=33:*.ogx=33:*.qt=33:*.rm=33:*.rmvb=33:*.swf=33:*.vob=33:*.webm=33:*.wmv=33:*.doc=31:*.docx=31:*.rtf=31:*.odt=31:*.dot=31:*.dotx=31:*.ott=31:*.xls=31:*.xlsx=31:*.ods=31:*.ots=31:*.ppt=31:*.pptx=31:*.odp=31:*.otp=31:*.fla=31:*.psd=31:*.7z=1;35:*.apk=1;35:*.arj=1;35:*.bin=1;35:*.bz=1;35:*.bz2=1;35:*.cab=1;35:*.deb=1;35:*.dmg=1;35:*.gem=1;35:*.gz=1;35:*.iso=1;35:*.jar=1;35:*.msi=1;35:*.rar=1;35:*.rpm=1;35:*.tar=1;35:*.tbz=1;35:*.tbz2=1;35:*.tgz=1;35:*.tx=1;35:*.war=1;35:*.xpi=1;35:*.xz=1;35:*.z=1;35:*.Z=1;35:*.zip=1;35:*.ANSI-30-black=30:*.ANSI-01;30-brblack=01;30:*.ANSI-31-red=31:*.ANSI-01;31-brred=01;31:*.ANSI-32-green=32:*.ANSI-01;32-brgreen=01;32:*.ANSI-33-yellow=33:*.ANSI-01;33-bryellow=01;33:*.ANSI-34-blue=34:*.ANSI-01;34-brblue=01;34:*.ANSI-35-magenta=35:*.ANSI-01;35-brmagenta=01;35:*.ANSI-36-cyan=36:*.ANSI-01;36-brcyan=01;36:*.ANSI-37-white=37:*.ANSI-01;37-brwhite=01;37:*.log=01;32:*~=01;32:*#=01;32:*.bak=01;33:*.BAK=01;33:*.old=01;33:*.OLD=01;33:*.org_archive=01;33:*.off=01;33:*.OFF=01;33:*.dist=01;33:*.DIST=01;33:*.orig=01;33:*.ORIG=01;33:*.swp=01;33:*.swo=01;33:*,v=01;33:*.gpg=34:*.gpg=34:*.pgp=34:*.asc=34:*.3des=34:*.aes=34:*.enc=34:*.sqlite=34:', 'SSH_CONNECTION': '10.254.107.201 59657 10.54.74.39 22', 'LANG': 'en_US.UTF-8', 'HISTCONTROL': 'ignoredups', 'GUESTFISH_RESTORE': '\\e[0m', 'HOSTNAME': 'chiron.jf.intel.com', 'OLDPWD': '/home/ttorling/Projects/openembedded-core/meta/recipes-devtools/perl/perl/debian', 'GUESTFISH_INIT': '\\e[1;34m', 'XDG_SESSION_ID': '4715', 'GUESTFISH_PS1': '\\[\\e[1;32m\\]><fs>\\[\\e[0;31m\\] ', 'SELINUX_ROLE_REQUESTED': '', 'SSH_CLIENT': '10.254.107.201 59657 22', 'SELINUX_LEVEL_REQUESTED': '', 'XDG_DATA_DIRS': '/home/ttorling/.local/share/flatpak/exports/share:/var/lib/flatpak/exports/share:/usr/local/share:/usr/share', 'LOADEDMODULES': 'python-sphinx/python3-sphinx', 'BUILDDIR': '/var/build/build-timo-perl-5.28.0', 'SSH_TTY': '/dev/pts/5', 'MAIL': '/var/spool/mail/ttorling', 'SOCKS_PROXY': 'socks://proxy-us.intel.com:1080/', 'socks_proxy': 'socks://proxy-us.intel.com:1080/', 'SELINUX_USE_CURRENT_RANGE': '', 'SHLVL': '1', 'MODULEPATH': '/etc/scl/modulefiles:/usr/share/Modules/modulefiles:/etc/modulefiles:/usr/share/modulefiles', 'DBUS_SESSION_BUS_ADDRESS': 'unix:path=/run/user/1000/bus', 'XDG_RUNTIME_DIR': '/run/user/1000', '_LMFILES_': '/usr/share/modulefiles/python-sphinx/python3-sphinx', 'GUESTFISH_OUTPUT': '\\e[0m', 'MODULESHOME': '/usr/share/Modules', 'HISTSIZE': '1000', 'LESSOPEN': '||/usr/bin/lesspipe.sh %s', 'BASH_FUNC_module%%': '() {  eval `/usr/bin/modulecmd bash $*`\n}', 'BASH_FUNC_scl%%': '() {  if [ "$1" = "load" -o "$1" = "unload" ]; then\n eval "module $@";\n else\n /usr/bin/scl "$@";\n fi\n}', '_': '/home/ttorling/Projects/bitbake/bin/bitbake'}, ['/home/ttorling/Projects/bitbake/bin/bitbake', 'perl-native']]
+Running command ['getVariable', 'BBINCLUDELOGS']
+Running command ['getVariable', 'BBINCLUDELOGS_LINES']
+Running command ['getSetVariable', 'BB_CONSOLELOG']
+Running command ['getUIHandlerNum']
+Running command ['setEventMask', 1, 20, {}, ['bb.runqueue.runQueueExitWait', 'bb.event.LogExecTTY', 'logging.LogRecord', 'bb.build.TaskFailed', 'bb.build.TaskBase', 'bb.event.ParseStarted', 'bb.event.ParseProgress', 'bb.event.ParseCompleted', 'bb.event.CacheLoadStarted', 'bb.event.CacheLoadProgress', 'bb.event.CacheLoadCompleted', 'bb.command.CommandFailed', 'bb.command.CommandExit', 'bb.command.CommandCompleted', 'bb.cooker.CookerExit', 'bb.event.MultipleProviders', 'bb.event.NoProvider', 'bb.runqueue.sceneQueueTaskStarted', 'bb.runqueue.runQueueTaskStarted', 'bb.runqueue.runQueueTaskFailed', 'bb.runqueue.sceneQueueTaskFailed', 'bb.event.BuildBase', 'bb.build.TaskStarted', 'bb.build.TaskSucceeded', 'bb.build.TaskFailedSilent', 'bb.build.TaskProgress', 'bb.event.ProcessStarted', 'bb.event.ProcessProgress', 'bb.event.ProcessFinished']]
+Running command ['getVariable', 'BB_DEFAULT_TASK']
+Running command ['setConfig', 'cmd', 'build']
+Running command ['buildTargets', ['perl-native'], 'build']
+Connecting Client
+Disconnecting Client
+No timeout, exiting.
+Exiting

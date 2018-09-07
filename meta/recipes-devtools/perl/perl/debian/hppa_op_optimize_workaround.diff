@@ -1,0 +1,35 @@
+From 56ec0748c4aab7b4b704f226dfea508d404a6a27 Mon Sep 17 00:00:00 2001
+From: Niko Tyni <ntyni@debian.org>
+Date: Sun, 25 Sep 2016 09:59:22 +0200
+Subject: [PATCH] Temporarily lower the optimization of op.c on hppa due to
+ gcc-6 problems
+
+This fixes a crash in ext/XS-APItest/t/customop.t
+
+It's currently unclear if the problem is with the code or the
+gcc-6 optimizer.
+
+Bug-Debian: https://bugs.debian.org/838613
+Patch-Name: debian/hppa_op_optimize_workaround.diff
+
+---
+ cflags.SH | 6 ++++++
+ 1 file changed, 6 insertions(+)
+
+diff --git a/cflags.SH b/cflags.SH
+index 3af1e97..7a57d7e 100755
+--- a/cflags.SH
++++ b/cflags.SH
+@@ -493,6 +493,12 @@ for file do
+     # or customize here
+ 
+     case "$file" in
++    op) : work around http://bugs.debian.org/838613
++        case $archname in
++        hppa-*)
++            optimize="$optimize -O0";;
++        esac;;
++
+     regcomp) : work around http://bugs.debian.org/754054
+         case $archname in
+         mips-*|mipsel-*)

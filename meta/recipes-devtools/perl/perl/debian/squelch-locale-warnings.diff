@@ -1,7 +1,7 @@
-From 487a6d6ada0b08e6a7276520ebc61cd851005e7c Mon Sep 17 00:00:00 2001
+From dd00a91a2b83a988d3986c0adc3e094c441d909b Mon Sep 17 00:00:00 2001
 From: Niko Tyni <ntyni@debian.org>
 Date: Sun, 3 Oct 2010 21:36:17 +0300
-Subject: Squelch locale warnings in Debian package maintainer scripts
+Subject: [PATCH] Squelch locale warnings in Debian package maintainer scripts
 
 Bug-Debian: http://bugs.debian.org/508764
 
@@ -14,17 +14,17 @@ Any real locale problem will show up after the system upgrade too, and
 the warning will be triggered normally again at that point.
 
 Patch-Name: debian/squelch-locale-warnings.diff
-Upstream-Status: Pending
+
 ---
  locale.c           | 5 ++++-
  pod/perllocale.pod | 8 ++++++++
  2 files changed, 12 insertions(+), 1 deletion(-)
 
 diff --git a/locale.c b/locale.c
-index 7a4a418..fdf911d 100644
+index 258542a..1aeba7b 100644
 --- a/locale.c
 +++ b/locale.c
-@@ -674,7 +674,10 @@ Perl_init_i18nl10n(pTHX_ int printwarn)
+@@ -942,7 +942,10 @@ Perl_init_i18nl10n(pTHX_ int printwarn)
  
      const bool locwarn = (printwarn > 1
                            || (printwarn
@@ -37,10 +37,10 @@ index 7a4a418..fdf911d 100644
                                      /* disallow with "" or "0" */
                                      *bad_lang_use_once
 diff --git a/pod/perllocale.pod b/pod/perllocale.pod
-index 701b422..58cabaf 100644
+index 44da58f..011a506 100644
 --- a/pod/perllocale.pod
 +++ b/pod/perllocale.pod
-@@ -1217,6 +1217,14 @@ B<NOTE>: C<PERL_BADLANG> only gives you a way to hide the warning message.
+@@ -1236,6 +1236,14 @@ B<NOTE>: C<PERL_BADLANG> only gives you a way to hide the warning message.
  The message tells about some problem in your system's locale support,
  and you should investigate what the problem is.
  

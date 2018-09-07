@@ -1,9 +1,18 @@
+From 02b98c2bfe7d6b8e2034ea76c59d4301a8bf94b2 Mon Sep 17 00:00:00 2001
+From: Richard Purdie <richard@openedhand.com>
+Date: Wed, 31 Aug 2005 10:45:47 +0000
+Subject: [PATCH] Initial population
+
 Upstream-Status:Inappropriate [embedded specific]
 
-Index: perl-5.14.2/Cross/Makefile
-===================================================================
---- perl-5.14.2.orig/Cross/Makefile
-+++ perl-5.14.2/Cross/Makefile
+---
+ Cross/Makefile | 24 +++++++-----------------
+ 1 file changed, 7 insertions(+), 17 deletions(-)
+
+diff --git a/Cross/Makefile b/Cross/Makefile
+index 1c91b29..0064336 100644
+--- a/Cross/Makefile
++++ b/Cross/Makefile
 @@ -1,6 +1,7 @@
  ## Toplevel Makefile for cross-compilation of perl
  

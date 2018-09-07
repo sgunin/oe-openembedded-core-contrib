@@ -1,10 +1,19 @@
+From 4ea95a0ffb3d602031f3a4df5beb6589591ca0e7 Mon Sep 17 00:00:00 2001
+From: Nitin A Kamble <nitin.a.kamble@intel.com>
+Date: Wed, 19 Oct 2011 14:53:17 -0700
+Subject: [PATCH] perl: upgrade from 5.12.3 to 5.14.2
+
 Upstream-Status:Inappropriate [embedded specific]
 
-Index: perl-5.24.1/Makefile.SH
-===================================================================
---- perl-5.24.1.orig/Makefile.SH
-+++ perl-5.24.1/Makefile.SH
-@@ -710,7 +710,7 @@ bitcount.h: generate_uudmap\$(HOST_EXE_E
+---
+ Makefile.SH | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/Makefile.SH b/Makefile.SH
+index c6aaf02..e7e3324 100755
+--- a/Makefile.SH
++++ b/Makefile.SH
+@@ -729,7 +729,7 @@ bitcount.h: generate_uudmap\$(HOST_EXE_EXT)
  
  $spitshell >>$Makefile <<'!NO!SUBS!'
  generate_uudmap$(HOST_EXE_EXT): generate_uudmap$(OBJ_EXT)

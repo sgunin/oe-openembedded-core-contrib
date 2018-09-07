@@ -5,21 +5,69 @@ DEPENDS = "db-native grep-native gdbm-native zlib-native"
 
 EXTRA_OEMAKE = "-e MAKEFLAGS="
 
+#file://debian/hppa_opmini_optimize_workaround.diff
+#file://debian/hurd-softupdates.diff
+#file://debian/no_packlist_perllocal.diff
+#file://debian/prune_libs.diff
+#file://debian/sh4_op_optimize_workaround.diff
+#file://debian/writable_site_dirs.diff
+#file://fixes/rename-filexp.U-phase2.diff
+#file://fixes/test-printf-null.diff
 SRC_URI += "\
-           file://Configure-multilib.patch \
-           file://perl-configpm-switch.patch \
-           file://native-nopacklist.patch \
-           file://native-perlinc.patch \
-           file://MM_Unix.pm.patch \
-           file://debian/errno_ver.diff \
-           file://dynaloaderhack.patch \
-           file://perl-PathTools-don-t-filter-out-blib-from-INC.patch \
-           file://0001-Configure-Remove-fstack-protector-strong-for-native-.patch \
-           file://perl-5.26.1-guard_old_libcrypt_fix.patch \
-          "
+        file://debian/configure-regen.diff \
+        file://debian/cpan_definstalldirs.diff \
+        file://debian/cpan-missing-site-dirs.diff \
+        file://debian/db_file_ver.diff \
+        file://debian/deprecate-with-apt.diff \
+        file://debian/doc_info.diff \
+        file://debian/enc2xs_inc.diff \
+        file://debian/errno_ver.diff \
+        file://debian/extutils_set_libperl_path.diff \
+        file://debian/fakeroot.diff \
+        file://debian/find_html2text.diff \
+        file://debian/hppa_op_optimize_workaround.diff \
+        file://debian/installman-utf8.diff \
+        file://debian/instmodsh_doc.diff \
+        file://debian/kfreebsd-softupdates.diff \
+        file://debian/ld_run_path.diff \
+        file://debian/libnet_config_path.diff \
+        file://debian/libperl_embed_doc.diff \
+        file://debian/makemaker-manext.diff \
+        file://debian/makemaker-pasthru.diff \
+        file://debian/mod_paths.diff \
+        file://debian/patchlevel.diff \
+        file://debian/perl5db-x-terminal-emulator.patch \
+        file://debian/perldoc-pager.diff \
+        file://debian/perlivp.diff \
+        file://debian/squelch-locale-warnings.diff \
+        file://fixes/autodie-scope.diff \
+        file://fixes/cpan_web_link.diff \
+        file://fixes/CVE-2018-12015-Archive-Tar-directory-traversal.diff \
+        file://fixes/CVE-2018-6797-testcase.diff \
+        file://fixes/document_makemaker_ccflags.diff \
+        file://fixes/encode-alias-regexp.diff \
+        file://fixes/extutils_file_path_compat.diff \
+        file://fixes/extutils_makemaker_reproducible.diff \
+        file://fixes/file_path_chmod_race.diff \
+        file://fixes/file_path_hurd_errno.diff \
+        file://fixes/getopt-long-2.diff \
+        file://fixes/getopt-long-3.diff \
+        file://fixes/getopt-long-4.diff \
+        file://fixes/json-pp-example.diff \
+        file://fixes/math_complex_doc_angle_units.diff \
+        file://fixes/math_complex_doc_great_circle.diff \
+        file://fixes/math_complex_doc_see_also.diff \
+        file://fixes/memoize-pod.diff \
+        file://fixes/memoize_storable_nstore.diff \
+        file://fixes/packaging_test_skips.diff \
+        file://fixes/rename-filexp.U-phase1.diff \
+        file://fixes/respect_umask.diff \
+        file://fixes/test-builder-reset.diff \
+        file://fixes/time_piece_doc.diff \
+        "
 
-SRC_URI[md5sum] = "04622bc4d3941dc7eb571c52b7c02993"
-SRC_URI[sha256sum] = "7f080287ff64750270689843ae945f02159a33cb8f2fc910248c15befba5db84"
+SRC_URI[md5sum] = "1fa1b53eeff76aa37b17bfc9b2771671"
+SRC_URI[sha256sum] = "0f8c0fb1b0db4681adb75c3ba0dd77a0472b1b359b9e80efd79fc27b4352132c"
 
 inherit native
 
@@ -135,5 +183,5 @@ EOF
 
 # Fix the path in sstate
 SSTATE_SCAN_FILES += "*.pm *.pod *.h *.pl *.sh"
+PACKAGES_DYNAMIC_class-native += "^perl-module-.*native$"
 
-PACKAGES_DYNAMIC_class-native = "^perl-module-.*native$"
