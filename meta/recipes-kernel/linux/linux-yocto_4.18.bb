@@ -23,6 +23,7 @@ SRCREV_meta ?= "73417203913023f9438ea196377a363233857172"
 
 SRC_URI = "git://git.yoctoproject.org/linux-yocto.git;name=machine;branch=${KBRANCH}; \
            git://git.yoctoproject.org/yocto-kernel-cache;type=kmeta;name=meta;branch=yocto-4.18;destsuffix=${KMETA}"
+SRC_URI_append_qemuarm64 = " file://qemuarm64.cfg"
 
 LIC_FILES_CHKSUM = "file://COPYING;md5=bbea815ee2795b2f4230826c0c6b8814"
 LINUX_VERSION ?= "4.18.5"
