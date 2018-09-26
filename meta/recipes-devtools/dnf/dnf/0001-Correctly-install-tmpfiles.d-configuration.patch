@@ -1,0 +1,7 @@
+Index: dnf/etc/tmpfiles.d/CMakeLists.txt
+===================================================================
+--- dnf.orig/etc/tmpfiles.d/CMakeLists.txt
++++ dnf/etc/tmpfiles.d/CMakeLists.txt
+@@ -1 +1 @@
+-INSTALL (FILES dnf.conf DESTINATION /usr/lib/tmpfiles.d/)
++INSTALL (FILES dnf.conf DESTINATION ${SYSCONFDIR}/tmpfiles.d/)
