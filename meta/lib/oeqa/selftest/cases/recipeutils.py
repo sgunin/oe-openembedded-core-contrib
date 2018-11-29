@@ -22,12 +22,21 @@ def tearDownModule():
 class RecipeUtilsTests(OESelftestTestCase):
     """ Tests for the recipeutils module functions """
 
+    def get_selftest_layerdir(self, rd):
+        selftestdir = None
+        for entry in rd.getVar('BBLAYERS').split():
+            if "/meta-selftest" in entry:
+                selftestdir = entry
+        self.assertIsNotNone(selftestdir, msg="Couldn't find meta-selftest layer")
+        return selftestdir
+
+
     def test_patch_recipe_varflag(self):
         import oe.recipeutils
         rd = tinfoil.parse_recipe('python3-async-test')
         vals = {'SRC_URI[md5sum]': 'aaaaaa', 'LICENSE': 'something'}
-        corebase = rd.getVar('COREBASE')
-        patches = oe.recipeutils.patch_recipe(rd, rd.getVar('FILE'), vals, patch=True, relpath=corebase)
+        selftestdir = os.path.dirname(self.get_selftest_layerdir(rd))
+        patches = oe.recipeutils.patch_recipe(rd, rd.getVar('FILE'), vals, patch=True, relpath=selftestdir)
 
         expected_patch = """
 --- a/meta-selftest/recipes-devtools/python/python-async-test.inc
@@ -65,8 +74,8 @@ class RecipeUtilsTests(OESelftestTestCase):
         del val[1]
         val = ' '.join(val)
         vals = {'SRC_URI': val}
-        corebase = rd.getVar('COREBASE')
-        patches = oe.recipeutils.patch_recipe(rd, rd.getVar('FILE'), vals, patch=True, relpath=corebase)
+        selftestdir = os.path.dirname(self.get_selftest_layerdir(rd))
+        patches = oe.recipeutils.patch_recipe(rd, rd.getVar('FILE'), vals, patch=True, relpath=selftestdir)
 
         expected_patch = """
 --- a/meta-selftest/recipes-test/recipeutils/recipeutils-test_1.2.bb
@@ -91,8 +100,8 @@ class RecipeUtilsTests(OESelftestTestCase):
         rd = tinfoil.parse_recipe('recipeutils-test')
         val = rd.getVar('SRC_URI', False).split()
         vals = {'SRC_URI': val[0]}
-        corebase = rd.getVar('COREBASE')
-        patches = oe.recipeutils.patch_recipe(rd, rd.getVar('FILE'), vals, patch=True, relpath=corebase)
+        selftestdir = os.path.dirname(self.get_selftest_layerdir(rd))
+        patches = oe.recipeutils.patch_recipe(rd, rd.getVar('FILE'), vals, patch=True, relpath=selftestdir)
 
         expected_patch = """
 --- a/meta-selftest/recipes-test/recipeutils/recipeutils-test_1.2.bb
