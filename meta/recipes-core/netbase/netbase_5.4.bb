@@ -23,3 +23,14 @@ do_install () {
 }
 
 CONFFILES_${PN} = "${sysconfdir}/hosts"
+
+RDEPENDS_${PN} += "base-files"
+
+pkg_postinst_${PN} () {
+	if [ -s $D${sysconfdir}/hostname ]; then
+		hostname=`cat $D${sysconfdir}/hostname`
+		if ! grep -q "[[:space:]]$hostname[[:space:]]*" $D${sysconfdir}/hosts; then
+			echo "127.0.1.1 $hostname" >> $D${sysconfdir}/hosts
+		fi
+	fi
+}
