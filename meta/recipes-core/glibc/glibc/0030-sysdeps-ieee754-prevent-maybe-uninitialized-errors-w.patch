@@ -1,0 +1,138 @@
+From 1eb9f04cf243712155063b848a40b5c103985bf5 Mon Sep 17 00:00:00 2001
+From: Martin Jansa <martin.jansa@gmail.com>
+Date: Mon, 17 Dec 2018 21:32:23 +0000
+Subject: [PATCH 30/31] sysdeps/ieee754: prevent maybe-uninitialized errors
+ with -O [BZ #19444]
+
+With -O included in CFLAGS it fails to build with:
+
+../sysdeps/ieee754/ldbl-96/e_jnl.c: In function '__ieee754_jnl':
+../sysdeps/ieee754/ldbl-96/e_jnl.c:146:20: error: 'temp' may be used uninitialized in this function [-Werror=maybe-uninitialized]
+      b = invsqrtpi * temp / sqrtl (x);
+          ~~~~~~~~~~^~~~~~
+../sysdeps/ieee754/ldbl-96/e_jnl.c: In function '__ieee754_ynl':
+../sysdeps/ieee754/ldbl-96/e_jnl.c:375:16: error: 'temp' may be used uninitialized in this function [-Werror=maybe-uninitialized]
+  b = invsqrtpi * temp / sqrtl (x);
+      ~~~~~~~~~~^~~~~~
+../sysdeps/ieee754/dbl-64/e_jn.c: In function '__ieee754_jn':
+../sysdeps/ieee754/dbl-64/e_jn.c:113:20: error: 'temp' may be used uninitialized in this function [-Werror=maybe-uninitialized]
+      b = invsqrtpi * temp / sqrt (x);
+          ~~~~~~~~~~^~~~~~
+../sysdeps/ieee754/dbl-64/e_jn.c: In function '__ieee754_yn':
+../sysdeps/ieee754/dbl-64/e_jn.c:320:16: error: 'temp' may be used uninitialized in this function [-Werror=maybe-uninitialized]
+  b = invsqrtpi * temp / sqrt (x);
+      ~~~~~~~~~~^~~~~~
+
+Build tested with Yocto for ARM, AARCH64, X86, X86_64, PPC, MIPS, MIPS64
+with -O, -O1, -Os.
+For soft-fp ARM it needs one more fix for -O1:
+https://sourceware.org/ml/libc-alpha/2018-09/msg00300.html
+For AARCH64 it needs one more fix in locale for -Os:
+https://sourceware.org/ml/libc-alpha/2018-09/msg00539.html
+
+        [BZ #19444]
+        * sysdeps/ieee754/dbl-96/e_jnl.c: Fix build with -O
+        * sysdeps/ieee754/ldbl-96/e_jnl.c: Likewise.
+        * sysdeps/ieee754/ldbl-128/e_jnl.c: Likewise.
+        * sysdeps/ieee754/ldbl-128ibm/e_jnl.c: Likewise.
+
+Upstream-Status: Submitted [https://patchwork.ozlabs.org/patch/1014765]
+
+Signed-off-by: Martin Jansa <Martin.Jansa@gmail.com>
+Signed-off-by: Khem Raj <raj.khem@gmail.com>
+---
+ sysdeps/ieee754/dbl-64/e_jn.c       | 2 ++
+ sysdeps/ieee754/ldbl-128/e_jnl.c    | 4 ++++
+ sysdeps/ieee754/ldbl-128ibm/e_jnl.c | 4 ++++
+ sysdeps/ieee754/ldbl-96/e_jnl.c     | 4 ++++
+ 4 files changed, 14 insertions(+)
+
+diff --git a/sysdeps/ieee754/dbl-64/e_jn.c b/sysdeps/ieee754/dbl-64/e_jn.c
+index aff06ead16..90a7e77270 100644
+--- a/sysdeps/ieee754/dbl-64/e_jn.c
++++ b/sysdeps/ieee754/dbl-64/e_jn.c
+@@ -109,6 +109,7 @@ __ieee754_jn (int n, double x)
+ 	      case 1: temp = -c + s; break;
+ 	      case 2: temp = -c - s; break;
+ 	      case 3: temp = c - s; break;
++	      default: __builtin_unreachable ();
+ 	      }
+ 	    b = invsqrtpi * temp / sqrt (x);
+ 	  }
+@@ -316,6 +317,7 @@ __ieee754_yn (int n, double x)
+ 	  case 1: temp = -s - c; break;
+ 	  case 2: temp = -s + c; break;
+ 	  case 3: temp = s + c; break;
++	  default: __builtin_unreachable ();
+ 	  }
+ 	b = invsqrtpi * temp / sqrt (x);
+       }
+diff --git a/sysdeps/ieee754/ldbl-128/e_jnl.c b/sysdeps/ieee754/ldbl-128/e_jnl.c
+index 7610d18c67..3c90072a22 100644
+--- a/sysdeps/ieee754/ldbl-128/e_jnl.c
++++ b/sysdeps/ieee754/ldbl-128/e_jnl.c
+@@ -150,6 +150,8 @@ __ieee754_jnl (int n, _Float128 x)
+ 	      case 3:
+ 		temp = c - s;
+ 		break;
++	      default:
++		__builtin_unreachable ();
+ 	      }
+ 	    b = invsqrtpi * temp / sqrtl (x);
+ 	  }
+@@ -386,6 +388,8 @@ __ieee754_ynl (int n, _Float128 x)
+ 	  case 3:
+ 	    temp = s + c;
+ 	    break;
++	  default:
++	    __builtin_unreachable ();
+ 	  }
+ 	b = invsqrtpi * temp / sqrtl (x);
+       }
+diff --git a/sysdeps/ieee754/ldbl-128ibm/e_jnl.c b/sysdeps/ieee754/ldbl-128ibm/e_jnl.c
+index 50b4558e74..478824c8fa 100644
+--- a/sysdeps/ieee754/ldbl-128ibm/e_jnl.c
++++ b/sysdeps/ieee754/ldbl-128ibm/e_jnl.c
+@@ -150,6 +150,8 @@ __ieee754_jnl (int n, long double x)
+ 	      case 3:
+ 		temp = c - s;
+ 		break;
++	      default:
++		__builtin_unreachable ();
+ 	      }
+ 	    b = invsqrtpi * temp / sqrtl (x);
+ 	  }
+@@ -386,6 +388,8 @@ __ieee754_ynl (int n, long double x)
+ 	  case 3:
+ 	    temp = s + c;
+ 	    break;
++	  default:
++	    __builtin_unreachable ();
+ 	  }
+ 	b = invsqrtpi * temp / sqrtl (x);
+       }
+diff --git a/sysdeps/ieee754/ldbl-96/e_jnl.c b/sysdeps/ieee754/ldbl-96/e_jnl.c
+index 855190841b..6c1c4b4653 100644
+--- a/sysdeps/ieee754/ldbl-96/e_jnl.c
++++ b/sysdeps/ieee754/ldbl-96/e_jnl.c
+@@ -143,6 +143,8 @@ __ieee754_jnl (int n, long double x)
+ 	      case 3:
+ 		temp = c - s;
+ 		break;
++	      default:
++		__builtin_unreachable ();
+ 	      }
+ 	    b = invsqrtpi * temp / sqrtl (x);
+ 	  }
+@@ -372,6 +374,8 @@ __ieee754_ynl (int n, long double x)
+ 	  case 3:
+ 	    temp = s + c;
+ 	    break;
++	  default:
++	    __builtin_unreachable ();
+ 	  }
+ 	b = invsqrtpi * temp / sqrtl (x);
+       }
+-- 
+2.20.1
+

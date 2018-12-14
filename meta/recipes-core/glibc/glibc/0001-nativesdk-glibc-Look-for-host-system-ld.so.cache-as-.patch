@@ -1,7 +1,8 @@
-From bd51b3add89a5cb2d8f44029a1027c780b2afff5 Mon Sep 17 00:00:00 2001
+From aee27435f64dfec4b82bb6cd076eec9a1319336c Mon Sep 17 00:00:00 2001
 From: Khem Raj <raj.khem@gmail.com>
 Date: Wed, 18 Mar 2015 01:48:24 +0000
-Subject: [PATCH] nativesdk-glibc: Look for host system ld.so.cache as well
+Subject: [PATCH 01/31] nativesdk-glibc: Look for host system ld.so.cache as
+ well
 
 Upstream-Status: Inappropriate [embedded specific]
 
@@ -63,3 +64,6 @@ index c51e4b3718..44bbb69dc4 100644
        /* Add another newline when we are tracing the library loading.  */
        if (__glibc_unlikely (GLRO(dl_debug_mask) & DL_DEBUG_LIBS))
  	_dl_debug_printf ("\n");
+-- 
+2.20.1
+

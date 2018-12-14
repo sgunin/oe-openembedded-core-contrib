@@ -1,7 +1,8 @@
-From 055dd46b793168fb08e44913153010b088011ba2 Mon Sep 17 00:00:00 2001
+From 54ec801c5fbbe9e84ce430ba317ffd5705e2ff58 Mon Sep 17 00:00:00 2001
 From: Khem Raj <raj.khem@gmail.com>
 Date: Wed, 18 Mar 2015 01:51:38 +0000
-Subject: [PATCH] nativesdk-glibc: Raise the size of arrays containing dl paths
+Subject: [PATCH 03/31] nativesdk-glibc: Raise the size of arrays containing dl
+ paths
 
 This patch puts the dynamic loader path in the binaries, SYSTEM_DIRS strings
 and lengths as well as ld.so.cache path in the dynamic loader to specific
@@ -25,7 +26,7 @@ Signed-off-by: Khem Raj <raj.khem@gmail.com>
  7 files changed, 14 insertions(+), 10 deletions(-)
 
 diff --git a/elf/dl-cache.c b/elf/dl-cache.c
-index 6ee5153ff9..37a5f701fa 100644
+index 6dd99a35b9..776aea1fd5 100644
 --- a/elf/dl-cache.c
 +++ b/elf/dl-cache.c
 @@ -133,6 +133,10 @@ do									      \
@@ -107,7 +108,7 @@ index 1b0c74739f..a70a62d31e 100644
        ++_dl_skip_args;
        --_dl_argc;
 diff --git a/iconv/gconv_conf.c b/iconv/gconv_conf.c
-index f173cde71b..5c3205026f 100644
+index 2b73dd8f45..562a7423f3 100644
 --- a/iconv/gconv_conf.c
 +++ b/iconv/gconv_conf.c
 @@ -36,7 +36,7 @@
@@ -117,8 +118,8 @@ index f173cde71b..5c3205026f 100644
 -static const char default_gconv_path[] = GCONV_PATH;
 +static char default_gconv_path[4096] __attribute__ ((section (".gccrelocprefix"))) = GCONV_PATH;
  
- /* The path elements, as determined by the __gconv_get_path function.
-    All path elements end in a slash.  */
+ /* Type to represent search path.  */
+ struct path_elem
 diff --git a/sysdeps/generic/dl-cache.h b/sysdeps/generic/dl-cache.h
 index cf43f1cf3b..7f07adde53 100644
 --- a/sysdeps/generic/dl-cache.h
@@ -134,3 +135,6 @@ index cf43f1cf3b..7f07adde53 100644
  #ifndef add_system_dir
  # define add_system_dir(dir) add_dir (dir)
  #endif
+-- 
+2.20.1
+

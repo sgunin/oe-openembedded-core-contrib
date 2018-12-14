@@ -1,7 +1,7 @@
-From 4bb23fbb07984b93fd14f353fd9325d927b0cd98 Mon Sep 17 00:00:00 2001
+From 584a321509882f372d6967635afc3d9ee171d14a Mon Sep 17 00:00:00 2001
 From: Khem Raj <raj.khem@gmail.com>
 Date: Wed, 18 Mar 2015 01:33:49 +0000
-Subject: [PATCH] eglibc: Forward port cross locale generation support
+Subject: [PATCH 22/31] eglibc: Forward port cross locale generation support
 
 Upstream-Status: Pending
 
@@ -23,7 +23,7 @@ Signed-off-by: Khem Raj <raj.khem@gmail.com>
  create mode 100644 locale/catnames.c
 
 diff --git a/locale/Makefile b/locale/Makefile
-index fd9972279b..176b3946de 100644
+index 951c6154ac..88df85a88d 100644
 --- a/locale/Makefile
 +++ b/locale/Makefile
 @@ -26,7 +26,8 @@ headers		= langinfo.h locale.h bits/locale.h \
@@ -363,18 +363,18 @@ index 3525c8a43d..f8a7fd9c24 100644
    size_t bufmax = 56;
  
 diff --git a/locale/programs/localedef.c b/locale/programs/localedef.c
-index d718d2e9f4..e0a3ad5a83 100644
+index 6c4936be6b..826dbd8301 100644
 --- a/locale/programs/localedef.c
 +++ b/locale/programs/localedef.c
-@@ -105,6 +105,7 @@ void (*argp_program_version_hook) (FILE *, struct argp_state *) = print_version;
- #define OPT_BIG_ENDIAN 401
+@@ -109,6 +109,7 @@ void (*argp_program_version_hook) (FILE *, struct argp_state *) = print_version;
  #define OPT_NO_WARN 402
  #define OPT_WARN 403
-+#define OPT_UINT32_ALIGN 404
+ #define OPT_NO_HARD_LINKS 404
++#define OPT_UINT32_ALIGN 405
  
  /* Definitions of arguments for argp functions.  */
  static const struct argp_option options[] =
-@@ -147,6 +148,8 @@ static const struct argp_option options[] =
+@@ -153,6 +154,8 @@ static const struct argp_option options[] =
      N_("Generate little-endian output") },
    { "big-endian", OPT_BIG_ENDIAN, NULL, 0,
      N_("Generate big-endian output") },
@@ -383,7 +383,7 @@ index d718d2e9f4..e0a3ad5a83 100644
    { NULL, 0, NULL, 0, NULL }
  };
  
-@@ -236,12 +239,14 @@ main (int argc, char *argv[])
+@@ -242,12 +245,14 @@ main (int argc, char *argv[])
       ctype locale.  (P1003.2 4.35.5.2)  */
    setlocale (LC_CTYPE, "POSIX");
  
@@ -398,9 +398,9 @@ index d718d2e9f4..e0a3ad5a83 100644
  
    /* Process charmap file.  */
    charmap = charmap_read (charmap_file, verbose, 1, be_quiet, 1);
-@@ -389,6 +394,9 @@ parse_opt (int key, char *arg, struct argp_state *state)
-       /* Enable the warnings.  */
-       set_warnings (arg, true);
+@@ -399,6 +404,9 @@ parse_opt (int key, char *arg, struct argp_state *state)
+       /* Do not hard link to other locales.  */
+       hard_links = false;
        break;
 +    case OPT_UINT32_ALIGN:
 +      uint32_align_mask = strtol (arg, NULL, 0) - 1;
@@ -409,7 +409,7 @@ index d718d2e9f4..e0a3ad5a83 100644
        force_output = 1;
        break;
 diff --git a/locale/programs/locfile.c b/locale/programs/locfile.c
-index 32e5f761f2..b41e77bd8d 100644
+index 1555231deb..5afdb08fc3 100644
 --- a/locale/programs/locfile.c
 +++ b/locale/programs/locfile.c
 @@ -544,6 +544,9 @@ compare_files (const char *filename1, const char *filename2, size_t size,
@@ -561,3 +561,6 @@ index e4de907e1f..b5d8f5c17d 100644
  #ifdef NL_CURRENT_INDIRECT
  # define WEAK_POSTLOAD(postload) weak_extern (postload)
  #else
+-- 
+2.20.1
+

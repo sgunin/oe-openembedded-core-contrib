@@ -1,7 +1,7 @@
-From efb0fca7db742f4195e1771d8ba4c7fba4938819 Mon Sep 17 00:00:00 2001
+From ec36d40071079bdc0868257c71da626f93c7e10d Mon Sep 17 00:00:00 2001
 From: Khem Raj <raj.khem@gmail.com>
 Date: Sat, 27 Jan 2018 10:05:07 -0800
-Subject: [PATCH] reset dl_load_write_lock after forking
+Subject: [PATCH 25/31] reset dl_load_write_lock after forking
 
 The patch in this Bugzilla entry was requested by a customer:
 
@@ -35,3 +35,6 @@ index ec56a827eb..0f48933ff1 100644
        /* Run the handlers registered for the child.  */
        __run_fork_handlers (atfork_run_child);
      }
+-- 
+2.20.1
+
