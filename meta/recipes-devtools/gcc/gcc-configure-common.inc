@@ -24,6 +24,8 @@ GCCTHREADS ?= "posix"
 
 GCCPIE ??= ""
 
+# glibc version is a minimum and doesn't need to track glibc exactly
+# only governs ppc specific features in much older glibc versions
 EXTRA_OECONF = "\
     ${@['--enable-clocale=generic', ''][d.getVar('USE_NLS') != 'no']} \
     --with-gnu-ld \
@@ -38,6 +40,7 @@ EXTRA_OECONF = "\
     --enable-libstdcxx-pch \
     --program-prefix=${TARGET_PREFIX} \
     --without-local-prefix \
+    --with-glibc-version=2.28 \
     ${EXTRA_OECONF_BASE} \
     ${EXTRA_OECONF_GCC_FLOAT} \
     ${EXTRA_OECONF_PATHS} \
