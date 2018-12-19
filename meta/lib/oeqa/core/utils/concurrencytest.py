@@ -25,6 +25,7 @@ from itertools import cycle
 from subunit import ProtocolTestCase, TestProtocolClient
 from subunit.test_results import AutoTimingTestResultDecorator
 from testtools import ThreadsafeForwardingResult, iterate_tests
+from oeqa.utils.commands import get_test_layer
 
 import bb.utils
 import oe.path
@@ -166,7 +167,7 @@ def fork_for_tests(concurrency_num, suite):
                 if 'BUILDDIR' in os.environ:
                     builddir = os.environ['BUILDDIR']
                     newbuilddir = builddir + "-st-" + str(ourpid)
-                    selftestdir = os.path.abspath(builddir + "/../meta-selftest")
+                    selftestdir = get_test_layer()
                     newselftestdir = newbuilddir + "/meta-selftest"
 
                     bb.utils.mkdirhier(newbuilddir)
