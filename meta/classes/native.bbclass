@@ -54,9 +54,6 @@ TOOLCHAIN_OPTIONS = ""
 # Don't build ptest natively
 PTEST_ENABLED = "0"
 
-# Don't use site files for native builds
-export CONFIG_SITE = "${COREBASE}/meta/site/native"
-
 # set the compiler as well. It could have been set to something else
 export CC = "${BUILD_CC}"
 export CXX = "${BUILD_CXX}"
