@@ -153,6 +153,7 @@ python gcc_multilib_setup() {
     libdir64 = 'SYSTEMLIBS_DIR'
     libdirx32 = 'SYSTEMLIBS_DIR'
     libdirn32 = 'SYSTEMLIBS_DIR'
+    libdirilp32 = 'SYSTEMLIBS_DIR'
 
 
     target_arch = (d.getVar('TARGET_ARCH_MULTILIB_ORIGINAL') if mlprefix
@@ -207,6 +208,8 @@ python gcc_multilib_setup() {
             libdirn32 = tune_baselib
         elif tune_baselib == 'lib':
             libdir32 = tune_baselib
+        elif tune_baselib == 'libilp32':
+            libdirilp32 = tune_baselib
         else:
             bb.error('Unknown libdir (%s) of the tune : %s' % (tune_baselib, tune))
 
