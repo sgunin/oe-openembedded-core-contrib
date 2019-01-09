@@ -17,6 +17,11 @@ def autotools_dep_prepend(d):
                         and not d.getVar('INHIBIT_DEFAULT_DEPS'):
             deps += 'libtool-cross '
 
+    if not (d.getVar('INHIBIT_DEFAULT_DEPS') or \
+            bb.data.inherits_class('native', d) or \
+            bb.data.inherits_class('cross', d)):
+        deps += 'glibc-site '
+
     return deps + 'gnu-config-native '
 
 DEPENDS_prepend = "${@autotools_dep_prepend(d)} "
