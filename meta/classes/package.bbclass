@@ -1392,6 +1392,7 @@ python emit_pkgdata() {
         write_if_exists(sf, pkg, 'PACKAGE_ADD_METADATA_DEB')
         write_if_exists(sf, pkg, 'PACKAGE_ADD_METADATA_IPK')
         write_if_exists(sf, pkg, 'PACKAGE_ADD_METADATA_RPM')
+        write_if_exists(sf, pkg, 'MULTI_ARCH')
         for dfile in (d.getVar('FILERPROVIDESFLIST_' + pkg) or "").split():
             write_if_exists(sf, pkg, 'FILERPROVIDES_' + dfile)
 

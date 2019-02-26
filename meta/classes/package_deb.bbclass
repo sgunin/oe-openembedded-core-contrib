@@ -162,9 +162,21 @@ python do_package_deb () {
                 l2.append(data)
             return l2
 
+
+        def multi_arch_flag(d):
+            flag = d.getVar('MULTI_ARCH')
+            if flag:
+                return flag
+            if d.getVar('PACKAGE_ARCH') == "all":
+                return 'foreign'
+            if bb.data.inherits_class('kernel', d) or bb.data.inherits_class('module-base', d):
+                return 'foreign'
+            return 'no'
+
+
         ctrlfile.write("Package: %s\n" % pkgname)
-        if d.getVar('PACKAGE_ARCH') == "all":
-            ctrlfile.write("Multi-Arch: foreign\n")
+        ctrlfile.write("Multi-Arch: %s\n" % multi_arch_flag(localdata))
+
         # check for required fields
         for (c, fs) in fields:
             # Special behavior for description...
