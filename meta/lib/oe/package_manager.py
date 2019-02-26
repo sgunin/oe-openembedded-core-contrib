@@ -1459,6 +1459,10 @@ class DpkgPM(OpkgDpkgPM):
         if not os.path.exists(os.path.join(target_dpkg_dir, "available")):
             open(os.path.join(target_dpkg_dir, "available"), "w+").close()
 
+        with open(os.path.join(target_dpkg_dir, "arch"), "w+") as arch:
+            for base_arch in base_arch_list:
+                arch.write("%s\n" % base_arch)
+
     def remove_packaging_data(self):
         bb.utils.remove(os.path.join(self.target_rootfs,
                                      self.d.getVar('opkglibdir')), True)
