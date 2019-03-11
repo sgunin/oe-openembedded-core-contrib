@@ -14,6 +14,7 @@ SRC_URI = "${DEBIAN_MIRROR}/main/d/${BPN}/${BPN}_${PV}.tar.xz \
            file://0001-dpkg-Support-muslx32-build.patch \
            file://0007-update-alternatives-disable-logging.patch \
            file://0001-update-alternatives-Allow-to-override-altdir-from-en.patch \
+           file://0001-help-make-sure-dpkg-continues-to-work-if-unused-tool.patch \
            file://pager.patch \
            "
 SRC_URI_append_class-native = " \
