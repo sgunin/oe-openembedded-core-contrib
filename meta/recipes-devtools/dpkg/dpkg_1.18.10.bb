@@ -14,6 +14,7 @@ SRC_URI = "http://snapshot.debian.org/archive/debian/20160731T221931Z/pool/main/
            file://0006-add-musleabi-to-known-target-tripets.patch \
            file://0007-dpkg-deb-build.c-Remove-usage-of-clamp-mtime-in-tar.patch \
            file://0007-update-alternatives-disable-logging.patch \
+           file://0001-help-make-sure-dpkg-continues-to-work-if-unused-tool.patch \
            "
 SRC_URI_append_class-native = " file://glibc2.5-sync_file_range.patch "
 

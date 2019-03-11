@@ -1,0 +1,36 @@
+From 1b082e96c5a6f381d6e55cd4e2924a110d7058fc Mon Sep 17 00:00:00 2001
+From: Andreas Oberritter <obi@opendreambox.org>
+Date: Thu, 7 Mar 2019 13:42:25 +0100
+Subject: [PATCH] help: make sure dpkg continues to work if unused tools are
+ not in PATH
+
+Dpkg looks for some tools it doesn't use. They might get used by scripts,
+but it's perfectly valid to build a rootfs not containing ldconfig or
+start-stop-daemon, even if start-stop-daemon was built.
+
+Signed-off-by: Andreas Oberritter <obi@opendreambox.org>
+---
+ src/help.c | 10 ----------
+ 1 file changed, 10 deletions(-)
+
+diff --git a/src/help.c b/src/help.c
+index aa9b11c38..770aaf5bd 100644
+--- a/src/help.c
++++ b/src/help.c
+@@ -121,16 +121,6 @@ void checkpath(void) {
+     TAR,
+     DIFF,
+     BACKEND,
+-    /* Mac OS X uses dyld (Mach-O) instead of ld.so (ELF), and does not have
+-     * an ldconfig. */
+-#if defined(__APPLE__) && defined(__MACH__)
+-    "update_dyld_shared_cache",
+-#else
+-    "ldconfig",
+-#endif
+-#if BUILD_START_STOP_DAEMON
+-    "start-stop-daemon",
+-#endif
+     NULL
+   };
+ 
