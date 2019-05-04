@@ -43,4 +43,3 @@ def render(writer, trace, app_options, filename):
     draw.render (ctx, options, 1.0, trace)
     write_surface (surface)
     writer.status ("bootchart written to '%s'" % filename)
-
