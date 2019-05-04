@@ -732,9 +732,9 @@ def _parse_bitbake_buildstats(writer, state, filename, file):
     start = None
     end = None
     for line in file:
-        if line.startswith("Started:"):
+        if line.startswith(b"Started:"):
             start = int(float(line.split()[-1]))
-        elif line.startswith("Ended:"):
+        elif line.startswith(b"Ended:"):
             end = int(float(line.split()[-1]))
     if start and end:
         state.add_process(pn + ":" + task, start, end)
