@@ -13,33 +13,34 @@
 #  You should have received a copy of the GNU General Public License
 #  along with pybootchartgui. If not, see <http://www.gnu.org/licenses/>.
 
-import gobject
-import gtk
-import gtk.gdk
-import gtk.keysyms
+import gi
+gi.require_version('Gtk', '3.0')
+
+from gi.repository import GObject
+from gi.repository import Gtk
+from gi.repository import Gdk
 from . import draw
 from .draw import RenderOptions
 
-class PyBootchartWidget(gtk.DrawingArea):
+class PyBootchartWidget(Gtk.DrawingArea):
     __gsignals__ = {
-            'expose-event': 'override',
-            'clicked' : (gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, (gobject.TYPE_STRING, gtk.gdk.Event)),
-            'position-changed' : (gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, (gobject.TYPE_INT, gobject.TYPE_INT)),
-            'set-scroll-adjustments' : (gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, (gtk.Adjustment, gtk.Adjustment))
+            'clicked' : (GObject.SIGNAL_RUN_LAST, GObject.TYPE_NONE, (GObject.TYPE_STRING, Gdk.Event)),
+            'position-changed' : (GObject.SIGNAL_RUN_LAST, GObject.TYPE_NONE, (GObject.TYPE_INT, GObject.TYPE_INT)),
+            'set-scroll-adjustments' : (GObject.SIGNAL_RUN_LAST, GObject.TYPE_NONE, (Gtk.Adjustment, Gtk.Adjustment))
     }
 
     def __init__(self, trace, options, xscale):
-        gtk.DrawingArea.__init__(self)
+        Gtk.DrawingArea.__init__(self)
 
         self.trace = trace
         self.options = options
 
-        self.set_flags(gtk.CAN_FOCUS)
+        #self.set_flags(Gtk.CAN_FOCUS)
 
-        self.add_events(gtk.gdk.BUTTON_PRESS_MASK | gtk.gdk.BUTTON_RELEASE_MASK)
+        self.add_events(Gdk.EventMask.BUTTON_PRESS_MASK | Gdk.EventMask.BUTTON_RELEASE_MASK)
         self.connect("button-press-event", self.on_area_button_press)
         self.connect("button-release-event", self.on_area_button_release)
-        self.add_events(gtk.gdk.POINTER_MOTION_MASK | gtk.gdk.POINTER_MOTION_HINT_MASK | gtk.gdk.BUTTON_RELEASE_MASK)
+        self.add_events(Gdk.EventMask.POINTER_MOTION_MASK | Gdk.EventMask.POINTER_MOTION_HINT_MASK | Gdk.EventMask.BUTTON_RELEASE_MASK)
         self.connect("motion-notify-event", self.on_area_motion_notify)
         self.connect("scroll-event", self.on_area_scroll_event)
         self.connect('key-press-event', self.on_key_press_event)
@@ -128,13 +129,13 @@ class PyBootchartWidget(gtk.DrawingArea):
     POS_INCREMENT = 100
 
     def on_key_press_event(self, widget, event):
-        if event.keyval == gtk.keysyms.Left:
+        if event.keyval == Gtk.keysyms.Left:
             self.x -= self.POS_INCREMENT/self.zoom_ratio
-        elif event.keyval == gtk.keysyms.Right:
+        elif event.keyval == Gtk.keysyms.Right:
             self.x += self.POS_INCREMENT/self.zoom_ratio
-        elif event.keyval == gtk.keysyms.Up:
+        elif event.keyval == Gtk.keysyms.Up:
             self.y -= self.POS_INCREMENT/self.zoom_ratio
-        elif event.keyval == gtk.keysyms.Down:
+        elif event.keyval == Gtk.keysyms.Down:
             self.y += self.POS_INCREMENT/self.zoom_ratio
         else:
             return False
@@ -144,34 +145,34 @@ class PyBootchartWidget(gtk.DrawingArea):
 
     def on_area_button_press(self, area, event):
         if event.button == 2 or event.button == 1:
-            area.window.set_cursor(gtk.gdk.Cursor(gtk.gdk.FLEUR))
+            area.window.set_cursor(Gdk.Cursor(Gdk.FLEUR))
             self.prevmousex = event.x
             self.prevmousey = event.y
-        if event.type not in (gtk.gdk.BUTTON_PRESS, gtk.gdk.BUTTON_RELEASE):
+        if event.type not in (Gdk.BUTTON_PRESS, Gdk.BUTTON_RELEASE):
             return False
         return False
 
     def on_area_button_release(self, area, event):
         if event.button == 2 or event.button == 1:
-            area.window.set_cursor(gtk.gdk.Cursor(gtk.gdk.ARROW))
+            area.window.set_cursor(Gdk.Cursor(Gdk.ARROW))
             self.prevmousex = None
             self.prevmousey = None
             return True
         return False
 
     def on_area_scroll_event(self, area, event):
-        if event.state & gtk.gdk.CONTROL_MASK:
-            if event.direction == gtk.gdk.SCROLL_UP:
+        if event.state & Gdk.EventMask.CONTROL_MASK:
+            if event.direction == Gdk.SCROLL_UP:
                 self.zoom_image(self.zoom_ratio * self.ZOOM_INCREMENT)
                 return True
-            if event.direction == gtk.gdk.SCROLL_DOWN:
+            if event.direction == Gdk.SCROLL_DOWN:
                 self.zoom_image(self.zoom_ratio / self.ZOOM_INCREMENT)
                 return True
             return False
 
     def on_area_motion_notify(self, area, event):
         state = event.state
-        if state & gtk.gdk.BUTTON2_MASK or state & gtk.gdk.BUTTON1_MASK:
+        if state & Gdk.EventMask.BUTTON2_MASK or state & Gdk.EventMask.BUTTON1_MASK:
             x, y = int(event.x), int(event.y)
             # pan the image
             self.x += (self.prevmousex - x)/self.zoom_ratio
@@ -211,9 +212,9 @@ class PyBootchartWidget(gtk.DrawingArea):
 
     def _set_scroll_adjustments(self, hadj, vadj):
         if hadj == None:
-            hadj = gtk.Adjustment(0.0, 0.0, 0.0, 0.0, 0.0, 0.0)
+            hadj = Gtk.Adjustment(0.0, 0.0, 0.0, 0.0, 0.0, 0.0)
         if vadj == None:
-            vadj = gtk.Adjustment(0.0, 0.0, 0.0, 0.0, 0.0, 0.0)
+            vadj = Gtk.Adjustment(0.0, 0.0, 0.0, 0.0, 0.0, 0.0)
 
         if self.hadj_changed_signal_id != None and \
            self.hadj != None and hadj != self.hadj:
@@ -241,9 +242,9 @@ class PyBootchartWidget(gtk.DrawingArea):
         self.hadj.value = x * self.zoom_ratio
         self.vadj.value = y * self.zoom_ratio
 
-PyBootchartWidget.set_set_scroll_adjustments_signal('set-scroll-adjustments')
+#PyBootchartWidget.set_set_scroll_adjustments_signal('set-scroll-adjustments')
 
-class PyBootchartShell(gtk.VBox):
+class PyBootchartShell(Gtk.VBox):
     ui = '''
     <ui>
             <toolbar name="ToolBar">
@@ -258,29 +259,29 @@ class PyBootchartShell(gtk.VBox):
     </ui>
     '''
     def __init__(self, window, trace, options, xscale):
-        gtk.VBox.__init__(self)
+        Gtk.VBox.__init__(self)
 
         self.widget = PyBootchartWidget(trace, options, xscale)
 
         # Create a UIManager instance
-        uimanager = self.uimanager = gtk.UIManager()
+        uimanager = self.uimanager = Gtk.UIManager()
 
         # Add the accelerator group to the toplevel window
         accelgroup = uimanager.get_accel_group()
         window.add_accel_group(accelgroup)
 
         # Create an ActionGroup
-        actiongroup = gtk.ActionGroup('Actions')
+        actiongroup = Gtk.ActionGroup('Actions')
         self.actiongroup = actiongroup
 
         # Create actions
         actiongroup.add_actions((
-                ('Expand', gtk.STOCK_ADD, None, None, None, self.widget.on_expand),
-                ('Contract', gtk.STOCK_REMOVE, None, None, None, self.widget.on_contract),
-                ('ZoomIn', gtk.STOCK_ZOOM_IN, None, None, None, self.widget.on_zoom_in),
-                ('ZoomOut', gtk.STOCK_ZOOM_OUT, None, None, None, self.widget.on_zoom_out),
-                ('ZoomFit', gtk.STOCK_ZOOM_FIT, 'Fit Width', None, None, self.widget.on_zoom_fit),
-                ('Zoom100', gtk.STOCK_ZOOM_100, None, None, None, self.widget.on_zoom_100),
+                ('Expand', Gtk.STOCK_ADD, None, None, None, self.widget.on_expand),
+                ('Contract', Gtk.STOCK_REMOVE, None, None, None, self.widget.on_contract),
+                ('ZoomIn', Gtk.STOCK_ZOOM_IN, None, None, None, self.widget.on_zoom_in),
+                ('ZoomOut', Gtk.STOCK_ZOOM_OUT, None, None, None, self.widget.on_zoom_out),
+                ('ZoomFit', Gtk.STOCK_ZOOM_FIT, 'Fit Width', None, None, self.widget.on_zoom_fit),
+                ('Zoom100', Gtk.STOCK_ZOOM_100, None, None, None, self.widget.on_zoom_100),
         ))
 
         # Add the actiongroup to the uimanager
@@ -290,11 +291,11 @@ class PyBootchartShell(gtk.VBox):
         uimanager.add_ui_from_string(self.ui)
 
         # Scrolled window
-        scrolled = gtk.ScrolledWindow()
+        scrolled = Gtk.ScrolledWindow()
         scrolled.add(self.widget)
 
         # toolbar / h-box
-        hbox = gtk.HBox(False, 8)
+        hbox = Gtk.HBox(False, 8)
 
         # Create a Toolbar
         toolbar = uimanager.get_widget('/ToolBar')
@@ -302,7 +303,7 @@ class PyBootchartShell(gtk.VBox):
 
         if not options.kernel_only:
             # Misc. options
-            button = gtk.CheckButton("Show more")
+            button = Gtk.CheckButton("Show more")
             button.connect ('toggled', self.widget.show_toggled)
             button.set_active(options.app_options.show_all)
             hbox.pack_start (button, False, True)
@@ -315,22 +316,22 @@ class PyBootchartShell(gtk.VBox):
         window.set_focus(self.widget)
 
 
-class PyBootchartWindow(gtk.Window):
+class PyBootchartWindow(Gtk.Window):
 
     def __init__(self, trace, app_options):
-        gtk.Window.__init__(self)
+        Gtk.Window.__init__(self)
 
         window = self
         window.set_title("Bootchart %s" % trace.filename)
         window.set_default_size(750, 550)
 
-        tab_page = gtk.Notebook()
+        tab_page = Gtk.Notebook()
         tab_page.show()
         window.add(tab_page)
 
         full_opts = RenderOptions(app_options)
         full_tree = PyBootchartShell(window, trace, full_opts, 1.0)
-        tab_page.append_page (full_tree, gtk.Label("Full tree"))
+        tab_page.append_page (full_tree, Gtk.Label("Full tree"))
 
         if trace.kernel is not None and len (trace.kernel) > 2:
             kernel_opts = RenderOptions(app_options)
@@ -338,7 +339,7 @@ class PyBootchartWindow(gtk.Window):
             kernel_opts.charts = False
             kernel_opts.kernel_only = True
             kernel_tree = PyBootchartShell(window, trace, kernel_opts, 5.0)
-            tab_page.append_page (kernel_tree, gtk.Label("Kernel boot"))
+            tab_page.append_page (kernel_tree, Gtk.Label("Kernel boot"))
 
         full_tree.grab_focus(self)
         self.show()
@@ -346,5 +347,5 @@ class PyBootchartWindow(gtk.Window):
 
 def show(trace, options):
     win = PyBootchartWindow(trace, options)
-    win.connect('destroy', gtk.main_quit)
-    gtk.main()
+    win.connect('destroy', Gtk.main_quit)
+    Gtk.main()
