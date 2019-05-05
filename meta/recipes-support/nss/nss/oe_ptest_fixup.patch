@@ -1,0 +1,26 @@
+Index: nss-3.43/nss/tests/common/init.sh
+===================================================================
+--- nss-3.43.orig/nss/tests/common/init.sh
++++ nss-3.43/nss/tests/common/init.sh
+@@ -267,7 +267,7 @@ if [ -z "${INIT_SOURCED}" -o "${INIT_SOU
+     COMMON=${TEST_COMMON-$common}
+     export COMMON
+ 
+-    DIST=${DIST-${MOZILLA_ROOT}/dist}
++    DIST=/usr
+     TESTDIR=${TESTDIR-${MOZILLA_ROOT}/tests_results/security}
+ 
+     # Allow for override options from a config file
+Index: nss-3.43/nss/tests/all.sh
+===================================================================
+--- nss-3.43.orig/nss/tests/all.sh
++++ nss-3.43/nss/tests/all.sh
+@@ -303,7 +303,7 @@ if [ $NO_INIT_SUPPORT -eq 0 ]; then
+     RUN_FIPS="fips"
+ fi
+ 
+-tests="cipher lowhash libpkix cert dbtests tools $RUN_FIPS sdr crmf smime ssl ocsp merge pkits ec gtests ssl_gtests policy"
++tests="cipher lowhash libpkix cert dbtests tools sdr crmf smime ocsp merge pkits ec policy"
+ # Don't run chains tests when we have a gyp build.
+ if [ "$OBJDIR" != "Debug" -a "$OBJDIR" != "Release" ]; then
+   tests="$tests chains"

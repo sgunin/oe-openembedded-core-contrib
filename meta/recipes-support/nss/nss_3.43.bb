@@ -31,6 +31,8 @@ SRC_URI = "http://ftp.mozilla.org/pub/mozilla.org/security/nss/releases/${VERSIO
            file://blank-cert9.db \
            file://blank-key4.db \
            file://system-pkcs11.txt \
+           file://oe_ptest_fixup.patch \
+           file://run-ptest \
            "
 
 SRC_URI[md5sum] = "67c8fa282c32cb56117fdd530dd77001"
@@ -39,7 +41,7 @@ SRC_URI[sha256sum] = "f30bc1b7330887b75de9fec37dbc173001758dc43fb095ffbc45dac409
 UPSTREAM_CHECK_URI = "https://developer.mozilla.org/en-US/docs/Mozilla/Projects/NSS/NSS_Releases"
 UPSTREAM_CHECK_REGEX = "NSS_(?P<pver>.+)_release_notes"
 
-inherit siteinfo
+inherit siteinfo ptest
 
 TD = "${S}/tentative-dist"
 TDS = "${S}/tentative-dist-staging"
@@ -227,6 +229,11 @@ do_install_append_class-target() {
     install -m 0644 ${WORKDIR}/system-pkcs11.txt ${D}${sysconfdir}/pki/nssdb/pkcs11.txt
 }
 
+do_install_ptest () {
+    install -d ${D}${PTEST_PATH}/tests
+    cp -a ${S}/nss/tests/* ${D}${PTEST_PATH}/tests/.
+}
+
 PACKAGE_WRITE_DEPS += "nss-native"
 pkg_postinst_${PN} () {
     if [ -n "$D" ]; then
@@ -263,5 +270,6 @@ FILES_${PN}-dev = "\
     "
 
 RDEPENDS_${PN}-smime = "perl"
+RDEPENDS_${PN}-ptest = "nss bash tcsh make perl"
 
 BBCLASSEXTEND = "native nativesdk"
