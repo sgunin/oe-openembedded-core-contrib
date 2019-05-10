@@ -87,7 +87,7 @@ def gen_updatealternativesvardeps(d):
 
 def ua_extend_depends(d):
     if not 'virtual/update-alternatives' in d.getVar('PROVIDES'):
-        d.appendVar('DEPENDS', ' virtual/${MLPREFIX}update-alternatives')
+        d.appendVarFlag('do_package', 'depends', ' virtual/${MLPREFIX}update-alternatives:do_populate_sysroot')
 
 def update_alternatives_enabled(d):
     # Update Alternatives only works on target packages...
