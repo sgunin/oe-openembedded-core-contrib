@@ -1,0 +1,26 @@
+From f76968e3772464ed2ce67e5e7622f9c1fae7a77c Mon Sep 17 00:00:00 2001
+From: Martin Jansa <Martin.Jansa@gmail.com>
+Date: Tue, 14 May 2019 18:22:29 +0000
+Subject: [PATCH] renameat2: return EINVAL instead of ENOSYS
+
+* e.g. qtbase is only checking for EINVAL from glibc, see:
+  https://code.qt.io/cgit/qt/qtbase.git/commit/src/corelib/io/qfilesystemengine_unix.cpp?id=b7887f9b4faad2227691a2af589e9d7680d6ae08
+
+Signed-off-by: Martin Jansa <Martin.Jansa@gmail.com>
+---
+ ports/linux/guts/renameat2.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/ports/linux/guts/renameat2.c b/ports/linux/guts/renameat2.c
+index 135933b..1942e23 100644
+--- a/ports/linux/guts/renameat2.c
++++ b/ports/linux/guts/renameat2.c
+@@ -17,7 +17,7 @@
+ 	/* for now, let's try just failing out hard, and hope things retry with a
+ 	 * different syscall.
+ 	 */
+-	errno = ENOSYS;
++	errno = EINVAL;
+ 	rc = -1;
+ 
+ /*	return rc;
