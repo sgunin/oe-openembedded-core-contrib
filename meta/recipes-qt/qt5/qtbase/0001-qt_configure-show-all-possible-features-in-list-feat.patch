@@ -1,0 +1,41 @@
+From 0c098f6e6a2fdfe46384ade0b201334ecb66a65f Mon Sep 17 00:00:00 2001
+From: Martin Jansa <Martin.Jansa@gmail.com>
+Date: Tue, 14 May 2019 18:31:37 +0000
+Subject: [PATCH] qt_configure: show all possible features in -list-features
+
+* there are 249 features without purpose defined and 179
+  which have it
+* It's useful to see really all features available, e.g. when validating
+  meta-qt5 PACKAGECONFIGs e.g. getentropy is still, statx, renameat
+  were used before (and might be useful again because of issues with
+  pseudo)
+
+Signed-off-by: Martin Jansa <Martin.Jansa@gmail.com>
+
+Change-Id: I85ab46643833766ef8b2f113dab92da78e0ab866
+---
+ mkspecs/features/qt_configure.prf | 11 +++++------
+ 1 file changed, 5 insertions(+), 6 deletions(-)
+
+diff --git a/mkspecs/features/qt_configure.prf b/mkspecs/features/qt_configure.prf
+index 04690068bc..c1c9a3b46d 100644
+--- a/mkspecs/features/qt_configure.prf
++++ b/mkspecs/features/qt_configure.prf
+@@ -2323,12 +2323,11 @@ qtConfCheckErrors()
+     for (currentConfig, allModuleConfigs) {
+         for (k, $${currentConfig}.features._KEYS_) {
+             pp = $$eval($${currentConfig}.features.$${k}.purpose)
+-            !isEmpty(pp) {
+-                pfx = $$eval($${currentConfig}.features.$${k}.section)
+-                !isEmpty(pfx): pfx = "$$pfx: "
+-                all_ft += $$qtConfPadCols($$k, ".......................", \
+-                                          $$pfx$$section(pp, $$escape_expand(\\n), 0, 0))
+-            }
++            isEmpty(pp): pp = "No description"
++            pfx = $$eval($${currentConfig}.features.$${k}.section)
++            !isEmpty(pfx): pfx = "$$pfx: "
++            all_ft += $$qtConfPadCols($$k, ".......................", \
++                                      $$pfx$$section(pp, $$escape_expand(\\n), 0, 0))
+         }
+     }
+     all_ft = $$sorted(all_ft)

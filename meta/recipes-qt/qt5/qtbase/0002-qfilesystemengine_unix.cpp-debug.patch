@@ -1,0 +1,112 @@
+From 2a62aa3e3d900fa8a631827230795d2e22021a6d Mon Sep 17 00:00:00 2001
+From: Martin Jansa <Martin.Jansa@gmail.com>
+Date: Tue, 14 May 2019 18:46:26 +0000
+Subject: [PATCH] qfilesystemengine_unix.cpp: debug
+
+Change-Id: I8469ec273c608e60f3fbe64b9dbd95f48149809c
+Signed-off-by: Martin Jansa <Martin.Jansa@gmail.com>
+---
+ src/corelib/io/qfile.cpp                  |  3 ++
+ src/corelib/io/qfilesystemengine_unix.cpp | 43 +++++++++++++++++++++--
+ 2 files changed, 44 insertions(+), 2 deletions(-)
+
+diff --git a/src/corelib/io/qfile.cpp b/src/corelib/io/qfile.cpp
+index 3166fa1b83..dd7d1878c8 100644
+--- a/src/corelib/io/qfile.cpp
++++ b/src/corelib/io/qfile.cpp
+@@ -773,6 +773,9 @@ QFile::copy(const QString &newName)
+         qWarning("QFile::copy: Empty or null file name");
+         return false;
+     }
++#if defined(QT_DEBUG)
++    qWarning("QFile::copy %s -> %s", qPrintable(fileName()), qPrintable(QFileInfo(newName).path()));
++#endif
+     if (QFile::exists(newName)) {
+         // ### Race condition. If a file is moved in after this, it /will/ be
+         // overwritten. On Unix, the proper solution is to use hardlinks:
+diff --git a/src/corelib/io/qfilesystemengine_unix.cpp b/src/corelib/io/qfilesystemengine_unix.cpp
+index b2d81066db..351d9fa937 100644
+--- a/src/corelib/io/qfilesystemengine_unix.cpp
++++ b/src/corelib/io/qfilesystemengine_unix.cpp
+@@ -1248,12 +1248,32 @@ bool QFileSystemEngine::renameFile(const QFileSystemEntry &source, const QFileSy
+     if (Q_UNLIKELY(srcPath.isEmpty() || tgtPath.isEmpty()))
+         return emptyFileEntryWarning(), false;
+ 
++#if defined(QT_DEBUG)
++    qWarning("QFileSystemEngine::renameFile %s -> %s", srcPath, tgtPath);
++#if defined(RENAME_NOREPLACE)
++    qWarning("QFileSystemEngine::renameFile RENAME_NOREPLACE is defined");
++#endif
++#if QT_CONFIG(renameat2)
++    qWarning("QFileSystemEngine::renameFile QT_CONFIG(renameat2)");
++#endif
++#endif
++
+ #if defined(RENAME_NOREPLACE) && QT_CONFIG(renameat2)
+-    if (renameat2(AT_FDCWD, srcPath, AT_FDCWD, tgtPath, RENAME_NOREPLACE) == 0)
++    if (renameat2(AT_FDCWD, srcPath, AT_FDCWD, tgtPath, RENAME_NOREPLACE) == 0) {
++#if defined(QT_DEBUG)
++    qWarning("QFileSystemEngine::renameFile true");
++#endif
+         return true;
++    }
+ 
++#if defined(QT_DEBUG)
++    qWarning("QFileSystemEngine::renameFile %s", errno);
++#endif
+     // We can also get EINVAL for some non-local filesystems.
+     if (errno != EINVAL) {
++#if defined(QT_DEBUG)
++    qWarning("QFileSystemEngine::renameFile some other error than EINVAL");
++#endif
+         error = QSystemError(errno, QSystemError::StandardLibraryError);
+         return false;
+     }
+@@ -1266,8 +1286,14 @@ bool QFileSystemEngine::renameFile(const QFileSystemEntry &source, const QFileSy
+         return false;
+     }
+ #endif
++#if defined(QT_DEBUG)
++    qWarning("QFileSystemEngine::renameFile SupportsHardlinking %s", SupportsHardlinking);
++#endif
+ 
+     if (SupportsHardlinking && ::link(srcPath, tgtPath) == 0) {
++#if defined(QT_DEBUG)
++    qWarning("QFileSystemEngine::renameFile SupportsHardlinking && ::link");
++#endif
+         if (::unlink(srcPath) == 0)
+             return true;
+ 
+@@ -1296,6 +1322,9 @@ bool QFileSystemEngine::renameFile(const QFileSystemEntry &source, const QFileSy
+     case ENOTDIR:
+     case EROFS:
+     case EXDEV:
++#if defined(QT_DEBUG)
++    qWarning("QFileSystemEngine::renameFile break on EACCES, EEXIST, ENAMETOOLONG, ENOENT, ENOTDIR, EROFS or EXDEV");
++#endif
+         // accept the error from link(2) (especially EEXIST) and don't retry
+         break;
+ 
+@@ -1303,11 +1332,21 @@ bool QFileSystemEngine::renameFile(const QFileSystemEntry &source, const QFileSy
+         // fall back to rename()
+         // ### Race condition. If a file is moved in after this, it /will/ be
+         // overwritten.
+-        if (::rename(srcPath, tgtPath) == 0)
++#if defined(QT_DEBUG)
++    qWarning("QFileSystemEngine::renameFile retrying with ::rename");
++#endif
++        if (::rename(srcPath, tgtPath) == 0) {
++#if defined(QT_DEBUG)
++    qWarning("QFileSystemEngine::renameFile ::rename ok");
++#endif
+             return true;
++        }
+     }
+ 
+     error = QSystemError(errno, QSystemError::StandardLibraryError);
++#if defined(QT_DEBUG)
++    qWarning("QFileSystemEngine::renameFile %s", error);
++#endif
+     return false;
+ }
+ 

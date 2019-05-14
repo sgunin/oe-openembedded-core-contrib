@@ -36,6 +36,8 @@ SRC_URI += "\
     file://0014-Qt5GuiConfigExtras.cmake.in-cope-with-variable-path-.patch \
     file://0015-corelib-Include-sys-types.h-for-uint32_t.patch \
     file://0016-Define-QMAKE_CXX.COMPILER_MACROS-for-clang-on-linux.patch \
+    file://0001-qt_configure-show-all-possible-features-in-list-feat.patch \
+    file://0002-qfilesystemengine_unix.cpp-debug.patch \
 "
 
 # common for qtbase-native and nativesdk-qtbase
@@ -43,12 +45,6 @@ SRC_URI += "\
 # 5.12.meta-qt5-native.7
 SRC_URI += " \
     file://0017-Always-build-uic-and-qvkgen.patch \
-    file://0018-Avoid-renameeat2-for-native-sdk-builds.patch \
-"
-
-# only for qtbase-native
-SRC_URI += " \
-    file://0019-Bootstrap-without-linkat-feature.patch \
 "
 
 CLEANBROKEN = "1"
