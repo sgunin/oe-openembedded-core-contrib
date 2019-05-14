@@ -6,7 +6,6 @@ SRC_URI = "git://git.yoctoproject.org/pseudo \
            file://fallback-group \
            file://moreretries.patch \
            file://toomanyfiles.patch \
-           file://0001-renameat2-return-EINVAL-instead-of-ENOSYS.patch \
            "
 
 SRCREV = "3fa7c853e0bcd6fe23f7524c2a3c9e3af90901c3"
