@@ -16,13 +16,17 @@ do_compile() {
     ALL="all: "
     for i in `seq -w 1 ${RULES}`; do
         /bin/echo $i > ${S}/$i.txt
-        /bin/echo -e "R$i:\n\t\$(QINSTALL) ${S}/$i.txt ${D}/$i.txt && mv ${D}/$i.txt ${D}/`expr $i + 1`.txt" >> Makefile;
+        /bin/echo -e "R$i:\n\t-\$(QINSTALL) ${S}/$i.txt ${D}/$i.txt && mv ${D}/$i.txt ${D}/`expr $i + 1`.txt" >> Makefile;
         ALL="$ALL R$i"
     done
     /bin/echo ${ALL} >> Makefile
 }
 
 do_install() {
+    # create the files first, so qmake replaces them
+    for i in `seq -w 1 ${RULES}`; do
+        /bin/echo $i > ${D}/$i.txt
+    done
     oe_runmake all
 }
 
