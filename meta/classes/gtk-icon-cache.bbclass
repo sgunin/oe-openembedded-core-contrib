@@ -4,6 +4,11 @@ DEPENDS +=" ${@['hicolor-icon-theme', '']['${BPN}' == 'hicolor-icon-theme']} gtk
 
 PACKAGE_WRITE_DEPS += "gtk+3-native gdk-pixbuf-native"
 
+inherit distro_features_check
+ANY_OF_DISTRO_FEATURES = "${GTK3DISTROFEATURES}"
+
+DEPENDS += "gtk+3"
+
 gtk_icon_cache_postinst() {
 if [ "x$D" != "x" ]; then
 	$INTERCEPT_DIR/postinst_intercept update_icon_cache ${PKG} \
@@ -45,10 +50,11 @@ python populate_packages_append () {
         if not os.path.exists(icon_dir):
             continue
 
-        bb.note("adding hicolor-icon-theme dependency to %s" % pkg)
-        rdepends = ' ' + d.getVar('MLPREFIX', False) + "hicolor-icon-theme"
-        d.appendVar('RDEPENDS_%s' % pkg, rdepends)
-    
+        for dep in ('hicolor-icon-theme', 'gtk+3'):
+            bb.note("Adding %s dependency to %s" % (dep, pkg))
+            rdepends = ' ' + d.getVar('MLPREFIX', False) + dep
+            d.appendVar('RDEPENDS_%s' % pkg, rdepends)
+
         bb.note("adding gtk-icon-cache postinst and postrm scripts to %s" % pkg)
         
         postinst = d.getVar('pkg_postinst_%s' % pkg)
