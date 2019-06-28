@@ -19,6 +19,12 @@
 CLASSOVERRIDE .= ":class-devupstream"
 
 python devupstream_virtclass_handler () {
+    # bitbake can't extend an extended recipe, for example:
+    # virtual:multilib:lib32:virtual:devupstream:target
+    # So disable devupstream when multilib is enabled.
+    if d.getVar('MULTILIBS'):
+        raise bb.parse.SkipRecipe("Disable devupstream when multilib is enabled")
+
     # Do nothing if this is inherited, as it's for BBCLASSEXTEND
     if "devupstream" not in (d.getVar('BBCLASSEXTEND') or ""):
         bb.error("Don't inherit devupstream, use BBCLASSEXTEND")
