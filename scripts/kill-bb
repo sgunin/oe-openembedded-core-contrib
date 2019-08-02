@@ -1,0 +1,35 @@
+#!/usr/bin/env python3
+#
+# Kill bitbake processes if the process' cwd == cwd
+#
+# Copyright (c) 2019 Wind River Systems, Inc.
+#
+# SPDX-License-Identifier: GPL-2.0-only
+#
+
+import os
+import sys
+import re
+
+pids = [pid for pid in os.listdir('/proc') if pid.isdigit()]
+
+bb_pids = []
+cwd =os.getcwd()
+for pid in pids:
+    cmdline_path = os.path.join('/proc', pid, 'cmdline')
+    pid_cwd = os.path.join('/proc', pid, 'cwd')
+    if os.path.exists(cmdline_path) and os.path.exists(pid_cwd):
+        pid_cwd = os.readlink(pid_cwd)
+        with open(cmdline_path, 'r') as f:
+            cmdline = f.read()
+            # Kill the bitbake process if its cwd == cwd
+            if re.match('python3.*/bitbake/bin/bitbake', cmdline) and pid_cwd == cwd:
+                bb_pids.append(pid)
+
+if not bb_pids:
+    print('No bitbake processes found in current working dir')
+    sys.exit(0)
+
+for pid in bb_pids:
+    print('Killing %s' % pid)
+    os.kill(int(pid), 9)
