@@ -15,6 +15,8 @@ DEPENDS = "coreutils-native"
 
 inherit bash-completion
 
+RDEPENDS_${PN}-bash-completion += "bash"
+
 do_install() {
     oe_runmake DESTDIR=${D} install
 }
