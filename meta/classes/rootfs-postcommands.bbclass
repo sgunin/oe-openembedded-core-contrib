@@ -333,7 +333,7 @@ python write_image_test_data() {
 
     deploy_dir = d.getVar('IMGDEPLOYDIR')
     link_name = d.getVar('IMAGE_LINK_NAME')
-    testdata_name = os.path.join(deploy_dir, "%s.testdata.json" % d.getVar('IMAGE_NAME'))
+    testdata_name = os.path.join(deploy_dir, "%s%s.testdata.json" % (d.getVar('IMAGE_NAME'), d.getVar('IMAGE_NAME_SUFFIX')))
 
     searchString = "%s/"%(d.getVar("TOPDIR")).replace("//","/")
     export2json(d, testdata_name, searchString=searchString, replaceString="")

@@ -49,8 +49,9 @@ def testexport_main(d):
     from oeqa.runtime.context import OERuntimeTestContext
     from oeqa.runtime.context import OERuntimeTestContextExecutor
 
-    image_name = ("%s/%s" % (d.getVar('DEPLOY_DIR_IMAGE'),
-                             d.getVar('IMAGE_LINK_NAME')))
+    image_name = ("%s/%s%s" % (d.getVar('DEPLOY_DIR_IMAGE'),
+                               d.getVar('IMAGE_NAME'),
+                               d.getVar('IMAGE_NAME_SUFFIX')))
 
     tdname = "%s.testdata.json" % image_name
     td = json.load(open(tdname, "r"))
@@ -122,8 +123,9 @@ def copy_needed_files(d, tc):
             shutil.copy2(json_file, cases_path)
 
     # Copy test data
-    image_name = ("%s/%s" % (d.getVar('DEPLOY_DIR_IMAGE'),
-                            d.getVar('IMAGE_LINK_NAME')))
+    image_name = ("%s/%s%s" % (d.getVar('DEPLOY_DIR_IMAGE'),
+                               d.getVar('IMAGE_NAME'),
+                               d.getVar('IMAGE_NAME_SUFFIX')))
     image_manifest = "%s.manifest" % image_name
     tdname = "%s.testdata.json" % image_name
     test_data_path = os.path.join(export_path, 'data')

@@ -72,7 +72,7 @@ syslinux_hddimg_populate() {
 }
 
 syslinux_hddimg_install() {
-	syslinux ${IMGDEPLOYDIR}/${IMAGE_NAME}.hddimg
+	syslinux ${IMGDEPLOYDIR}/${IMAGE_NAME}${IMAGE_NAME_SUFFIX}.hddimg
 }
 
 python build_syslinux_cfg () {

@@ -230,8 +230,9 @@ def testimage_main(d):
 
     bb.utils.mkdirhier(d.getVar("TEST_LOG_DIR"))
 
-    image_name = ("%s/%s" % (d.getVar('DEPLOY_DIR_IMAGE'),
-                             d.getVar('IMAGE_LINK_NAME')))
+    image_name = ("%s/%s%s" % (d.getVar('DEPLOY_DIR_IMAGE'),
+                               d.getVar('IMAGE_NAME'),
+                               d.getVar('IMAGE_NAME_SUFFIX')))
 
     tdname = "%s.testdata.json" % image_name
     try:
