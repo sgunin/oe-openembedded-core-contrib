@@ -89,15 +89,15 @@ do_install () {
 	install -d ${D}${libdir}/apt
 	install -m 0755 bin/apt-helper ${D}${libdir}/apt
 
-	install -d ${D}${libdir}/apt/methods
-	install -m 0755 bin/methods/* ${D}${libdir}/apt/methods
+	install -d ${D}${nonarch_libdir}/apt/methods
+	install -m 0755 bin/methods/* ${D}${nonarch_libdir}/apt/methods
 
-	install -d ${D}${libdir}/dpkg/methods/apt
+	install -d ${D}${nonarch_libdir}/dpkg/methods/apt
 	for f in desc.apt names; do
-		install -m 0644 ${S}/dselect/$f ${D}${libdir}/dpkg/methods/apt
+		install -m 0644 ${S}/dselect/$f ${D}${nonarch_libdir}/dpkg/methods/apt
 	done
 	for f in install setup update; do
-		install -m 0755 ${S}/dselect/$f ${D}${libdir}/dpkg/methods/apt
+		install -m 0755 ${S}/dselect/$f ${D}${nonarch_libdir}/dpkg/methods/apt
 	done
 
 	if ${@bb.utils.contains('PACKAGECONFIG', 'manpages', 'true', 'false', d)}; then
@@ -149,10 +149,10 @@ RRECOMMENDS_${PN}_class-native = ""
 
 RPROVIDES_${PN}-opkg = "opkg"
 
-FILES_${PN} += "${libdir}/dpkg ${systemd_system_unitdir}/apt-daily.service"
-FILES_${PN}-dselect = "${libdir}/dpkg/methods/apt"
+FILES_${PN} += "${nonarch_libdir}/apt ${systemd_system_unitdir}/apt-daily.service"
+FILES_${PN}-dselect = "${nonarch_libdir}/dpkg/methods/apt"
 FILES_${PN}-opkg = "${bindir}/apt-opkg"
-FILES_${PN}-transport-https = "${libdir}/apt/methods/https"
+FILES_${PN}-transport-https = "${nonarch_libdir}/apt/methods/https"
 FILES_${PN}-utils = "${bindir}/apt-extracttemplates \
                      ${bindir}/apt-ftparchive \
                      ${bindir}/apt-sortpkgs"
