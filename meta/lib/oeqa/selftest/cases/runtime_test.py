@@ -322,3 +322,20 @@ class Postinst(OESelftestTestCase):
                 self.assertFalse(os.path.isfile(os.path.join(hosttestdir, "rootfs-after-failure")),
                                     "rootfs-after-failure file was created")
 
+
+
+class Bsp(OESelftestTestCase):
+    def test_bash_installed(self):
+        """
+        Summary:        The purpose of this test case is to verify that bash 
+                        in exists in the image. Test came from manual.
+        Expected:       Bash is found.
+        """
+
+        features = 'IMAGE_INSTALL_append = " bash"\n'
+        self.write_config(features)
+        bitbake('core-image-minimal')
+
+        with runqemu('core-image-minimal') as qemu:
+            result = runCmd("which bash" , shell=True)
+            self.assertEqual(0, result.status, "Couldn't find bash")
