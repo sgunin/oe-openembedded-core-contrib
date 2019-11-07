@@ -339,3 +339,55 @@ class Bsp(OESelftestTestCase):
         with runqemu('core-image-minimal') as qemu:
             result = runCmd("which bash" , shell=True)
             self.assertEqual(0, result.status, "Couldn't find bash")
+
+
+class SystemTap(OESelftestTestCase):
+        """
+        Summary:        The purpose of this test case is to verify native crosstap
+                        works while talking to a target. Test came from manual.
+        Expected:       The script should successfully connect to the qemu machine
+                        and there should be presented a list of services
+                        (pid, process name) which run on the qemu machine.
+        """
+
+        @classmethod
+        def setUpClass(cls):
+            super(SystemTap, cls).setUpClass()
+            cls.tmpdir_stapQA = tempfile.mkdtemp(prefix='stap')
+            runCmd('cp %s/../selftest/files/*.stp %s' % (cls.tc.files_dir, cls.tmpdir_stapQA))
+
+        @classmethod
+        def tearDownClass(cls):
+            shutil.rmtree(cls.tmpdir_stapQA, ignore_errors=True)
+
+        def test_crosstap_script(self):
+            # These aren't the actual IP addresses but testexport class needs something defined
+            target_ip = "192.168.7.2"
+            features = 'TEST_SERVER_IP = "192.168.7.1"\n'
+            features += 'TEST_TARGET_IP = "%s"\n' % target_ip
+
+            features += 'EXTRA_IMAGE_FEATURES += "tools-profile"\n'
+            features += 'IMAGE_FEATURES_append = " ssh-server-dropbear"\n'
+
+            # crosstap setup
+            features += 'IMAGE_GEN_DEBUGFS = "1"\n'
+            features += 'IMAGE_FSTYPES_DEBUGFS = "tar.bz2"\n'
+            features += 'USER_CLASSES += "image-combined-dbg"\n'
+
+            # enables kernel debug symbols
+            features += 'KERNEL_EXTRA_FEATURES_append = " features/debug/debug-kernel.scc"\n'
+            features += 'KERNEL_EXTRA_FEATURES_append = " features/systemtap/systemtap.scc"\n'
+
+            # add systemtap run-time into target image if it is not there yet
+            features += 'IMAGE_INSTALL_append = " systemtap"\n'
+
+            self.write_config(features)
+
+            bitbake('systemtap-native')
+            bitbake('core-image-minimal')
+
+            with runqemu('core-image-minimal') as qemu:
+                cmd = "crosstap -r root@%s -s %s/trace_open2.stp " % (target_ip, self.tmpdir_stapQA)
+                result = runCmd(cmd)
+                self.assertEqual(0, result.status, 'crosstap runtime returned a non 0 status:%s' % result.output)
+
