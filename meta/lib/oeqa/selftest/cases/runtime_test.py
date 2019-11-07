@@ -339,3 +339,81 @@ class Bsp(OESelftestTestCase):
         with runqemu('core-image-minimal') as qemu:
             result = runCmd("which bash" , shell=True)
             self.assertEqual(0, result.status, "Couldn't find bash")
+
+
+class SystemTap(OESelftestTestCase):
+        """
+        Summary:        The purpose of this test case is to verify native crosstap
+                        works while talking to a target.
+        Expected:       The script should successfully connect to the qemu machine
+                        and run some systemtap examples on a qemu machine.
+        """
+
+        @classmethod
+        def setUpClass(cls):
+            super(SystemTap, cls).setUpClass()
+            cls.image = "core-image-minimal"
+
+        def default_config(self):
+            return """
+# These aren't the actual IP addresses but testexport class needs something defined
+TEST_SERVER_IP = "192.168.7.1"
+TEST_TARGET_IP = "192.168.7.2"
+
+EXTRA_IMAGE_FEATURES += "tools-profile dbg-pkgs"
+IMAGE_FEATURES_append = " ssh-server-dropbear"
+
+# enables kernel debug symbols
+KERNEL_EXTRA_FEATURES_append = " features/debug/debug-kernel.scc"
+KERNEL_EXTRA_FEATURES_append = " features/systemtap/systemtap.scc"
+
+# add systemtap run-time into target image if it is not there yet
+IMAGE_INSTALL_append = " systemtap"
+"""
+
+        def test_crosstap_helloworld(self):
+            self.write_config(self.default_config())
+            bitbake('systemtap-native')
+            systemtap_examples = os.path.join(get_bb_var("WORKDIR","systemtap-native"), "usr/share/systemtap/examples")
+            bitbake(self.image)
+
+            with runqemu(self.image) as qemu:
+                cmd = "crosstap -r root@192.168.7.2 -s %s/general/helloworld.stp " % systemtap_examples 
+                result = runCmd(cmd)
+                self.assertEqual(0, result.status, 'crosstap helloworld returned a non 0 status:%s' % result.output)
+
+        def test_crosstap_pstree(self):
+            self.write_config(self.default_config())
+
+            bitbake('systemtap-native')
+            systemtap_examples = os.path.join(get_bb_var("WORKDIR","systemtap-native"), "usr/share/systemtap/examples")
+            bitbake(self.image)
+
+            with runqemu(self.image) as qemu:
+                cmd = "crosstap -r root@192.168.7.2 -s %s/process/pstree.stp" % systemtap_examples
+                result = runCmd(cmd)
+                self.assertEqual(0, result.status, 'crosstap pstree returned a non 0 status:%s' % result.output)
+
+        def test_crosstap_syscalls_by_proc(self):
+            self.write_config(self.default_config())
+
+            bitbake('systemtap-native')
+            systemtap_examples = os.path.join(get_bb_var("WORKDIR","systemtap-native"), "usr/share/systemtap/examples")
+            bitbake(self.image)
+
+            with runqemu(self.image) as qemu:
+                cmd = "crosstap -r root@192.168.7.2 -s %s/process/ syscalls_by_proc.stp" % systemtap_examples
+                result = runCmd(cmd)
+                self.assertEqual(0, result.status, 'crosstap  syscalls_by_proc returned a non 0 status:%s' % result.output)
+
+        def test_crosstap_syscalls_by_pid(self):
+            self.write_config(self.default_config())
+
+            bitbake('systemtap-native')
+            systemtap_examples = os.path.join(get_bb_var("WORKDIR","systemtap-native"), "usr/share/systemtap/examples")
+            bitbake(self.image)
+
+            with runqemu(self.image) as qemu:
+                cmd = "crosstap -r root@192.168.7.2 -s %s/process/ syscalls_by_pid.stp" % systemtap_examples
+                result = runCmd(cmd)
+                self.assertEqual(0, result.status, 'crosstap  syscalls_by_pid returned a non 0 status:%s' % result.output)
