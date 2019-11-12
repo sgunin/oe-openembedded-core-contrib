@@ -42,6 +42,7 @@ def get_conf_data(e, filename):
                     continue
                 else:
                     jsonstring=jsonstring + line
+    jsonstring = jsonstring.replace("<", "&lt;").replace(">", "&gt;")
     return jsonstring
 
 def errorreport_get_user_info(e):
