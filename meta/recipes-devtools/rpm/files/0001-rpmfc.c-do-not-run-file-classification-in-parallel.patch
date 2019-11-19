@@ -6,7 +6,7 @@ Subject: [PATCH] rpmfc.c: do not run file classification in parallel
 This is causing freezes with libmagic when the file in question is compressed:
 https://github.com/rpm-software-management/rpm/issues/756
 
-Upstream-Status: Inapppropriate [upstream wants a proper fix]
+Upstream-Status: Inappropriate [upstream wants a proper fix]
 Signed-off-by: Alexander Kanavin <alex.kanavin@gmail.com>
 ---
  build/rpmfc.c | 8 --------
