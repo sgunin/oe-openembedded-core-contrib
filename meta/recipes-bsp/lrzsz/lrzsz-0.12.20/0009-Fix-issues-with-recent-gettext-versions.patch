@@ -1,0 +1,42 @@
+From 245c104267363c13f2ba83eca4409c673ee99fcf Mon Sep 17 00:00:00 2001
+From: Alexander Kanavin <alex.kanavin@gmail.com>
+Date: Thu, 21 Nov 2019 12:34:56 +0100
+Subject: [PATCH] Fix issues with recent gettext versions
+
+[external] is required by recent gettext versions,
+USE_INCLUDED_LIBINTL is no longer defined by the gettext m4
+macro and was never documented anyway.
+
+Upstream-Status: Inappropriate [upstream is dead]
+Signed-off-by: Alexander Kanavin <alex.kanavin@gmail.com>
+---
+ configure.in     | 2 +-
+ intl/Makefile.in | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/configure.in b/configure.in
+index aa20263..4bde433 100644
+--- a/configure.in
++++ b/configure.in
+@@ -256,7 +256,7 @@ AC_SUBST(CFLAGS)
+ AC_SUBST(LDFLAGS)
+ AC_SUBST(LIBS)
+ 
+-AM_GNU_GETTEXT
++AM_GNU_GETTEXT([external])
+ 
+ AC_DEFINE_UNQUOTED(LOCALEDIR,"$prefix/$DATADIRNAME",[locale directory])
+ 
+diff --git a/intl/Makefile.in b/intl/Makefile.in
+index bbac1d5..7629a94 100644
+--- a/intl/Makefile.in
++++ b/intl/Makefile.in
+@@ -138,7 +138,7 @@ libgnuintl.h.msvc-static libgnuintl.h.msvc-shared README.woe32 Makefile.msvc
+ DISTFILES.obsolete = xopen-msg.sed linux-msg.sed po2tbl.sed.in cat-compat.c \
+ COPYING.LIB-2 gettext.h libgettext.h plural-eval.c libgnuintl.h
+ 
+-all: all-@USE_INCLUDED_LIBINTL@
++all: all-no-no
+ all-yes: libintl.$la libintl.h charset.alias ref-add.sed ref-del.sed
+ all-no: all-no-@BUILD_INCLUDED_LIBINTL@
+ all-no-yes: libgnuintl.$la
