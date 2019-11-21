@@ -24,3 +24,5 @@ inherit autotools gettext pkgconfig
 do_install() {
 	for d in doc extras man lib src; do make -C $d DESTDIR=${D} install; done
 }
+
+RRECOMMENDS_${PN} += "lrzsz"

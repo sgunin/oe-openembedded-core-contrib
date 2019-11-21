@@ -337,7 +337,7 @@ RRECOMMENDS_packagegroup-base-ipv6 = "\
 SUMMARY_packagegroup-base-serial = "Serial port support"
 RDEPENDS_packagegroup-base-serial = "\
     setserial \
-    "
+    lrzsz "
 
 SUMMARY_packagegroup-base-phone = "Cellular telephony (voice) support"
 RDEPENDS_packagegroup-base-phone = "\
