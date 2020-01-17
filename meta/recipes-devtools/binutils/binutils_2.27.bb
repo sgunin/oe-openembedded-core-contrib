@@ -45,4 +45,6 @@ do_install_class-native () {
 USE_ALTERNATIVES_FOR_class-nativesdk = ""
 FILES_${PN}_append_class-nativesdk = " ${bindir}"
 
+SRC_URI_append_class-nativesdk =  "file://nativesdk-relocation.patch"
+
 BBCLASSEXTEND = "native nativesdk"
