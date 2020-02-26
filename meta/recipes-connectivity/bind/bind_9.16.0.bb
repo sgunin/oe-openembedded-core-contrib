@@ -2,12 +2,12 @@ SUMMARY = "ISC Internet Domain Name Server"
 HOMEPAGE = "http://www.isc.org/sw/bind/"
 SECTION = "console/network"
 
-LICENSE = "ISC & BSD"
-LIC_FILES_CHKSUM = "file://COPYRIGHT;md5=8f17f64e47e83b60cd920a1e4b54419e"
+LICENSE = "MPL-2.0"
+LIC_FILES_CHKSUM = "file://COPYRIGHT;md5=188b8d0644bd6835df43b84e3f180be1"
 
-DEPENDS = "openssl libcap zlib"
+DEPENDS = "openssl libcap zlib libuv"
 
-SRC_URI = "https://ftp.isc.org/isc/bind9/${PV}/${BPN}-${PV}.tar.gz \
+SRC_URI = "https://ftp.isc.org/isc/bind9/${PV}/${BPN}-${PV}.tar.xz \
            file://conf.patch \
            file://named.service \
            file://bind9 \
@@ -15,21 +15,19 @@ SRC_URI = "https://ftp.isc.org/isc/bind9/${PV}/${BPN}-${PV}.tar.gz \
            file://make-etc-initd-bind-stop-work.patch \
            file://init.d-add-support-for-read-only-rootfs.patch \
            file://bind-ensure-searching-for-json-headers-searches-sysr.patch \
-           file://0001-configure.in-remove-useless-L-use_openssl-lib.patch \
            file://0001-named-lwresd-V-and-start-log-hide-build-options.patch \
            file://0001-avoid-start-failure-with-bind-user.patch \
            "
 
-SRC_URI[md5sum] = "17de0d024ab1eac377f1c2854dc25057"
-SRC_URI[sha256sum] = "fd3f3cc9fcfcdaa752db35eb24598afa1fdcc2509d3227fc90a8631b7b400f7d"
+SRC_URI[md5sum] = "f973848bf32797c5f546de7d92a6fd07"
+SRC_URI[sha256sum] = "af4bd9bdaeb1aa7399429972f3a8aa01dd6886b7ae046d703ab8da45330f2e28"
+SRC_URI[sha1sum] = "01678973598db55dfb03cd12a004d3d75a8ab2bf"
+SRC_URI[sha384sum] = "29df1a4a9d2a460ff970ea3d9abb47ff1204c762fa5c23da0627b0eeb847560f706d333796f61c5aeba09b8333532359"
+SRC_URI[sha512sum] = "6f836fe4cb12d3e2e3a871f69e5b249b2bae6ae1dc542395c79cc974ca95aa595e963b6716a38f6c9d5cb3c54ec606fcd932412a6fbe596651123ac1379dd010"
 
 UPSTREAM_CHECK_URI = "https://ftp.isc.org/isc/bind9/"
-# stay at 9.11 until 9.16, from 9.16 follow the ESV versions divisible by 4
+# stay at 9.16 follow the ESV versions divisible by 4
 UPSTREAM_CHECK_REGEX = "(?P<pver>9.(11|16|20|24|28)(\.\d+)+(-P\d+)*)/"
-
-# BIND >= 9.11.2 need dhcpd >= 4.4.0,
-# don't report it here since dhcpd is already recent enough.
-CVE_CHECK_WHITELIST += "CVE-2019-6470"
 
 inherit autotools update-rc.d systemd useradd pkgconfig multilib_script multilib_header
 
@@ -40,17 +38,14 @@ PACKAGECONFIG ?= "readline"
 PACKAGECONFIG[httpstats] = "--with-libxml2=${STAGING_DIR_HOST}${prefix},--without-libxml2,libxml2"
 PACKAGECONFIG[readline] = "--with-readline=-lreadline,,readline"
 PACKAGECONFIG[libedit] = "--with-readline=-ledit,,libedit"
-PACKAGECONFIG[urandom] = "--with-randomdev=/dev/urandom,--with-randomdev=/dev/random,,"
 PACKAGECONFIG[python3] = "--with-python=yes --with-python-install-dir=${PYTHON_SITEPACKAGES_DIR} , --without-python, python3-ply-native,"
 
-ENABLE_IPV6 = "--enable-ipv6=${@bb.utils.contains('DISTRO_FEATURES', 'ipv6', 'yes', 'no', d)}"
-EXTRA_OECONF = " ${ENABLE_IPV6} --with-libtool --enable-threads \
-                 --disable-devpoll --enable-epoll --with-gost=no \
-                 --with-gssapi=no --with-ecdsa=yes --with-eddsa=no \
-                 --with-lmdb=no \
+EXTRA_OECONF = " --with-libtool --disable-devpoll --enable-epoll \
+                 --with-gssapi=no --with-lmdb=no --with-zlib \
                  --sysconfdir=${sysconfdir}/bind \
                  --with-openssl=${STAGING_DIR_HOST}${prefix} \
                "
+LDFLAGS_append = " -lz"
 
 inherit ${@bb.utils.contains('PACKAGECONFIG', 'python3', 'python3native distutils3-base', '', d)}
 
@@ -65,13 +60,6 @@ INITSCRIPT_NAME = "bind"
 INITSCRIPT_PARAMS = "defaults"
 
 SYSTEMD_SERVICE_${PN} = "named.service"
-
-do_install_prepend() {
-	# clean host path in isc-config.sh before the hardlink created
-	# by "make install":
-	#   bind9-config -> isc-config.sh
-	sed -i -e "s,${STAGING_LIBDIR},${libdir}," ${B}/isc-config.sh
-}
 
 do_install_append() {
 
@@ -130,7 +118,7 @@ FILES_${PN}-dev += "${bindir}/isc-config.h"
 FILES_${PN} += "${sbindir}/generate-rndc-key.sh"
 
 PACKAGE_BEFORE_PN += "${PN}-libs"
-FILES_${PN}-libs = "${libdir}/*.so*"
+FILES_${PN}-libs = "${libdir}/*.so* ${libdir}/named/*.so*"
 FILES_${PN}-staticdev += "${libdir}/*.la"
 
 PACKAGE_BEFORE_PN += "${@bb.utils.contains('PACKAGECONFIG', 'python3', 'python3-bind', '', d)}"
