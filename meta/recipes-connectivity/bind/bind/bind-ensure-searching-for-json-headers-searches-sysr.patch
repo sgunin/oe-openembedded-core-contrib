@@ -32,16 +32,16 @@ Signed-off-by: Paul Gortmaker <paul.gortmaker@windriver.com>
  configure.ac | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/configure.ac b/configure.ac
-index 17392fd..e85a5c6 100644
---- a/configure.ac
-+++ b/configure.ac
-@@ -2449,7 +2449,7 @@ case "$use_libjson" in
- 		libjson_libs=""
+Index: bind-9.16.4/configure.ac
+===================================================================
+--- bind-9.16.4.orig/configure.ac
++++ bind-9.16.4/configure.ac
+@@ -1232,7 +1232,7 @@ case "$use_lmdb" in
+ 		LMDB_LIBS=""
  		;;
  	auto|yes)
 -		for d in /usr /usr/local /opt/local
 +		for d in "${STAGING_INCDIR}"
  		do
- 			if test -f "${d}/include/json/json.h"
+ 			if test -f "${d}/include/lmdb.h"
  			then
