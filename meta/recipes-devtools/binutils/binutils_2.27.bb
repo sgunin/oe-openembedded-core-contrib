@@ -42,4 +42,7 @@ do_install_class-native () {
 	rmdir ${D}/${libdir}64 || :
 }
 
+USE_ALTERNATIVES_FOR_class-nativesdk = ""
+FILES_${PN}_append_class-nativesdk = " ${bindir}"
+
 BBCLASSEXTEND = "native nativesdk"
