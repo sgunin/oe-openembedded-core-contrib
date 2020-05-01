@@ -15,7 +15,6 @@ TOOLCHAIN_HOST_TASK ?= "\
     nativesdk-ncurses-terminfo-base \
     nativesdk-chrpath \
     nativesdk-tar \
-    nativesdk-buildtools-perl-dummy \
     nativesdk-git \
     nativesdk-git-perltools \
     nativesdk-pigz \
@@ -23,6 +22,10 @@ TOOLCHAIN_HOST_TASK ?= "\
     nativesdk-wget \
     nativesdk-ca-certificates \
     nativesdk-texinfo \
+    nativesdk-perl-module-file-path \
+    nativesdk-perl-modules \
+    nativesdk-libxml-parser-perl \
+    nativesdk-intltool \
     "
 
 MULTIMACH_TARGET_SYS = "${SDK_ARCH}-nativesdk${SDK_VENDOR}-${SDK_OS}"
