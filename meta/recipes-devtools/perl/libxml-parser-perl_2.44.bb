@@ -31,4 +31,4 @@ do_compile_class-native() {
 	cpan_do_compile
 }
 
-BBCLASSEXTEND="native"
+BBCLASSEXTEND="native nativesdk"
