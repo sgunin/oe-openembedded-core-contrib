@@ -44,6 +44,9 @@
 COPYLEFT_RECIPE_TYPES ?= 'target native nativesdk cross crosssdk cross-canadian'
 inherit copyleft_filter
 
+# Set this to 0 will archive all used sources in the build
+ENABLE_COPYLEFT_FILTER ?= "1"
+
 ARCHIVER_MODE[srpm] ?= "0"
 ARCHIVER_MODE[src] ?= "patched"
 ARCHIVER_MODE[diff] ?= "0"
@@ -81,13 +84,13 @@ python () {
                 pn = p
                 break
 
-    included, reason = copyleft_should_include(d)
-    if not included:
-        bb.debug(1, 'archiver: %s is excluded: %s' % (pn, reason))
-        return
-    else:
-        bb.debug(1, 'archiver: %s is included: %s' % (pn, reason))
-
+    if oe.types.boolean(d.getVar('ENABLE_COPYLEFT_FILTER')):
+        included, reason = copyleft_should_include(d)
+        if not included:
+            bb.debug(1, 'archiver: %s is excluded: %s' % (pn, reason))
+            return
+        else:
+            bb.debug(1, 'archiver: %s is included: %s' % (pn, reason))
 
     # glibc-locale: do_fetch, do_unpack and do_patch tasks have been deleted,
     # so avoid archiving source here.
