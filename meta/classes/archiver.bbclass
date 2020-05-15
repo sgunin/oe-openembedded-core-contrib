@@ -592,4 +592,8 @@ python () {
     # gets added or removed (by adding or removing archiver.bbclass).
     if bb.data.inherits_class('kernel-yocto', d):
         bb.build.addtask('do_kernel_configme', 'do_configure', 'do_unpack_and_patch', d)
+
+    # For populate_sdk
+    if bb.data.inherits_class('image', d):
+        d.appendVarFlag('do_populate_sdk', 'recrdeptask', ' do_deploy_archives')
 }
