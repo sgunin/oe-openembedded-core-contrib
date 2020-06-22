@@ -37,7 +37,7 @@ POSTINST_LOGFILE ?= "${localstatedir}/log/postinstall.log"
 SYSTEMD_DEFAULT_TARGET ?= '${@bb.utils.contains("IMAGE_FEATURES", "x11-base", "graphical.target", "multi-user.target", d)}'
 ROOTFS_POSTPROCESS_COMMAND += '${@bb.utils.contains("DISTRO_FEATURES", "systemd", "set_systemd_default_target; systemd_create_users;", "", d)}'
 
-ROOTFS_POSTPROCESS_COMMAND += 'empty_var_volatile;'
+ROOTFS_POSTPROCESS_COMMAND += 'empty_var_volatile; rootfs_check_host_user_contaminated;'
 
 # Sort the user and group entries in /etc by ID in order to make the content
 # deterministic. Package installs are not deterministic, causing the ordering
@@ -311,10 +311,9 @@ rootfs_check_host_user_contaminated () {
 	find "${IMAGE_ROOTFS}" -wholename "${IMAGE_ROOTFS}/home" -prune \
 	    -user "$HOST_USER_UID" -o -group "$HOST_USER_GID" >"$contaminated"
 
-	if [ -s "$contaminated" ]; then
-		echo "WARNING: Paths in the rootfs are owned by the same user or group as the user running bitbake. See the logfile for the specific paths."
-		cat "$contaminated" | sed "s,^,  ,"
-	fi
+	sed -e "s,${IMAGE_ROOTFS},," $contaminated | while read line; do
+		bbwarn "Path in the rootfs is owned by the same user or group as the user running bitbake:" $line
+	done
 }
 
 # Make any absolute links in a sysroot relative
