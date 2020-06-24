@@ -1,0 +1,23 @@
+busybox ar is not able to handle deterministic archives produced with  binutils archiver
+since it alters the archive headers by shunting certain fields, busybox ar operates on fixed
+bytes which gets then confused in parsing the file header.
+
+This is a workaround until busybox is fixed for
+
+https://bugs.busybox.net/show_bug.cgi?id=13036
+
+Upstream-Status: Inappropriate
+
+Signed-off-by: Khem Raj <raj.khem@gmail.com>
+
+--- a/opkg-build
++++ b/opkg-build
+@@ -324,7 +324,7 @@ fi
+ 
+ rm -f $pkg_file
+ if [ "$outer" = "ar" ] ; then
+-  ( cd $tmp_dir && ar -crfD $pkg_file ./debian-binary ./control.tar.gz ./data.tar.$cext )
++  ( cd $tmp_dir && ar -crfU $pkg_file ./debian-binary ./control.tar.gz ./data.tar.$cext )
+ else
+   ( cd $tmp_dir && tar -c $tsortargs --mtime=@$build_date $tarformat ./debian-binary ./control.tar.gz ./data.tar.$cext | gzip $zipargs > $pkg_file )
+ fi
