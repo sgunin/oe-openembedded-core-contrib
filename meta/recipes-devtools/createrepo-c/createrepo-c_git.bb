@@ -16,7 +16,7 @@ SRCREV = "434a40babdde57ab405e9a1085a30e9575ea0c92"
 S = "${WORKDIR}/git"
 
 DEPENDS = "expat curl glib-2.0 libxml2 openssl bzip2 zlib file sqlite3 xz rpm"
-DEPENDS_append_class-native = " file-replacement-native"
+DEPENDS_append_class-native = " file-replacement-native "
 
 inherit cmake pkgconfig bash-completion distutils3-base
 
