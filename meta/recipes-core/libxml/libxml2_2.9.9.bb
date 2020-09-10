@@ -23,6 +23,7 @@ SRC_URI = "http://www.xmlsoft.org/sources/libxml2-${PV}.tar.gz;name=libtar \
            file://Fix-CVE-2019-19956.patch \
            file://CVE-2020-7595.patch \
            file://CVE-2019-20388.patch \
+           file://CVE-2020-24977.patch \
            "
 
 SRC_URI[libtar.md5sum] = "c04a5a0a042eaa157e8e8c9eabe76bd6"
