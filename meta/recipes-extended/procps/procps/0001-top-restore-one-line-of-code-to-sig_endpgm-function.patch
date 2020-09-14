@@ -1,0 +1,38 @@
+From ed34b1228ed08fbfdbf6f1a61ca7ca62448ccd86 Mon Sep 17 00:00:00 2001
+From: Jim Warner <james.warner@comcast.net>
+Date: Wed, 22 Jan 2020 00:00:00 -0600
+Subject: [PATCH] top: restore one line of code to sig_endpgm() function
+
+When that potential abend at program end was addressed
+in the patch shown below, one line of code was removed
+in error. That line served to suppress some end-of-job
+reports should ATEOJ_RPTSTD or ATEOJ_RPTHSH be active.
+
+So, this patch restores that previously deleted logic.
+
+Reference(s):
+. potential SEGV fix, master branch
+commit d37f85c269fbb6e905802ffdbce0ba4173ba21a9
+
+Signed-off-by: Jim Warner <james.warner@comcast.net>
+Upstream-Status: Backport[https://gitlab.com/procps-ng/procps.git]
+Signed-off-by: Zhixiong Chi <zhixiong.chi@windriver.com>
+---
+ top/top.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/top/top.c b/top/top.c
+index 8e8c7d9..63ec5fe 100644
+--- a/top/top.c
++++ b/top/top.c
+@@ -604,6 +604,7 @@ static void sig_abexit (int sig) {
+          *    SIGUSR1 and SIGUSR2 */
+ static void sig_endpgm (int dont_care_sig) NORETURN;
+ static void sig_endpgm (int dont_care_sig) {
++   Frames_signal = BREAK_sig;
+    bye_bye(NULL);
+    (void)dont_care_sig;
+ } // end: sig_endpgm
+-- 
+2.17.0
+

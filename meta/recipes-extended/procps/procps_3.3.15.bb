@@ -15,6 +15,8 @@ inherit autotools gettext pkgconfig update-alternatives
 SRC_URI = "http://downloads.sourceforge.net/project/procps-ng/Production/procps-ng-${PV}.tar.xz \
            file://sysctl.conf \
            file://0001-Fix-out-of-tree-builds.patch \
+           file://0001-top-avoid-a-potential-SEGV-during-program-terminatio.patch \
+           file://0001-top-restore-one-line-of-code-to-sig_endpgm-function.patch \
            "
 
 SRC_URI[md5sum] = "2b0717a7cb474b3d6dfdeedfbad2eccc"
