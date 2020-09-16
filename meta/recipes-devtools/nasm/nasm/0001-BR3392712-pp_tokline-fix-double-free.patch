@@ -1,0 +1,36 @@
+From 652c58c92d9e8eaf09a0eb125c4fe2d4b6cc3397 Mon Sep 17 00:00:00 2001
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+Date: Tue, 15 Sep 2020 15:50:20 +0800
+Subject: [PATCH] BR3392712: pp_tokline: fix double free
+
+Make sure the data being freed get double
+freed after -- the pointers must be zapped
+(actually nasm_free and free_tlist support
+being called with NULL pointer as an argument).
+
+Upstream-Status: Backport [https://github.com/netwide-assembler/nasm/commit/8806c3ca007b84accac21dd88b900fb03614ceb7]
+CVE: CVE-2020-24978
+
+Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
+Signed-off-by: Wenlin Kang <wenlin.kang@windriver.com>
+---
+ asm/preproc.c | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/asm/preproc.c b/asm/preproc.c
+index 2737ec1..da2c9c9 100644
+--- a/asm/preproc.c
++++ b/asm/preproc.c
+@@ -5119,6 +5119,9 @@ static char *pp_getline(void)
+                             free_tlist(m->iline);
+                             nasm_free(m->paramlen);
+                             l->finishes->in_progress = 0;
++                            m->params = NULL;
++                            m->iline = NULL;
++                            m->paramlen = NULL;
+                         }
+                     }
+ 
+-- 
+2.13.3
+
