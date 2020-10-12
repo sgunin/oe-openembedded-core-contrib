@@ -1,8 +1,12 @@
+NOTE: Reconnecting to bitbake server...
+NOTE: Previous bitbake instance shutting down?, waiting to retry...
+NOTE: Retrying server connection (#1)...
+NOTE: Started PRServer with DBfile: /OE/build/oe-core/cache/prserv.sqlite3, IP: 127.0.0.1, PORT: 37079, PID: 261372
 ERROR:  OE-core's config sanity checker detected a potential misconfiguration.
     Either fix the cause of this error or at your own risk disable the checker (see sanity.conf).
     Following is the list of potential problems / advisories:
 
-    Error, the PACKAGE_ARCHS variable does not contain TUNE_PKGARCH (supersparc).Toolchain tunings invalid:
+    Error, the PACKAGE_ARCHS variable (all any noarch ${PACKAGE_EXTRA_ARCHS_tune-${DEFAULTTUNE}} fake_supersparc) for DEFAULTTUNE (None) does not contain TUNE_PKGARCH (supersparc).Toolchain tunings invalid:
 No tuning found for default multilib.
 
 

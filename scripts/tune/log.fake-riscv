@@ -1,0 +1,10 @@
+NOTE: Started PRServer with DBfile: /OE/build/oe-core/cache/prserv.sqlite3, IP: 127.0.0.1, PORT: 33503, PID: 199282
+Loading cache...done.
+Loaded 0 entries from dependency cache.
+Parsing recipes...ERROR: /OE/build/oe-core/openembedded-core/meta/recipes-devtools/binutils/binutils_2.35.bb: Gold linker does not _yet_ support RISC-V architecture please remove ld-is-gold from DISTRO_FEATURES
+ERROR: /OE/build/oe-core/openembedded-core/meta/recipes-devtools/binutils/binutils-cross_2.35.bb: Gold linker does not _yet_ support RISC-V architecture please remove ld-is-gold from DISTRO_FEATURES
+ERROR: /OE/build/oe-core/openembedded-core/meta/recipes-devtools/binutils/binutils-cross-canadian_2.35.bb: Gold linker does not _yet_ support RISC-V architecture please remove ld-is-gold from DISTRO_FEATURES
+ERROR: /OE/build/oe-core/openembedded-core/meta/recipes-devtools/binutils/binutils-cross-testsuite_2.35.bb: Gold linker does not _yet_ support RISC-V architecture please remove ld-is-gold from DISTRO_FEATURES
+ERROR: Failed to parse recipe: /OE/build/oe-core/openembedded-core/meta/recipes-devtools/binutils/binutils_2.35.bb
+
+Summary: There were 5 ERROR messages shown, returning a non-zero exit code.

@@ -1,0 +1,11 @@
+NOTE: Started PRServer with DBfile: /OE/build/oe-core/cache/prserv.sqlite3, IP: 127.0.0.1, PORT: 44979, PID: 158972
+ERROR:  OE-core's config sanity checker detected a potential misconfiguration.
+    Either fix the cause of this error or at your own risk disable the checker (see sanity.conf).
+    Following is the list of potential problems / advisories:
+
+    Toolchain tunings invalid:
+Tuning 'cortexa65' has the following errors:
+Feature 'cortexa55' is not defined.
+
+
+Summary: There was 1 ERROR message shown, returning a non-zero exit code.
