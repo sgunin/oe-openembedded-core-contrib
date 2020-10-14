@@ -1,0 +1,11 @@
+NOTE: Reconnecting to bitbake server...
+NOTE: Previous bitbake instance shutting down?, waiting to retry...
+NOTE: Retrying server connection (#1)...
+NOTE: Started PRServer with DBfile: /OE/build/oe-core/cache/prserv.sqlite3, IP: 127.0.0.1, PORT: 35113, PID: 631808
+ERROR:  OE-core's config sanity checker detected a potential misconfiguration.
+    Either fix the cause of this error or at your own risk disable the checker (see sanity.conf).
+    Following is the list of potential problems / advisories:
+
+    Error, the PACKAGE_ARCHS variable (all any noarch ${PACKAGE_EXTRA_ARCHS_tune-armv7atb-vfpv4d16} fake_cortexa76ae) for DEFAULTTUNE (armv7atb-vfpv4d16) does not contain TUNE_PKGARCH (armv7at2b-vfpv4d16).
+
+Summary: There was 1 ERROR message shown, returning a non-zero exit code.
