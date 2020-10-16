@@ -12,6 +12,9 @@ INCLUDES_TO_TEST=`find openembedded-core/meta/conf/machine/include/ -name tune-\
 INCLUDES=`echo "${INCLUDES_TO_TEST}" | wc -l`
 INCLUDE=0
 
+# It's recommended to add BB_SERVER_TIMEOUT = "60"
+# to local.conf
+
 for I in ${INCLUDES_TO_TEST}; do
   M=`basename ${I} | sed 's/\.inc//g; s/^tune-/fake-/g'`
   INCLUDE=`expr ${INCLUDE} + 1`
