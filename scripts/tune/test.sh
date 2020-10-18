@@ -23,7 +23,7 @@ for I in ${INCLUDES_TO_TEST}; do
   MACHINE=${M} bitbake -e openssl > ${TUNE_TEST_DIR}/log.${M} 2>&1
   grep "\(^export CC=\)\|\(^TUNE_CCARGS\)\|\(^TUNE_FEATURES=\)\|\(^PACKAGE_ARCHS=\)\|\(^TUNE_PKGARCH=\)\|\(^AVAILTUNES=\)" \
     ${TUNE_TEST_DIR}/log.${M} | sort |\
-      sed "s#--sysroot=[^ \"]*/${M}#--sysroot=SYSROOTS/${M}#g" \
+      sed "s#--sysroot=[^ \"]*/recipe-sysroot#--sysroot=SYSROOT#g" \
         > ${TUNE_TEST_DIR}/env.${M}
   if [ `cat ${TUNE_TEST_DIR}/env.${M} | wc -l` -lt 6 ] ; then
     echo "ERROR: something wrong in ${TUNE_TEST_DIR}/log.${M}"
@@ -42,7 +42,7 @@ for I in ${INCLUDES_TO_TEST}; do
     MACHINE=${M} bitbake -e openssl > ${TUNE_TEST_DIR}/log.${M}.${T} 2>&1
     grep "\(^export CC=\)\|\(^TUNE_CCARGS\)\|\(^TUNE_FEATURES=\)\|\(^PACKAGE_ARCHS=\)\|\(^TUNE_PKGARCH=\)" \
       ${TUNE_TEST_DIR}/log.${M}.${T} | sort |\
-        sed "s#--sysroot=[^ \"]*/${M}#--sysroot=SYSROOTS/${M}#g" \
+        sed "s#--sysroot=[^ \"]*/recipe-sysroot#--sysroot=SYSROOT#g" \
           > ${TUNE_TEST_DIR}/env.${M}.${T}
     if [ `cat ${TUNE_TEST_DIR}/env.${M}.${T} | wc -l` -lt 5 ] ; then
       echo "ERROR: something wrong in ${TUNE_TEST_DIR}/log.${M}.${T}"
