@@ -6,7 +6,9 @@ inherit siteinfo
 # all of the ABI variants for that given architecture.
 #
 oe_multilib_header() {
-
+	if [ -z "${MULTILIB_VARIANTS}" ]; then
+		return
+	fi
 	case ${HOST_OS} in
 	*-musl*)
 		return
