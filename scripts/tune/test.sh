@@ -4,11 +4,11 @@
 # then for each combination of machine and tune lists PACKAGE_ARCHS, CC, TUNE_CCARGS*, TUNE_PKGARCH
 
 # To have the same sorting rules
-export LC_ALL=C
+export LANG=en_US.UTF-8
 
 TUNE_TEST_DIR=`dirname $0`
 
-INCLUDES_TO_TEST=`find openembedded-core/meta/conf/machine/include/ -name tune-\*.inc | sort | sed 's%openembedded-core/meta/%%g'`
+INCLUDES_TO_TEST=`find oe-core/meta/conf/machine/include/ -name tune-\*.inc | sort | sed 's%oe-core/meta/%%g'`
 INCLUDES=`echo "${INCLUDES_TO_TEST}" | wc -l`
 INCLUDE=0
 
@@ -19,7 +19,7 @@ for I in ${INCLUDES_TO_TEST}; do
   M=`basename ${I} | sed 's/\.inc//g; s/^tune-/fake-/g'`
   INCLUDE=`expr ${INCLUDE} + 1`
   echo "Testing fake MACHINE ${M} for include ${I} (${INCLUDE}/${INCLUDES})"
-  echo "require ${I}" > openembedded-core/meta/conf/machine/${M}.conf
+  echo "require ${I}" > oe-core/meta/conf/machine/${M}.conf
   MACHINE=${M} bitbake -e openssl > ${TUNE_TEST_DIR}/log.${M} 2>&1
   grep "\(^export CC=\)\|\(^TUNE_CCARGS\)\|\(^TUNE_FEATURES=\)\|\(^PACKAGE_ARCHS=\)\|\(^TUNE_PKGARCH=\)\|\(^AVAILTUNES=\)" \
     ${TUNE_TEST_DIR}/log.${M} | sort |\
@@ -38,7 +38,7 @@ for I in ${INCLUDES_TO_TEST}; do
   for T in ${AVAILTUNES}; do
     TUNE=`expr ${TUNE} + 1`
     echo "Testing DEFAULTTUNE ${T} (${TUNE}/${TUNES}) for fake MACHINE ${M} (${INCLUDE}/${INCLUDES})"
-    echo "DEFAULTTUNE = \"${T}\"" >> openembedded-core/meta/conf/machine/${M}.conf;
+    echo "DEFAULTTUNE = \"${T}\"" >> oe-core/meta/conf/machine/${M}.conf;
     MACHINE=${M} bitbake -e openssl > ${TUNE_TEST_DIR}/log.${M}.${T} 2>&1
     grep "\(^export CC=\)\|\(^TUNE_CCARGS\)\|\(^TUNE_FEATURES=\)\|\(^PACKAGE_ARCHS=\)\|\(^TUNE_PKGARCH=\)" \
       ${TUNE_TEST_DIR}/log.${M}.${T} | sort |\
