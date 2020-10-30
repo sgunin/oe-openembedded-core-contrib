@@ -8,7 +8,7 @@ export LC_ALL=C
 
 TUNE_TEST_DIR=`dirname $0`
 
-INCLUDES_TO_TEST=`find openembedded-core/meta/conf/machine/include/ -name tune-arm9tdmi.inc | sort | sed 's%openembedded-core/meta/%%g'`
+INCLUDES_TO_TEST=`find openembedded-core/meta/conf/machine/include/ -name tune-\*.inc | sort | sed 's%openembedded-core/meta/%%g'`
 INCLUDES=`echo "${INCLUDES_TO_TEST}" | wc -l`
 INCLUDE=0
 
