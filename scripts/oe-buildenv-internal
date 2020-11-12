@@ -98,6 +98,10 @@ for newpath in "$BITBAKEDIR/bin" "$OEROOT/scripts"; do
 done
 unset BITBAKEDIR newpath
 
+if [ -e $OEROOT/extrasettings ]; then
+. $OEROOT/extrasettings
+fi
+
 # Used by the runqemu script
 export BUILDDIR
 export PATH
