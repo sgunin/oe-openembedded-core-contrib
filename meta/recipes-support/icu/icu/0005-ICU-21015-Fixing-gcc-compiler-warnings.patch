@@ -1,0 +1,220 @@
+From a2dc2884923ffc1121367d9e6be08e6d1a1f4364 Mon Sep 17 00:00:00 2001
+From: "Shane F. Carr" <shane@unicode.org>
+Date: Mon, 30 Mar 2020 22:21:24 -0500
+Subject: [PATCH] ICU-21015 Fixing gcc compiler warnings
+
+Upstream-Status: Backport [https://github.com/unicode-org/icu/commit/3b0772fff9c880b1c048878e9a11bf2d1278c69f]
+Signed-off-by: Martin Jansa <Martin.Jansa@gmail.com>
+---
+ i18n/dtptngen.cpp          |  5 +++++
+ i18n/dtptngen_impl.h       |  1 +
+ i18n/unicode/basictz.h     |  6 ++++++
+ i18n/unicode/numsys.h      |  6 ++++++
+ test/cintltst/ccapitst.c   |  2 +-
+ test/intltest/convtest.cpp | 16 ++++++++++----
+ test/intltest/rbbitst.cpp  |  4 +++-
+ tools/pkgdata/pkgdata.cpp  | 28 +++++++++++++++++++------
+ 8 files changed, 56 insertions(+), 12 deletions(-)
+
+diff --git a/i18n/dtptngen.cpp b/i18n/dtptngen.cpp
+index c5f8618a6d..b6d9c8527f 100644
+--- a/i18n/dtptngen.cpp
++++ b/i18n/dtptngen.cpp
+@@ -2118,6 +2118,11 @@ DateTimeMatcher::DateTimeMatcher(const DateTimeMatcher& other) {
+     copyFrom(other.skeleton);
+ }
+ 
++DateTimeMatcher& DateTimeMatcher::operator=(const DateTimeMatcher& other) {
++    copyFrom(other.skeleton);
++    return *this;
++}
++
+ 
+ void
+ DateTimeMatcher::set(const UnicodeString& pattern, FormatParser* fp) {
+diff --git a/i18n/dtptngen_impl.h b/i18n/dtptngen_impl.h
+index 95219f0ba2..ade9f57331 100644
+--- a/i18n/dtptngen_impl.h
++++ b/i18n/dtptngen_impl.h
+@@ -238,6 +238,7 @@ class DateTimeMatcher: public UMemory {
+     int32_t getDistance(const DateTimeMatcher& other, int32_t includeMask, DistanceInfo& distanceInfo) const;
+     DateTimeMatcher();
+     DateTimeMatcher(const DateTimeMatcher& other);
++    DateTimeMatcher& operator=(const DateTimeMatcher& other);
+     virtual ~DateTimeMatcher();
+     int32_t getFieldMask() const;
+ };
+diff --git a/i18n/unicode/basictz.h b/i18n/unicode/basictz.h
+index c4d0876898..fc2cb8e59f 100644
+--- a/i18n/unicode/basictz.h
++++ b/i18n/unicode/basictz.h
+@@ -206,6 +206,12 @@ class U_I18N_API BasicTimeZone: public TimeZone {
+      */
+     BasicTimeZone(const BasicTimeZone& source);
+ 
++    /**
++     * Copy assignment.
++     * @stable ICU 3.8
++     */
++    BasicTimeZone& operator=(const BasicTimeZone&) = default;
++
+     /**
+      * Gets the set of TimeZoneRule instances applicable to the specified time and after.
+      * @param start     The start date used for extracting time zone rules
+diff --git a/i18n/unicode/numsys.h b/i18n/unicode/numsys.h
+index b2b16fa0d0..7def7032e1 100644
+--- a/i18n/unicode/numsys.h
++++ b/i18n/unicode/numsys.h
+@@ -73,6 +73,12 @@ class U_I18N_API NumberingSystem : public UObject {
+      */
+     NumberingSystem(const NumberingSystem& other);
+ 
++    /**
++     * Copy assignment.
++     * @stable ICU 4.2
++     */
++    NumberingSystem& operator=(const NumberingSystem& other) = default;
++
+     /**
+      * Destructor.
+      * @stable ICU 4.2
+diff --git a/test/cintltst/ccapitst.c b/test/cintltst/ccapitst.c
+index 73663f1245..aae16f98f4 100644
+--- a/test/cintltst/ccapitst.c
++++ b/test/cintltst/ccapitst.c
+@@ -3035,7 +3035,7 @@ static void TestJ1968(void) {
+ 
+     err = U_ZERO_ERROR;
+     myConvName[UCNV_MAX_CONVERTER_NAME_LENGTH-1] = ',';
+-    strncpy(myConvName + UCNV_MAX_CONVERTER_NAME_LENGTH, "locale=", 7);
++    memcpy(myConvName + UCNV_MAX_CONVERTER_NAME_LENGTH, "locale=", 7);
+     cnv = ucnv_open(myConvName, &err);
+     if (cnv || err != U_ILLEGAL_ARGUMENT_ERROR) {
+         log_err("4) Didn't get U_ILLEGAL_ARGUMENT_ERROR as expected %s\n", u_errorName(err));
+diff --git a/test/intltest/convtest.cpp b/test/intltest/convtest.cpp
+index 53d8cfdbd1..949bd3b848 100644
+--- a/test/intltest/convtest.cpp
++++ b/test/intltest/convtest.cpp
+@@ -1185,9 +1185,13 @@ ConversionTest::ToUnicodeCase(ConversionCase &cc, UConverterToUCallback callback
+             cc.offsets=NULL;
+         }
+         else {
+-            memset(resultOffsets, -1, UPRV_LENGTHOF(resultOffsets));
++            for (int32_t i = 0; i < UPRV_LENGTHOF(resultOffsets); i++) {
++                resultOffsets[i] = -1;
++            }
++        }
++        for (int32_t i = 0; i < UPRV_LENGTHOF(result); i++) {
++            result[i] = -1;
+         }
+-        memset(result, -1, UPRV_LENGTHOF(result));
+         errorCode.reset();
+         resultLength=stepToUnicode(cc, cnv.getAlias(),
+                                 result, UPRV_LENGTHOF(result),
+@@ -1615,8 +1619,12 @@ ConversionTest::FromUnicodeCase(ConversionCase &cc, UConverterFromUCallback call
+     ok=TRUE;
+     for(i=0; i<UPRV_LENGTHOF(steps) && ok; ++i) {
+         step=steps[i].step;
+-        memset(resultOffsets, -1, UPRV_LENGTHOF(resultOffsets));
+-        memset(result, -1, UPRV_LENGTHOF(result));
++        for (int32_t i = 0; i < UPRV_LENGTHOF(resultOffsets); i++) {
++            resultOffsets[i] = -1;
++        }
++        for (int32_t i = 0; i < UPRV_LENGTHOF(result); i++) {
++            result[i] = -1;
++        }
+         errorCode=U_ZERO_ERROR;
+         resultLength=stepFromUnicode(cc, cnv,
+                                 result, UPRV_LENGTHOF(result),
+diff --git a/test/intltest/rbbitst.cpp b/test/intltest/rbbitst.cpp
+index ba01ca3c90..9503746c54 100644
+--- a/test/intltest/rbbitst.cpp
++++ b/test/intltest/rbbitst.cpp
+@@ -4268,7 +4268,7 @@ void RBBITest::RunMonkey(BreakIterator *bi, RBBIMonkeyKind &mk, const char *name
+                     u_charName(c, U_EXTENDED_CHAR_NAME, cName, sizeof(cName), &status);
+ 
+                     char buffer[200];
+-                    snprintf(buffer, 200,
++                    auto ret = snprintf(buffer, UPRV_LENGTHOF(buffer),
+                              "%4s %3i :  %1s  %1s  %10s  %-*s  %-40s  %-40s",
+                              currentLineFlag.c_str(),
+                              ci,
+@@ -4278,6 +4278,8 @@ void RBBITest::RunMonkey(BreakIterator *bi, RBBIMonkeyKind &mk, const char *name
+                              classNameSize,
+                              mk.classNameFromCodepoint(c).c_str(),
+                              mk.getAppliedRule(ci).c_str(), cName);
++                    (void)ret;
++                    U_ASSERT(0 <= ret && ret < UPRV_LENGTHOF(buffer));
+ 
+                     // Output the error
+                     if (ci == i) {
+diff --git a/tools/pkgdata/pkgdata.cpp b/tools/pkgdata/pkgdata.cpp
+index 7235a7f669..fe082a8393 100644
+--- a/tools/pkgdata/pkgdata.cpp
++++ b/tools/pkgdata/pkgdata.cpp
+@@ -46,6 +46,7 @@
+ #include "flagparser.h"
+ #include "filetools.h"
+ #include "charstr.h"
++#include "uassert.h"
+ 
+ #if U_HAVE_POPEN
+ # include <unistd.h>
+@@ -1131,12 +1132,15 @@ static int32_t pkg_installLibrary(const char *installDir, const char *targetDir,
+     int32_t result = 0;
+     char cmd[SMALL_BUFFER_MAX_SIZE];
+ 
+-    sprintf(cmd, "cd %s && %s %s %s%s%s",
++    auto ret = snprintf(cmd,
++            SMALL_BUFFER_MAX_SIZE,
++            "cd %s && %s %s %s%s%s",
+             targetDir,
+             pkgDataFlags[INSTALL_CMD],
+             libFileNames[LIB_FILE_VERSION],
+-            installDir, PKGDATA_FILE_SEP_STRING, libFileNames[LIB_FILE_VERSION]
+-            );
++            installDir, PKGDATA_FILE_SEP_STRING, libFileNames[LIB_FILE_VERSION]);
++    (void)ret;
++    U_ASSERT(0 <= ret && ret < SMALL_BUFFER_MAX_SIZE);
+ 
+     result = runCommand(cmd);
+ 
+@@ -1254,10 +1258,14 @@ static int32_t pkg_installFileMode(const char *installDir, const char *srcDir, c
+                     buffer[bufferLength-1] = 0;
+                 }
+ 
+-                sprintf(cmd, "%s %s%s%s %s%s%s",
++                auto ret = snprintf(cmd,
++                        SMALL_BUFFER_MAX_SIZE,
++                        "%s %s%s%s %s%s%s",
+                         pkgDataFlags[INSTALL_CMD],
+                         srcDir, PKGDATA_FILE_SEP_STRING, buffer,
+                         installDir, PKGDATA_FILE_SEP_STRING, buffer);
++                (void)ret;
++                U_ASSERT(0 <= ret && ret < SMALL_BUFFER_MAX_SIZE);
+ 
+                 result = runCommand(cmd);
+                 if (result != 0) {
+@@ -1689,12 +1697,20 @@ static int32_t pkg_createWithoutAssemblyCode(UPKGOptions *o, const char *targetD
+                             break;
+                         }
+                     }
+-                    sprintf(newName, "%s_%s",
++                    auto ret = snprintf(newName,
++                            SMALL_BUFFER_MAX_SIZE,
++                            "%s_%s",
+                             DATA_PREFIX[n],
+                             newNameTmp);
+-                    sprintf(dataName, "%s_%s",
++                    (void)ret;
++                    U_ASSERT(0 <= ret && ret < SMALL_BUFFER_MAX_SIZE);
++                    ret = snprintf(dataName,
++                            SMALL_BUFFER_MAX_SIZE,
++                            "%s_%s",
+                             o->shortName,
+                             DATA_PREFIX[n]);
++                    (void)ret;
++                    U_ASSERT(0 <= ret && ret < SMALL_BUFFER_MAX_SIZE);
+                 }
+                 if (newName[0] != 0) {
+                     break;

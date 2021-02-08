@@ -24,10 +24,10 @@ SRC_URI = "${BASE_SRC_URI};name=code \
            file://0001-Fix-big-endian-build.patch;patchdir=${WORKDIR} \
            file://0002-ICU-21175-Add-cnvalias-as-a-dependency-of-misc_res.patch;patchdir=${WORKDIR} \
            file://filter.json \
-           file://icu-pkgdata-large-cmd.patch \
            file://fix-install-manx.patch \
            file://0001-icu-Added-armeb-support.patch \
            file://CVE-2020-10531.patch \
+           file://0005-ICU-21015-Fixing-gcc-compiler-warnings.patch \
            "
 
 SRC_URI_append_class-target = "\
