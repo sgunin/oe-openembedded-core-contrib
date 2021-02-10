@@ -1,4 +1,4 @@
-From b7d08bc04a4296982fcef8b6b8a354a9e4e7afca Mon Sep 17 00:00:00 2001
+From b6ee819ed4e68cfb2abb7964546f8f96789fa415 Mon Sep 17 00:00:00 2001
 From: Frank Tang <ftang@chromium.org>
 Date: Sat, 1 Feb 2020 02:39:04 +0000
 Subject: [PATCH] ICU-20958 Prevent SEGV_MAPERR in append
@@ -10,15 +10,14 @@ CVE: CVE-2020-10531
 
 Reference to upstream patch:
 https://github.com/unicode-org/icu/commit/b7d08bc04a4296982fcef8b6b8a354a9e4e7afca
-
 ---
  common/unistr.cpp          |  6 ++-
- test/intltest/ustrtest.cpp | 62 +++++++++++++++++++++++++++++++
+ test/intltest/ustrtest.cpp | 62 +++++++++++++++++++++++++
  test/intltest/ustrtest.h   |  1 +
  3 files changed, 68 insertions(+), 1 deletion(-)
 
 diff --git a/common/unistr.cpp b/common/unistr.cpp
-index 901bb33..6ea0915 100644
+index 901bb3358b..6ea09150ca 100644
 --- a/common/unistr.cpp
 +++ b/common/unistr.cpp
 @@ -1563,7 +1563,11 @@ UnicodeString::doAppend(const UChar *srcChars, int32_t srcStart, int32_t srcLeng
@@ -35,7 +34,7 @@ index 901bb33..6ea0915 100644
    // Check for append onto ourself
    const UChar* oldArray = getArrayStart();
 diff --git a/test/intltest/ustrtest.cpp b/test/intltest/ustrtest.cpp
-index b6515ea..ad38bdf 100644
+index b6515ea813..ad38bdf53a 100644
 --- a/test/intltest/ustrtest.cpp
 +++ b/test/intltest/ustrtest.cpp
 @@ -67,6 +67,7 @@ void UnicodeStringTest::runIndexedTest( int32_t index, UBool exec, const char* &
@@ -112,10 +111,10 @@ index b6515ea..ad38bdf 100644
 +    }
 +}
 diff --git a/test/intltest/ustrtest.h b/test/intltest/ustrtest.h
-index 218befd..4a356a9 100644
+index 218befdcc6..4a356a92c7 100644
 --- a/test/intltest/ustrtest.h
 +++ b/test/intltest/ustrtest.h
-@@ -97,6 +97,7 @@ public:
+@@ -97,6 +97,7 @@ class UnicodeStringTest: public IntlTest {
      void TestWCharPointers();
      void TestNullPointers();
      void TestUnicodeStringInsertAppendToSelf();
@@ -123,6 +122,3 @@ index 218befd..4a356a9 100644
  };
  
  #endif
--- 
-2.17.1
-

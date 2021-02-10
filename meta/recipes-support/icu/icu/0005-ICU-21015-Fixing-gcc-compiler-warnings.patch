@@ -1,4 +1,4 @@
-From a2dc2884923ffc1121367d9e6be08e6d1a1f4364 Mon Sep 17 00:00:00 2001
+From c986e29444aafa229105bc50277eeedd9f0beaca Mon Sep 17 00:00:00 2001
 From: "Shane F. Carr" <shane@unicode.org>
 Date: Mon, 30 Mar 2020 22:21:24 -0500
 Subject: [PATCH] ICU-21015 Fixing gcc compiler warnings

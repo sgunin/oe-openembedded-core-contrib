@@ -1,4 +1,4 @@
-From b5ff5641519893c7c57c8663a010442a0af9eff5 Mon Sep 17 00:00:00 2001
+From 7bf0bdf668ec73809f36881f6e174a84509be9b5 Mon Sep 17 00:00:00 2001
 From: Elango Cheran <elango@google.com>
 Date: Thu, 26 Mar 2020 14:21:26 -0700
 Subject: [PATCH] ICU-21026 fix GCC warnings of signed-int left shift

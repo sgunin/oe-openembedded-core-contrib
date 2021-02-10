@@ -24,16 +24,16 @@ SRC_URI = "${BASE_SRC_URI};name=code \
            file://0001-Fix-big-endian-build.patch;patchdir=${WORKDIR} \
            file://0002-ICU-21175-Add-cnvalias-as-a-dependency-of-misc_res.patch;patchdir=${WORKDIR} \
            file://filter.json \
-           file://fix-install-manx.patch \
-           file://0001-icu-Added-armeb-support.patch \
-           file://CVE-2020-10531.patch \
+           file://0001-icu-fix-install-race.patch \
+           file://0002-icu-Added-armeb-support.patch \
+           file://0003-ICU-20958-Prevent-SEGV_MAPERR-in-append.patch \
            file://0005-ICU-21015-Fixing-gcc-compiler-warnings.patch \
            file://0006-ICU-21001-Fixing-problems-found-by-running-valgrind.patch \
            file://0007-ICU-21026-fix-GCC-warnings-of-signed-int-left-shift.patch \
            "
 
 SRC_URI_append_class-target = "\
-           file://0001-Disable-LDFLAGSICUDT-for-Linux.patch \
+           file://0008-Disable-LDFLAGSICUDT-for-Linux.patch \
           "
 SRC_URI[code.sha256sum] = "52a3f2209ab95559c1cf0a14f24338001f389615bf00e2585ef3dbc43ecf0a2e"
 SRC_URI[data.sha256sum] = "8be647f738891d2beb79d48f99077b3499948430eae6f1be112553b15ab0243e"
