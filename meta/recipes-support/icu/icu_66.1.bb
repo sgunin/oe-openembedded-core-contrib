@@ -28,6 +28,8 @@ SRC_URI = "${BASE_SRC_URI};name=code \
            file://0001-icu-Added-armeb-support.patch \
            file://CVE-2020-10531.patch \
            file://0005-ICU-21015-Fixing-gcc-compiler-warnings.patch \
+           file://0006-ICU-21001-Fixing-problems-found-by-running-valgrind.patch \
+           file://0007-ICU-21026-fix-GCC-warnings-of-signed-int-left-shift.patch \
            "
 
 SRC_URI_append_class-target = "\

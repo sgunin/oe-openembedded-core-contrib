@@ -1,0 +1,25 @@
+From b5ff5641519893c7c57c8663a010442a0af9eff5 Mon Sep 17 00:00:00 2001
+From: Elango Cheran <elango@google.com>
+Date: Thu, 26 Mar 2020 14:21:26 -0700
+Subject: [PATCH] ICU-21026 fix GCC warnings of signed-int left shift
+
+Upstream-Status: Backport [https://github.com/unicode-org/icu/commit/72e07c0d52b3c5ac8576299d4a8a9405145c6d2d]
+Signed-off-by: Martin Jansa <Martin.Jansa@gmail.com>
+---
+ tools/gensprep/store.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/tools/gensprep/store.c b/tools/gensprep/store.c
+index 3d75a39cc8..4b00d1b796 100644
+--- a/tools/gensprep/store.c
++++ b/tools/gensprep/store.c
+@@ -412,7 +412,8 @@ storeMapping(uint32_t codepoint, uint32_t* mapping,int32_t length,
+         int16_t delta = (int16_t)((int32_t)codepoint - (int16_t) mapping[0]);
+         if(delta >= SPREP_DELTA_RANGE_NEGATIVE_LIMIT && delta <= SPREP_DELTA_RANGE_POSITIVE_LIMIT){
+ 
+-            trieWord = delta << 2;
++            trieWord = delta;
++            trieWord <<= 2;
+ 
+ 
+             /* make sure that the second bit is OFF */

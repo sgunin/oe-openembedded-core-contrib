@@ -1,0 +1,235 @@
+From c7a86358271e33e38445d321e642c49210d443af Mon Sep 17 00:00:00 2001
+From: Jeff Genovy <29107334+jefgen@users.noreply.github.com>
+Date: Tue, 3 Mar 2020 00:44:59 -0800
+Subject: [PATCH] ICU-21001 Fixing problems found by running valgrind.
+
+This makes fixes in order to run the icu4c tests (intltest, cintltst,
+iotest, and icuinfo) cleanly under valgrind with --leak-check=full.
+
+Upstream-Status: Backport [https://github.com/unicode-org/icu/commit/ce7e060d50a9af8f631e4684d151cccd5fbbc8c2]
+Signed-off-by: Martin Jansa <Martin.Jansa@gmail.com>
+---
+ common/ucurr.cpp          | 4 ++--
+ common/unames.cpp         | 3 ++-
+ common/uresbund.cpp       | 4 ++--
+ common/uscript.cpp        | 4 ++--
+ i18n/calendar.cpp         | 2 +-
+ i18n/dtptngen.cpp         | 3 +++
+ i18n/gender.cpp           | 2 +-
+ i18n/name2uni.cpp         | 1 +
+ i18n/numsys.cpp           | 2 +-
+ test/intltest/dadrcal.cpp | 2 +-
+ test/intltest/dadrfmt.cpp | 2 +-
+ test/intltest/tztest.cpp  | 2 +-
+ tools/icuinfo/icuinfo.cpp | 8 ++++++++
+ 13 files changed, 26 insertions(+), 13 deletions(-)
+
+diff --git a/common/ucurr.cpp b/common/ucurr.cpp
+index dfee3bd300..5eacc4a99b 100644
+--- a/common/ucurr.cpp
++++ b/common/ucurr.cpp
+@@ -866,7 +866,7 @@ getCurrencyNameCount(const char* loc, int32_t* total_currency_name_count, int32_
+     *total_currency_name_count = 0;
+     *total_currency_symbol_count = 0;
+     const UChar* s = NULL;
+-    char locale[ULOC_FULLNAME_CAPACITY];
++    char locale[ULOC_FULLNAME_CAPACITY] = "";
+     uprv_strcpy(locale, loc);
+     const icu::Hashtable *currencySymbolsEquiv = getCurrSymbolsEquiv();
+     for (;;) {
+@@ -941,7 +941,7 @@ collectCurrencyNames(const char* locale,
+     // Look up the Currencies resource for the given locale.
+     UErrorCode ec2 = U_ZERO_ERROR;
+ 
+-    char loc[ULOC_FULLNAME_CAPACITY];
++    char loc[ULOC_FULLNAME_CAPACITY] = "";
+     uloc_getName(locale, loc, sizeof(loc), &ec2);
+     if (U_FAILURE(ec2) || ec2 == U_STRING_NOT_TERMINATED_WARNING) {
+         ec = U_ILLEGAL_ARGUMENT_ERROR;
+diff --git a/common/unames.cpp b/common/unames.cpp
+index cde8b5ad7e..5776058f95 100644
+--- a/common/unames.cpp
++++ b/common/unames.cpp
+@@ -1519,7 +1519,8 @@ U_CAPI UChar32 U_EXPORT2
+ u_charFromName(UCharNameChoice nameChoice,
+                const char *name,
+                UErrorCode *pErrorCode) {
+-    char upper[120], lower[120];
++    char upper[120] = {0};
++    char lower[120] = {0};
+     FindName findName;
+     AlgorithmicRange *algRange;
+     uint32_t *p;
+diff --git a/common/uresbund.cpp b/common/uresbund.cpp
+index 6c0e760389..97df4a85eb 100644
+--- a/common/uresbund.cpp
++++ b/common/uresbund.cpp
+@@ -2611,8 +2611,8 @@ ures_getFunctionalEquivalent(char *result, int32_t resultCapacity,
+     char defVal[1024] = ""; /* default value for given locale */
+     char defLoc[1024] = ""; /* default value for given locale */
+     char base[1024] = ""; /* base locale */
+-    char found[1024];
+-    char parent[1024];
++    char found[1024] = "";
++    char parent[1024] = "";
+     char full[1024] = "";
+     UResourceBundle bund1, bund2;
+     UResourceBundle *res = NULL;
+diff --git a/common/uscript.cpp b/common/uscript.cpp
+index 98528c158b..f8bd7e7fdd 100644
+--- a/common/uscript.cpp
++++ b/common/uscript.cpp
+@@ -58,8 +58,8 @@ static int32_t
+ getCodesFromLocale(const char *locale,
+                    UScriptCode *scripts, int32_t capacity, UErrorCode *err) {
+     UErrorCode internalErrorCode = U_ZERO_ERROR;
+-    char lang[8];
+-    char script[8];
++    char lang[8] = {0};
++    char script[8] = {0};
+     int32_t scriptLength;
+     if(U_FAILURE(*err)) { return 0; }
+     // Multi-script languages, equivalent to the LocaleScript data
+diff --git a/i18n/calendar.cpp b/i18n/calendar.cpp
+index c043bb3186..981f09c574 100644
+--- a/i18n/calendar.cpp
++++ b/i18n/calendar.cpp
+@@ -958,7 +958,7 @@ Calendar::makeInstance(const Locale& aLocale, UErrorCode& success) {
+ #endif
+         c->setWeekData(aLocale, c->getType(), success);  // set the correct locale (this was an indirected calendar)
+ 
+-        char keyword[ULOC_FULLNAME_CAPACITY];
++        char keyword[ULOC_FULLNAME_CAPACITY] = "";
+         UErrorCode tmpStatus = U_ZERO_ERROR;
+         l.getKeywordValue("calendar", keyword, ULOC_FULLNAME_CAPACITY, tmpStatus);
+         if (U_SUCCESS(tmpStatus) && uprv_strcmp(keyword, "iso8601") == 0) {
+diff --git a/i18n/dtptngen.cpp b/i18n/dtptngen.cpp
+index b6d9c8527f..d162c178d1 100644
+--- a/i18n/dtptngen.cpp
++++ b/i18n/dtptngen.cpp
+@@ -324,6 +324,7 @@ DateTimePatternGenerator::createEmptyInstance(UErrorCode& status) {
+ DateTimePatternGenerator::DateTimePatternGenerator(UErrorCode &status) :
+     skipMatcher(nullptr),
+     fAvailableFormatKeyHash(nullptr),
++    fDefaultHourFormatChar(0),
+     internalErrorCode(U_ZERO_ERROR)
+ {
+     fp = new FormatParser();
+@@ -338,6 +339,7 @@ DateTimePatternGenerator::DateTimePatternGenerator(UErrorCode &status) :
+ DateTimePatternGenerator::DateTimePatternGenerator(const Locale& locale, UErrorCode &status) :
+     skipMatcher(nullptr),
+     fAvailableFormatKeyHash(nullptr),
++    fDefaultHourFormatChar(0),
+     internalErrorCode(U_ZERO_ERROR)
+ {
+     fp = new FormatParser();
+@@ -356,6 +358,7 @@ DateTimePatternGenerator::DateTimePatternGenerator(const DateTimePatternGenerato
+     UObject(),
+     skipMatcher(nullptr),
+     fAvailableFormatKeyHash(nullptr),
++    fDefaultHourFormatChar(0),
+     internalErrorCode(U_ZERO_ERROR)
+ {
+     fp = new FormatParser();
+diff --git a/i18n/gender.cpp b/i18n/gender.cpp
+index 32ddbf9a66..dc5def6ad3 100644
+--- a/i18n/gender.cpp
++++ b/i18n/gender.cpp
+@@ -160,7 +160,7 @@ const GenderInfo* GenderInfo::loadInstance(const Locale& locale, UErrorCode& sta
+   if (s == NULL) {
+     return &gObjs[NEUTRAL];
+   }
+-  char type_str[256];
++  char type_str[256] = "";
+   u_UCharsToChars(s, type_str, resLen + 1);
+   if (uprv_strcmp(type_str, gNeutralStr) == 0) {
+     return &gObjs[NEUTRAL];
+diff --git a/i18n/name2uni.cpp b/i18n/name2uni.cpp
+index 52bab80e3d..dcf8d852e2 100644
+--- a/i18n/name2uni.cpp
++++ b/i18n/name2uni.cpp
+@@ -190,6 +190,7 @@ void NameUnicodeTransliterator::handleTransliterate(Replaceable& text, UTransPos
+                 }
+ 
+                 if (uprv_isInvariantUString(name.getBuffer(), len)) {
++                    cbuf[0] = 0;
+                     name.extract(0, len, cbuf, maxLen, US_INV);
+ 
+                     UErrorCode status = U_ZERO_ERROR;
+diff --git a/i18n/numsys.cpp b/i18n/numsys.cpp
+index ee530e8d33..62d555aad2 100644
+--- a/i18n/numsys.cpp
++++ b/i18n/numsys.cpp
+@@ -118,7 +118,7 @@ NumberingSystem::createInstance(const Locale & inLocale, UErrorCode& status) {
+ 
+     UBool nsResolved = TRUE;
+     UBool usingFallback = FALSE;
+-    char buffer[ULOC_KEYWORDS_CAPACITY];
++    char buffer[ULOC_KEYWORDS_CAPACITY] = "";
+     int32_t count = inLocale.getKeywordValue("numbers", buffer, sizeof(buffer), status);
+     if (U_FAILURE(status) || status == U_STRING_NOT_TERMINATED_WARNING) {
+         // the "numbers" keyword exceeds ULOC_KEYWORDS_CAPACITY; ignore and use default.
+diff --git a/test/intltest/dadrcal.cpp b/test/intltest/dadrcal.cpp
+index 08c9cec95c..c74f387714 100644
+--- a/test/intltest/dadrcal.cpp
++++ b/test/intltest/dadrcal.cpp
+@@ -448,7 +448,7 @@ void DataDrivenCalendarTest::processTest(TestData *testData) {
+     //Calendar *cal= NULL;
+     //const UChar *arguments= NULL;
+     //int32_t argLen = 0;
+-    char testType[256];
++    char testType[256] = "";
+     const DataMap *settings= NULL;
+     //const UChar *type= NULL;
+     UErrorCode status = U_ZERO_ERROR;
+diff --git a/test/intltest/dadrfmt.cpp b/test/intltest/dadrfmt.cpp
+index a382bd5ec3..bff134a266 100644
+--- a/test/intltest/dadrfmt.cpp
++++ b/test/intltest/dadrfmt.cpp
+@@ -330,7 +330,7 @@ void DataDrivenFormatTest::processTest(TestData *testData) {
+     //Format *cal= NULL;
+     //const UChar *arguments= NULL;
+     //int32_t argLen = 0;
+-    char testType[256];
++    char testType[256] = "";
+     const DataMap *settings= NULL;
+     //const UChar *type= NULL;
+     UErrorCode status = U_ZERO_ERROR;
+diff --git a/test/intltest/tztest.cpp b/test/intltest/tztest.cpp
+index 9346610931..17492a7a13 100644
+--- a/test/intltest/tztest.cpp
++++ b/test/intltest/tztest.cpp
+@@ -537,7 +537,7 @@ TimeZoneTest::TestGetAvailableIDsNew()
+     const UnicodeString *id1, *id2;
+     UnicodeString canonicalID;
+     UBool isSystemID;
+-    char region[4];
++    char region[4] = {0};
+     int32_t zoneCount;
+ 
+     any = canonical = canonicalLoc = any_US = canonical_US = canonicalLoc_US = any_W5 = any_CA_W5 = any_US_E14 = NULL;
+diff --git a/tools/icuinfo/icuinfo.cpp b/tools/icuinfo/icuinfo.cpp
+index fee17cf685..934825924f 100644
+--- a/tools/icuinfo/icuinfo.cpp
++++ b/tools/icuinfo/icuinfo.cpp
+@@ -58,6 +58,12 @@ static void do_init() {
+     }
+ }
+ 
++static void do_cleanup() {
++  if (icuInitted) {
++    u_cleanup();
++    icuInitted = FALSE;
++  }
++}
+ 
+ void cmd_millis()
+ {
+@@ -295,5 +301,7 @@ main(int argc, char* argv[]) {
+       cmd_version(FALSE, errorCode);  /* at least print the version # */
+     }
+ 
++    do_cleanup();
++
+     return U_FAILURE(errorCode);
+ }
