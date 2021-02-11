@@ -17,12 +17,10 @@ ICU_FOLDER = "${@icu_download_folder(d)}"
 ARM_INSTRUCTION_SET_armv4 = "arm"
 ARM_INSTRUCTION_SET_armv5 = "arm"
 
-BASE_SRC_URI = "https://github.com/unicode-org/icu/releases/download/release-${ICU_FOLDER}/icu4c-${ICU_PV}-src.tgz"
-DATA_SRC_URI = "https://github.com/unicode-org/icu/releases/download/release-${ICU_FOLDER}/icu4c-${ICU_PV}-data.zip"
-SRC_URI = "${BASE_SRC_URI};name=code \
-           ${DATA_SRC_URI};name=data \
-           file://0001-Fix-big-endian-build.patch;patchdir=${WORKDIR} \
-           file://0002-ICU-21175-Add-cnvalias-as-a-dependency-of-misc_res.patch;patchdir=${WORKDIR} \
+SRCREV = "5f681ecbc75898a6484217b322f3883b6d1b2049"
+SRC_URI = "git://github.com/unicode-org/icu.git \
+           file://0001-Fix-big-endian-build.patch \
+           file://0002-ICU-21175-Add-cnvalias-as-a-dependency-of-misc_res.patch \
            file://filter.json \
            file://0001-icu-fix-install-race.patch \
            file://0002-icu-Added-armeb-support.patch \
@@ -31,12 +29,11 @@ SRC_URI = "${BASE_SRC_URI};name=code \
            file://0006-ICU-21001-Fixing-problems-found-by-running-valgrind.patch \
            file://0007-ICU-21026-fix-GCC-warnings-of-signed-int-left-shift.patch \
            "
+S = "${WORKDIR}/git/icu4c/source"
 
 SRC_URI_append_class-target = "\
            file://0008-Disable-LDFLAGSICUDT-for-Linux.patch \
           "
-SRC_URI[code.sha256sum] = "52a3f2209ab95559c1cf0a14f24338001f389615bf00e2585ef3dbc43ecf0a2e"
-SRC_URI[data.sha256sum] = "8be647f738891d2beb79d48f99077b3499948430eae6f1be112553b15ab0243e"
 
 UPSTREAM_CHECK_REGEX = "icu4c-(?P<pver>\d+(_\d+)+)-src"
 UPSTREAM_CHECK_URI = "https://github.com/unicode-org/icu/releases"
@@ -47,10 +44,8 @@ PACKAGECONFIG ?= ""
 PACKAGECONFIG[make-icudata] = ",,,"
 
 do_make_icudata_class-target () {
-    cd ${S}
-    rm -rf data
-    cp -a ${WORKDIR}/data .
     ${@bb.utils.contains('PACKAGECONFIG', 'make-icudata', '', 'exit 0', d)}
+    cd ${S}
     AR='${BUILD_AR}' \
     CC='${BUILD_CC}' \
     CPP='${BUILD_CPP}' \

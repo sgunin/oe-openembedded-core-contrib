@@ -13,7 +13,7 @@ diff --git a/data/BUILDRULES.py b/data/BUILDRULES.py
 index 2338afd1f7..63b6e09273 100644
 --- a/data/BUILDRULES.py
 +++ b/data/BUILDRULES.py
-@@ -361,7 +361,7 @@ def generate_misc(config, io, common_vars):
+@@ -361,7 +361,7 @@
          RepeatedExecutionRequest(
              name = "misc_res",
              category = "misc",
