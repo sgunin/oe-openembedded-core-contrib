@@ -37,6 +37,9 @@ SRC_URI_append_class-target = "\
 UPSTREAM_CHECK_REGEX = "icu4c-(?P<pver>\d+(_\d+)+)-src"
 UPSTREAM_CHECK_URI = "https://github.com/unicode-org/icu/releases"
 
+EXTRA_OECONF_append = " --disable-silent-rules"
+EXTRA_OEMAKE_append = " V=1"
+
 EXTRA_OECONF_append_libc-musl = " ac_cv_func_strtod_l=no"
 
 PACKAGECONFIG ?= ""

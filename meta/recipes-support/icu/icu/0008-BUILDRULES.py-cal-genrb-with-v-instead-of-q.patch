@@ -3,21 +3,26 @@ From: Martin Jansa <Martin.Jansa@gmail.com>
 Date: Thu, 11 Feb 2021 02:17:50 -0800
 Subject: [PATCH] BUILDRULES.py: cal genrb with -v instead of -q
 
+* redirect to log file next to source, because there is a lot of
+  paralel genrb calls and the output is mixxed together
+
 Signed-off-by: Martin Jansa <Martin.Jansa@gmail.com>
 ---
- data/BUILDRULES.py | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ data/BUILDRULES.py | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/data/BUILDRULES.py b/data/BUILDRULES.py
-index 2338afd1f7..8ebaf206bd 100644
+index 2338afd1f7..ed8cc4a610 100644
 --- a/data/BUILDRULES.py
 +++ b/data/BUILDRULES.py
-@@ -366,7 +366,7 @@ def generate_misc(config, io, common_vars):
+@@ -366,8 +366,8 @@ def generate_misc(config, io, common_vars):
              output_files = output_files,
              tool = IcuTool("genrb"),
              args = "-s {IN_DIR}/misc -d {OUT_DIR} -i {OUT_DIR} "
 -                "-k -q "
+-                "{INPUT_BASENAME}",
 +                "-k -v "
-                 "{INPUT_BASENAME}",
++                "{INPUT_BASENAME} >{INPUT_BASENAME}.log 2>&1",
              format_with = {},
              repeat_with = {
+                 "INPUT_BASENAME": input_basenames
