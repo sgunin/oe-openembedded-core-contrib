@@ -1,0 +1,23 @@
+From 97c7513459f7b5112e2fbda4bf3649235cfed4f1 Mon Sep 17 00:00:00 2001
+From: Martin Jansa <Martin.Jansa@gmail.com>
+Date: Thu, 11 Feb 2021 02:17:50 -0800
+Subject: [PATCH] BUILDRULES.py: cal genrb with -v instead of -q
+
+Signed-off-by: Martin Jansa <Martin.Jansa@gmail.com>
+---
+ data/BUILDRULES.py | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/data/BUILDRULES.py b/data/BUILDRULES.py
+index 2338afd1f7..8ebaf206bd 100644
+--- a/data/BUILDRULES.py
++++ b/data/BUILDRULES.py
+@@ -366,7 +366,7 @@ def generate_misc(config, io, common_vars):
+             output_files = output_files,
+             tool = IcuTool("genrb"),
+             args = "-s {IN_DIR}/misc -d {OUT_DIR} -i {OUT_DIR} "
+-                "-k -q "
++                "-k -v "
+                 "{INPUT_BASENAME}",
+             format_with = {},
+             repeat_with = {

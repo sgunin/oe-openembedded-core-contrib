@@ -26,6 +26,7 @@ SRC_URI = "git://github.com/unicode-org/icu.git \
            file://0002-icu-Added-armeb-support.patch \
            file://0005-ICU-21015-Fixing-gcc-compiler-warnings.patch \
            file://0007-ICU-21026-fix-GCC-warnings-of-signed-int-left-shift.patch \
+           file://0008-BUILDRULES.py-cal-genrb-with-v-instead-of-q.patch \
            "
 S = "${WORKDIR}/git/icu4c/source"
 
