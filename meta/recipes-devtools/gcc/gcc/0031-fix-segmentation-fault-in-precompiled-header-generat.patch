@@ -1,7 +1,7 @@
-From 27b8ba5555ada2dab076988529bfb84d00a4b901 Mon Sep 17 00:00:00 2001
+From 12e54aa10ed63161cb5571b6a1fdc59d6b052159 Mon Sep 17 00:00:00 2001
 From: Juro Bystricky <juro.bystricky@intel.com>
 Date: Mon, 19 Mar 2018 22:31:20 -0700
-Subject: [PATCH] fix segmentation fault in precompiled header generation
+Subject: [PATCH 31/37] fix segmentation fault in precompiled header generation
 
 Prevent a segmentation fault which occurs when using incorrect
 structure trying to access name of some named operators, such as
@@ -19,10 +19,10 @@ Signed-off-by: Khem Raj <raj.khem@gmail.com>
  1 file changed, 21 insertions(+), 5 deletions(-)
 
 diff --git a/libcpp/lex.c b/libcpp/lex.c
-index 56ac3a1dd73..73a951148b3 100644
+index 06bcc31c87e..24bed9a35fa 100644
 --- a/libcpp/lex.c
 +++ b/libcpp/lex.c
-@@ -3311,11 +3311,27 @@ cpp_spell_token (cpp_reader *pfile, const cpp_token *token,
+@@ -3531,11 +3531,27 @@ cpp_spell_token (cpp_reader *pfile, const cpp_token *token,
      spell_ident:
      case SPELL_IDENT:
        if (forstring)
@@ -55,3 +55,6 @@ index 56ac3a1dd73..73a951148b3 100644
        else
  	buffer = _cpp_spell_ident_ucns (buffer, token->val.node.node);
        break;
+-- 
+2.30.1
+

@@ -1,8 +1,8 @@
-From 08752c2f1d21553301bee5757c453c6a36cbe03c Mon Sep 17 00:00:00 2001
+From f2e2c2e3c792f681bde94a9ef8abe06b46d85e82 Mon Sep 17 00:00:00 2001
 From: Khem Raj <raj.khem@gmail.com>
 Date: Fri, 20 Feb 2015 09:39:38 +0000
-Subject: [PATCH] Avoid using libdir from .la which usually points to a host
- path
+Subject: [PATCH 17/37] Avoid using libdir from .la which usually points to a
+ host path
 
 Upstream-Status: Inappropriate [embedded specific]
 
@@ -26,3 +26,6 @@ index ee938056bef..9ebc7e3d1e0 100644
  	    dir="$libdir"
  	    absdir="$libdir"
  	  fi
+-- 
+2.30.1
+

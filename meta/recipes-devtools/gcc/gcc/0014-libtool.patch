@@ -1,7 +1,7 @@
-From 6ecd478881468934444ff85611fd43f7033b1e81 Mon Sep 17 00:00:00 2001
+From 0f707388e0552c045caf9dc87c1c62a4e3a45fb6 Mon Sep 17 00:00:00 2001
 From: Khem Raj <raj.khem@gmail.com>
 Date: Fri, 29 Mar 2013 09:29:11 +0400
-Subject: [PATCH] libtool
+Subject: [PATCH 14/37] libtool
 
 libstdc++ from gcc-runtime gets created with -rpath=/usr/lib/../lib for qemux86-64
 when running on am x86_64 build host.
@@ -37,3 +37,6 @@ index 70990740b6c..ee938056bef 100644
  
        oldlibs=
        if test -z "$rpath"; then
+-- 
+2.30.1
+

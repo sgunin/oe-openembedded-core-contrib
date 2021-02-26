@@ -1,7 +1,7 @@
-From 6e3395c0bc933bdc3242d1dead4896d0aa4e11a8 Mon Sep 17 00:00:00 2001
+From fb798283af5ead088bec828b08308b656dcc9bc2 Mon Sep 17 00:00:00 2001
 From: Khem Raj <raj.khem@gmail.com>
 Date: Fri, 29 Mar 2013 09:08:31 +0400
-Subject: [PATCH] gcc-4.3.3: SYSROOT_CFLAGS_FOR_TARGET
+Subject: [PATCH 03/37] gcc-4.3.3: SYSROOT_CFLAGS_FOR_TARGET
 
 Before committing, I noticed that PR/32161 was marked as a dup of PR/32009, but my previous patch did not fix it.
 
@@ -26,10 +26,10 @@ Upstream-Status: Pending
  1 file changed, 32 insertions(+)
 
 diff --git a/configure b/configure
-index 226a64939d1..b31dc137fc9 100755
+index bcebad264ec..86e4ee7c383 100755
 --- a/configure
 +++ b/configure
-@@ -6971,6 +6971,38 @@ fi
+@@ -8977,6 +8977,38 @@ fi
  
  
  
@@ -68,3 +68,6 @@ index 226a64939d1..b31dc137fc9 100755
  # Handle --with-headers=XXX.  If the value is not "yes", the contents of
  # the named directory are copied to $(tooldir)/sys-include.
  if test x"${with_headers}" != x && test x"${with_headers}" != xno ; then
+-- 
+2.30.1
+

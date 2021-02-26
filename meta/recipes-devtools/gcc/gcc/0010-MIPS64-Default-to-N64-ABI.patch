@@ -1,7 +1,7 @@
-From 4fad4433c96bc9d0d9d124f9674fb3389f6f426e Mon Sep 17 00:00:00 2001
+From 9d43518e226442f357dec371f028ea4c06ce46c0 Mon Sep 17 00:00:00 2001
 From: Khem Raj <raj.khem@gmail.com>
 Date: Fri, 29 Mar 2013 09:23:08 +0400
-Subject: [PATCH] MIPS64: Default to N64 ABI
+Subject: [PATCH 10/37] MIPS64: Default to N64 ABI
 
 MIPS64 defaults to n32 ABI, this patch makes it
 so that it defaults to N64 ABI
@@ -14,10 +14,10 @@ Upstream-Status: Inappropriate [OE config specific]
  1 file changed, 5 insertions(+), 5 deletions(-)
 
 diff --git a/gcc/config.gcc b/gcc/config.gcc
-index cf1a87e2efd..37c4221a39f 100644
+index 966cbc888cb..70e74ba762f 100644
 --- a/gcc/config.gcc
 +++ b/gcc/config.gcc
-@@ -2511,29 +2511,29 @@ mips*-*-linux*)				# Linux MIPS, either endian.
+@@ -2543,29 +2543,29 @@ mips*-*-linux*)				# Linux MIPS, either endian.
  			default_mips_arch=mips32
  			;;
  		mips64el-st-linux-gnu)
@@ -52,3 +52,6 @@ index cf1a87e2efd..37c4221a39f 100644
  			enable_mips_multilibs="yes"
  			;;
  	esac
+-- 
+2.30.1
+

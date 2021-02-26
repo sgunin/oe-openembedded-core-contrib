@@ -1,7 +1,7 @@
-From aba42de763a619355471efd1573561b0cbf51162 Mon Sep 17 00:00:00 2001
+From 1eed0be5aa9423d15dd4ec5acda8ed536f2d4deb Mon Sep 17 00:00:00 2001
 From: Khem Raj <raj.khem@gmail.com>
 Date: Tue, 28 Apr 2015 23:15:27 -0700
-Subject: [PATCH] Use SYSTEMLIBS_DIR replacement instead of hardcoding
+Subject: [PATCH 21/37] Use SYSTEMLIBS_DIR replacement instead of hardcoding
  base_libdir
 
 Upstream-Status: Pending
@@ -12,7 +12,7 @@ Signed-off-by: Khem Raj <raj.khem@gmail.com>
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/gcc/config/aarch64/aarch64-linux.h b/gcc/config/aarch64/aarch64-linux.h
-index e587e2e9ad6..ddc62895693 100644
+index 7f2529a2a1d..5303b39186f 100644
 --- a/gcc/config/aarch64/aarch64-linux.h
 +++ b/gcc/config/aarch64/aarch64-linux.h
 @@ -21,7 +21,7 @@
@@ -24,3 +24,6 @@ index e587e2e9ad6..ddc62895693 100644
  
  #undef MUSL_DYNAMIC_LINKER
  #define MUSL_DYNAMIC_LINKER "/lib/ld-musl-aarch64%{mbig-endian:_be}%{mabi=ilp32:_ilp32}.so.1"
+-- 
+2.30.1
+

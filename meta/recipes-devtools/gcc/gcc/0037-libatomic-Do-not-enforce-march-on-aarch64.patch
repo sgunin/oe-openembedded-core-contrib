@@ -1,7 +1,7 @@
-From 38d262bfe7c0c894c364dc6e4dc7971e78a73974 Mon Sep 17 00:00:00 2001
+From c0c415ff6acd9e17d9e3ee37ac7d04bf43d11914 Mon Sep 17 00:00:00 2001
 From: Khem Raj <raj.khem@gmail.com>
 Date: Wed, 13 May 2020 15:10:38 -0700
-Subject: [PATCH] libatomic: Do not enforce march on aarch64
+Subject: [PATCH 37/37] libatomic: Do not enforce march on aarch64
 
 OE passes the right options via gcc compiler cmdline via TUNE_CCARGS
 this can conflict between -mcpu settings and -march setting here, since
@@ -17,7 +17,7 @@ Signed-off-by: Khem Raj <raj.khem@gmail.com>
  2 files changed, 2 deletions(-)
 
 diff --git a/libatomic/Makefile.am b/libatomic/Makefile.am
-index 133fbbca77e..ac1ca645876 100644
+index 0f3cd6f7121..c8124c1d5aa 100644
 --- a/libatomic/Makefile.am
 +++ b/libatomic/Makefile.am
 @@ -125,7 +125,6 @@ libatomic_la_LIBADD = $(foreach s,$(SIZES),$(addsuffix _$(s)_.lo,$(SIZEOBJS)))
@@ -29,10 +29,10 @@ index 133fbbca77e..ac1ca645876 100644
  endif
  if ARCH_ARM_LINUX
 diff --git a/libatomic/Makefile.in b/libatomic/Makefile.in
-index a51807e95c9..97df2d7ff03 100644
+index 0a51bd55f01..6d5b1581706 100644
 --- a/libatomic/Makefile.in
 +++ b/libatomic/Makefile.in
-@@ -431,7 +431,6 @@ M_SRC = $(firstword $(filter %/$(M_FILE), $(all_c_files)))
+@@ -432,7 +432,6 @@ M_SRC = $(firstword $(filter %/$(M_FILE), $(all_c_files)))
  libatomic_la_LIBADD = $(foreach s,$(SIZES),$(addsuffix \
  	_$(s)_.lo,$(SIZEOBJS))) $(am__append_1) $(am__append_2) \
  	$(am__append_3) $(am__append_4)
@@ -40,3 +40,6 @@ index a51807e95c9..97df2d7ff03 100644
  @ARCH_ARM_LINUX_TRUE@@HAVE_IFUNC_TRUE@IFUNC_OPTIONS = -march=armv7-a+fp -DHAVE_KERNEL64
  @ARCH_I386_TRUE@@HAVE_IFUNC_TRUE@IFUNC_OPTIONS = -march=i586
  @ARCH_X86_64_TRUE@@HAVE_IFUNC_TRUE@IFUNC_OPTIONS = -mcx16
+-- 
+2.30.1
+

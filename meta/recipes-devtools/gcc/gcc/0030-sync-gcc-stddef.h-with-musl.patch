@@ -1,7 +1,7 @@
-From 24dc04dc8d69e3bf61322615b3ef18e02ccd311e Mon Sep 17 00:00:00 2001
+From 647227ada2d9ce86659925d1a06cec0b726ca8f6 Mon Sep 17 00:00:00 2001
 From: Khem Raj <raj.khem@gmail.com>
 Date: Fri, 3 Feb 2017 12:56:00 -0800
-Subject: [PATCH] sync gcc stddef.h with musl
+Subject: [PATCH 30/37] sync gcc stddef.h with musl
 
 musl defines ptrdiff_t size_t and wchar_t
 so dont define them here if musl is definining them
@@ -14,7 +14,7 @@ Signed-off-by: Khem Raj <raj.khem@gmail.com>
  1 file changed, 9 insertions(+)
 
 diff --git a/gcc/ginclude/stddef.h b/gcc/ginclude/stddef.h
-index 9d67eac4947..6cb5edbedb4 100644
+index 66619fe43b1..3f843d6f365 100644
 --- a/gcc/ginclude/stddef.h
 +++ b/gcc/ginclude/stddef.h
 @@ -128,6 +128,7 @@ _TYPE_wchar_t;
@@ -86,3 +86,6 @@ index 9d67eac4947..6cb5edbedb4 100644
  #undef	__need_wchar_t
  #endif /* _STDDEF_H or __need_wchar_t.  */
  
+-- 
+2.30.1
+

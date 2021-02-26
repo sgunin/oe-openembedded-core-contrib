@@ -1,7 +1,7 @@
-From fbc926dbf6a47fa623b9c94cd9b09a0e90448fdc Mon Sep 17 00:00:00 2001
+From df870e907dac119ef768a568febf1c250d2d9090 Mon Sep 17 00:00:00 2001
 From: Khem Raj <raj.khem@gmail.com>
 Date: Wed, 4 May 2016 21:11:34 -0700
-Subject: [PATCH] Link libgcc using LDFLAGS, not just SHLIB_LDFLAGS
+Subject: [PATCH 29/37] Link libgcc using LDFLAGS, not just SHLIB_LDFLAGS
 
 Upstream-Status: Pending
 
@@ -12,7 +12,7 @@ Signed-off-by: Khem Raj <raj.khem@gmail.com>
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/libgcc/config/t-slibgcc b/libgcc/config/t-slibgcc
-index c997553447c..330352c2c81 100644
+index c59b43b7b69..ca4c141f526 100644
 --- a/libgcc/config/t-slibgcc
 +++ b/libgcc/config/t-slibgcc
 @@ -32,7 +32,7 @@ SHLIB_INSTALL_SOLINK = $(LN_S) $(SHLIB_SONAME) \
@@ -24,3 +24,6 @@ index c997553447c..330352c2c81 100644
  	-o $(SHLIB_DIR)/$(SHLIB_SONAME).tmp @multilib_flags@ \
  	$(SHLIB_OBJS) $(SHLIB_LC) && \
  	rm -f $(SHLIB_DIR)/$(SHLIB_SOLINK) && \
+-- 
+2.30.1
+

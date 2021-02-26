@@ -1,8 +1,8 @@
-From 870e805d705d99d9b9d7dbd09727f9c1d2ad9c1d Mon Sep 17 00:00:00 2001
+From 36aa10b5ce9a34881d6de3fc9b0635fcdeb5b1f9 Mon Sep 17 00:00:00 2001
 From: Khem Raj <raj.khem@gmail.com>
 Date: Tue, 3 Mar 2015 08:21:19 +0000
-Subject: [PATCH] Don't search host directory during "relink" if $inst_prefix
- is provided
+Subject: [PATCH 20/37] Don't search host directory during "relink" if
+ $inst_prefix is provided
 
 http://lists.gnu.org/archive/html/libtool-patches/2011-01/msg00026.html
 
@@ -33,3 +33,6 @@ index 9ebc7e3d1e0..7ea79fa8be6 100644
  		    ;;
  		esac
  	      fi
+-- 
+2.30.1
+

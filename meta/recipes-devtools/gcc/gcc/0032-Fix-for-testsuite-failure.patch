@@ -1,7 +1,7 @@
-From 2512aacf023c679d86d8f40caff4f6ff412b32ff Mon Sep 17 00:00:00 2001
+From 7cefecb298a83c03742ccee411110e8d9b43fd91 Mon Sep 17 00:00:00 2001
 From: RAGHUNATH LOLUR <raghunath.lolur@kpit.com>
 Date: Wed, 6 Dec 2017 22:52:26 -0800
-Subject: [PATCH] Fix for testsuite failure
+Subject: [PATCH 32/37] Fix for testsuite failure
 
 2017-11-16  Raghunath Lolur  <raghunath.lolur@kpit.com>
 
@@ -253,3 +253,6 @@ index 6cda1534311..26e37f5b8ba 100644
  #define vector(elcount, type)  \
  __attribute__((vector_size((elcount)*sizeof(type)))) type
  
+-- 
+2.30.1
+
