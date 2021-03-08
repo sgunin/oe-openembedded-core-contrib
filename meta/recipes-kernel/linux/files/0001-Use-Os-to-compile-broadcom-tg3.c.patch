@@ -1,0 +1,29 @@
+From b510256cda566e0eda4e1cc9ccbeae2de2a4539e Mon Sep 17 00:00:00 2001
+From: Khem Raj <raj.khem@gmail.com>
+Date: Sun, 7 Mar 2021 13:00:37 -0800
+Subject: [PATCH] Use -Os to compile broadcom/tg3.c
+
+Workaround for GCC 11 bug
+
+Signed-off-by: Khem Raj <raj.khem@gmail.com>
+---
+ drivers/net/ethernet/broadcom/tg3.c | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/drivers/net/ethernet/broadcom/tg3.c b/drivers/net/ethernet/broadcom/tg3.c
+index 5143cdd0eeca..6737bcd9b154 100644
+--- a/drivers/net/ethernet/broadcom/tg3.c
++++ b/drivers/net/ethernet/broadcom/tg3.c
+@@ -21,6 +21,9 @@
+  *	notice is accompanying it.
+  */
+ 
++#if __GNUC__ >= 11
++#pragma GCC optimize ("Os")
++#endif
+ 
+ #include <linux/module.h>
+ #include <linux/moduleparam.h>
+-- 
+2.30.1
+

@@ -28,7 +28,7 @@ SRCREV_meta ?= "67e74d52f2aaa17ca7041032714368ea81bc8823"
 
 SRC_URI = "git://git.yoctoproject.org/linux-yocto.git;name=machine;branch=${KBRANCH}; \
            git://git.yoctoproject.org/yocto-kernel-cache;type=kmeta;name=meta;branch=yocto-5.10;destsuffix=${KMETA}"
-
+SRC_URI += "file://0001-Use-Os-to-compile-broadcom-tg3.c.patch"
 LIC_FILES_CHKSUM = "file://COPYING;md5=6bc538ed5bd9a7fc9398086aedcd7e46"
 LINUX_VERSION ?= "5.10.19"
 
