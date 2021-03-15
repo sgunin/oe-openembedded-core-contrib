@@ -43,6 +43,7 @@ def get_conf_data(e, filename):
                     continue
                 else:
                     jsonstring=jsonstring + line
+    jsonstring = jsonstring.replace("<", "&lt;").replace(">", "&gt;")
     return jsonstring
 
 def get_common_data(e):
