@@ -835,6 +835,7 @@ perform_packagecopy[dirs] = "${PKGD}"
 # the fs-perms.txt files
 python fixup_perms () {
     import pwd, grp
+    import shutil
 
     # init using a string with the same format as a line as documented in
     # the fs-perms.txt file
@@ -1049,7 +1050,10 @@ python fixup_perms () {
         # Create path to move directory to, move it, and then setup the symlink
         bb.utils.mkdirhier(os.path.dirname(target))
         #bb.note("Fixup Perms: Rename %s -> %s" % (dir, ptarget))
-        os.rename(origin, target)
+        try:
+            os.rename(origin, target)
+        except OSError:
+            shutil.move(origin, target)
         #bb.note("Fixup Perms: Link %s -> %s" % (dir, link))
         os.symlink(link, origin)
 
@@ -1776,6 +1780,7 @@ python package_do_shlibs() {
     import itertools
     import re, pipes
     import subprocess
+    import shutil
 
     exclude_shlibs = d.getVar('EXCLUDE_FROM_SHLIBS', False)
     if exclude_shlibs:
@@ -1967,7 +1972,10 @@ python package_do_shlibs() {
 
         for (old, new) in renames:
             bb.note("Renaming %s to %s" % (old, new))
-            os.rename(old, new)
+            try:
+                os.rename(old, new)
+            except OSError:
+                shutil.move(old, new)
             pkgfiles[pkg].remove(old)
 
         shlibs_file = os.path.join(shlibswork_dir, pkg + ".list")

@@ -1269,6 +1269,7 @@ class Wic2(WicTestCase):
 
     def test_expand_mbr_image(self):
         """Test wic write --expand command for mbr image"""
+        import shutil
         # build an image
         config = 'IMAGE_FSTYPES = "wic"\nWKS_FILE = "directdisk.wks"\n'
         self.append_config(config)
@@ -1306,8 +1307,14 @@ class Wic2(WicTestCase):
             result = runCmd("%s/usr/sbin/sfdisk -F %s" % (sysroot, new_image_path))
             self.assertTrue("0 B, 0 bytes, 0 sectors" in result.output)
 
-            os.rename(image_path, image_path + '.bak')
-            os.rename(new_image_path, image_path)
+            try:
+                os.rename(image_path, image_path + '.bak')
+            except OSError:
+                shutil.move(image_path, image_path + '.bak')
+            try:
+                os.rename(new_image_path, image_path)
+            except OSError:
+                shutil.move(new_image_path, image_path)
 
             # Check if it boots in qemu
             with runqemu('core-image-minimal', ssh=False) as qemu:
@@ -1318,7 +1325,10 @@ class Wic2(WicTestCase):
             if os.path.exists(new_image_path):
                 os.unlink(new_image_path)
             if os.path.exists(image_path + '.bak'):
-                os.rename(image_path + '.bak', image_path)
+                try:
+                    os.rename(image_path + '.bak', image_path)
+                except OSError:
+                    shutil.move(image_path + '.bak', image_path)
 
     def test_wic_ls_ext(self):
         """Test listing content of the ext partition using 'wic ls'"""

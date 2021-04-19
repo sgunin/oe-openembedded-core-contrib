@@ -114,7 +114,10 @@ class Rootfs(object, metaclass=ABCMeta):
             shutil.rmtree(self.image_rootfs + '-orig')
         except:
             pass
-        os.rename(self.image_rootfs, self.image_rootfs + '-orig')
+        try:
+            os.rename(self.image_rootfs, self.image_rootfs + '-orig')
+        except OSError:
+            shutil.move(self.image_rootfs, self.image_rootfs + '-orig')
 
         bb.note("  Creating debug rootfs...")
         bb.utils.mkdirhier(self.image_rootfs)
@@ -165,10 +168,16 @@ class Rootfs(object, metaclass=ABCMeta):
             shutil.rmtree(self.image_rootfs + '-dbg')
         except:
             pass
-        os.rename(self.image_rootfs, self.image_rootfs + '-dbg')
+        try:
+            os.rename(self.image_rootfs, self.image_rootfs + '-dbg')
+        except OSError:
+            shutil.move(self.image_rootfs, self.image_rootfs + '-dbg')
 
         bb.note("  Restoreing original rootfs...")
-        os.rename(self.image_rootfs + '-orig', self.image_rootfs)
+        try:
+            os.rename(self.image_rootfs + '-orig', self.image_rootfs)
+        except OSError:
+            shutil.move(self.image_rootfs + '-orig', self.image_rootfs)
 
     def _exec_shell_cmd(self, cmd):
         fakerootcmd = self.d.getVar('FAKEROOT')

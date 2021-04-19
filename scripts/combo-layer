@@ -508,7 +508,10 @@ def check_patch(patchfile):
     f.close()
     if of:
         of.close()
-        os.rename(patchfile + '.tmp', patchfile)
+        try:
+            os.rename(patchfile + '.tmp', patchfile)
+        except OSError:
+            shutil.move(patchfile + '.tmp', patchfile)
 
 def drop_to_shell(workdir=None):
     if not sys.stdin.isatty():

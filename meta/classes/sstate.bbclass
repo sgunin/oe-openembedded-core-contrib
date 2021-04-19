@@ -384,6 +384,7 @@ def sstate_installpkg(ss, d):
 def sstate_installpkgdir(ss, d):
     import oe.path
     import subprocess
+    import shutil
 
     sstateinst = d.getVar("SSTATE_INSTDIR")
     d.setVar('SSTATE_FIXMEDIR', ss['fixmedir'])
@@ -401,7 +402,10 @@ def sstate_installpkgdir(ss, d):
 
     for state in ss['dirs']:
         prepdir(state[1])
-        os.rename(sstateinst + state[0], state[1])
+        try:
+            os.rename(sstateinst + state[0], state[1])
+        except OSError:
+            shutil.move(sstateinst + state[0], state[1])
     sstate_install(ss, d)
 
     for plain in ss['plaindirs']:
@@ -413,7 +417,10 @@ def sstate_installpkgdir(ss, d):
         dest = plain
         bb.utils.mkdirhier(src)
         prepdir(dest)
-        os.rename(src, dest)
+        try:
+            os.rename(src, dest)
+        except OSError:
+            shutil.move(src, dest)
 
     return True
 
@@ -638,6 +645,7 @@ python sstate_hardcode_path () {
 
 def sstate_package(ss, d):
     import oe.path
+    import shutil
 
     tmpdir = d.getVar('TMPDIR')
 
@@ -664,7 +672,10 @@ def sstate_package(ss, d):
                     continue
                 bb.error("sstate found an absolute path symlink %s pointing at %s. Please replace this with a relative link." % (srcpath, link))
         bb.debug(2, "Preparing tree %s for packaging at %s" % (state[1], sstatebuild + state[0]))
-        os.rename(state[1], sstatebuild + state[0])
+        try:
+            os.rename(state[1], sstatebuild + state[0])
+        except OSError:
+            shutil.move(state[1], sstatebuild + state[0])
 
     workdir = d.getVar('WORKDIR')
     sharedworkdir = os.path.join(d.getVar('TMPDIR'), "work-shared")
@@ -674,7 +685,10 @@ def sstate_package(ss, d):
             pdir = plain.replace(sharedworkdir, sstatebuild)
         bb.utils.mkdirhier(plain)
         bb.utils.mkdirhier(pdir)
-        os.rename(plain, pdir)
+        try:
+            os.rename(plain, pdir)
+        except OSError:
+            shutil.move(plain, pdir)
 
     d.setVar('SSTATE_BUILDDIR', sstatebuild)
     d.setVar('SSTATE_INSTDIR', sstatebuild)

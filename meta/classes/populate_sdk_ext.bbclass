@@ -165,7 +165,10 @@ def create_filtered_tasklist(d, sdkbasepath, tasklistfile, conf_initpath):
             shutil.rmtree(temp_sdkbasepath)
         except FileNotFoundError:
             pass
-        os.rename(sdkbasepath, temp_sdkbasepath)
+        try:
+            os.rename(sdkbasepath, temp_sdkbasepath)
+        except OSError:
+            shutil.move(sdkbasepath, temp_sdkbasepath)
         cmdprefix = '. %s .; ' % conf_initpath
         logfile = d.getVar('WORKDIR') + '/tasklist_bb_log.txt'
         try:
@@ -175,7 +178,10 @@ def create_filtered_tasklist(d, sdkbasepath, tasklistfile, conf_initpath):
             if 'attempted to execute unexpectedly and should have been setscened' in e.stdout:
                 msg += '\n----------\n\nNOTE: "attempted to execute unexpectedly and should have been setscened" errors indicate this may be caused by missing sstate artifacts that were likely produced in earlier builds, but have been subsequently deleted for some reason.\n'
             bb.fatal(msg)
-        os.rename(temp_sdkbasepath, sdkbasepath)
+        try:
+            os.rename(temp_sdkbasepath, sdkbasepath)
+        except OSError:
+            shutil.move(temp_sdkbasepath, sdkbasepath)
         # Clean out residue of running bitbake, which check_sstate_task_list()
         # will effectively do
         clean_esdk_builddir(d, sdkbasepath)

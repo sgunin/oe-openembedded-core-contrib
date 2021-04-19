@@ -57,13 +57,17 @@ do_deploy_source_date_epoch () {
 }
 
 python do_deploy_source_date_epoch_setscene () {
+    import shutil
     sstate_setscene(d)
     bb.utils.mkdirhier(d.getVar('SDE_DIR'))
     sde_file = os.path.join(d.getVar('SDE_DEPLOYDIR'), '__source_date_epoch.txt')
     if os.path.exists(sde_file):
         target = d.getVar('SDE_FILE')
         bb.debug(1, "Moving setscene SDE file %s -> %s" % (sde_file, target))
-        os.rename(sde_file, target)
+        try:
+            os.rename(sde_file, target)
+        except OSError:
+            shutil.move(sde_file, target)
     else:
         bb.debug(1, "%s not found!" % sde_file)
 }

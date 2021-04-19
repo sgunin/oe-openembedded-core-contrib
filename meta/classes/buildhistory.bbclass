@@ -875,7 +875,11 @@ python buildhistory_eventhandler() {
                 entries = [ x for x in os.listdir(rootdir) if not x.startswith('.') ]
                 bb.utils.mkdirhier(olddir)
                 for entry in entries:
-                    os.rename(os.path.join(rootdir, entry),
+                    try:
+                        os.rename(os.path.join(rootdir, entry),
+                              os.path.join(olddir, entry))
+                    except OSError:
+                        shutil.move(os.path.join(rootdir, entry),
                               os.path.join(olddir, entry))
         elif isinstance(e, bb.event.BuildCompleted):
             if reset:

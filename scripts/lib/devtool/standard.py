@@ -746,7 +746,10 @@ def _check_preserve(config, recipename):
                         os.remove(removefile)
                 else:
                     tf.write(line)
-    os.rename(newfile, origfile)
+    try:
+        os.rename(newfile, origfile)
+    except OSError:
+        shutil.move(newfile, origfile)
 
 def get_staging_kver(srcdir):
     # Kernel version from work-shared
@@ -1094,10 +1097,16 @@ def rename(args, config, basepath, workspace):
 
     # Rename bbappend
     logger.info('Renaming %s to %s' % (append, newappend))
-    os.rename(append, newappend)
+    try:
+        os.rename(append, newappend)
+    except OSError:
+        shutil.move(append, newappend)
     # Rename recipe file
     logger.info('Renaming %s to %s' % (recipefile, newfile))
-    os.rename(recipefile, newfile)
+    try:
+        os.rename(recipefile, newfile)
+    except OSError:
+        shutil.move(recipefile, newfile)
 
     # Rename source tree if it's the default path
     appendmd5 = None
@@ -1333,7 +1342,11 @@ def _export_patches(srctree, rd, start_rev, destdir, changed_revs=None):
         if match_name:
             # Rename patch files
             if new_patch != match_name:
-                os.rename(os.path.join(destdir, new_patch),
+                try:
+                    os.rename(os.path.join(destdir, new_patch),
+                          os.path.join(destdir, match_name))
+                except OSError:
+                    shutil.move(os.path.join(destdir, new_patch),
                           os.path.join(destdir, match_name))
             # Need to pop it off the list now before checking changed_revs
             oldpath = existing_patches.pop(old_patch)
