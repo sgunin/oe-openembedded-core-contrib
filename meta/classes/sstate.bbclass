@@ -1183,8 +1183,9 @@ python sstate_eventhandler2() {
                     (stamp, manifest, workdir) = l.split()
                     if stamp not in stamps and stamp not in preservestamps and stamp in machineindex:
                         toremove.append(l)
+                        bb.note("Stamp %s is not reachable, removing related manifests" % stamp)
                         if stamp not in seen:
-                            bb.debug(2, "Stamp %s is not reachable, removing related manifests" % stamp)
+                            bb.note("Seen for first time: Stamp %s is not reachable, removing related manifests" % stamp)
                             seen.append(stamp)
                 except ValueError:
                     bb.fatal("Invalid line '%s' in sstate manifest '%s'" % (l, i))
@@ -1196,12 +1197,19 @@ python sstate_eventhandler2() {
             removed = 0
             for r in toremove:
                 (stamp, manifest, workdir) = r.split()
+                bb.note("Cleaning stamp %s" % stamp)
                 for m in glob.glob(manifest + ".*"):
                     if m.endswith(".postrm"):
                         continue
+                    bb.note("Cleaning manifest %s of stamp %s" % (m, stamp))
                     sstate_clean_manifest(m, d)
+                bb.note("Removing stamp %s + '*'" % stamp)
+                for name in glob.glob(stamp + "*"):
+                    bb.note("Removing %s" % name)
+
                 bb.utils.remove(stamp + "*")
                 if removeworkdir:
+                    bb.note("Cleaning workdir %s as well, because SSTATE_PRUNE_OBSOLETEWORKDIR is set" % workdir)
                     bb.utils.remove(workdir, recurse = True)
                 lines.remove(r)
                 removed = removed + 1
