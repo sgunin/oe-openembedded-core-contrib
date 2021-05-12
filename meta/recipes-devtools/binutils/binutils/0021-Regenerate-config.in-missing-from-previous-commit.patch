@@ -1,0 +1,29 @@
+From 60d4cc811201809e036a578db74fc4320323d03f Mon Sep 17 00:00:00 2001
+From: Cary Coutant <ccoutant@gmail.com>
+Date: Fri, 19 Mar 2021 15:23:49 -0700
+Subject: [PATCH] Regenerate config.in, missing from previous commit.
+
+	PR gold/26585
+	* config.in: Regenerate from previous commit.
+
+Upstream-Status: Backport [9331846e44b Regenerate config.in, missing from previous commit.]
+
+Signed-off-by: Martin Jansa <Martin.Jansa@gmail.com>
+---
+ gold/config.in | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/gold/config.in b/gold/config.in
+index aaad1bee706..ca0b9d2e2f9 100644
+--- a/gold/config.in
++++ b/gold/config.in
+@@ -124,6 +124,9 @@
+ /* Define to 1 if you have the `mallinfo' function. */
+ #undef HAVE_MALLINFO
+ 
++/* Define to 1 if you have the `mallinfo2' function. */
++#undef HAVE_MALLINFO2
++
+ /* Define to 1 if you have the <memory.h> header file. */
+ #undef HAVE_MEMORY_H
+ 
