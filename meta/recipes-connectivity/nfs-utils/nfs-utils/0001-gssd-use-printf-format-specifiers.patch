@@ -1,0 +1,182 @@
+From 094b965b7044e7d102542ac30e95b556ca82654b Mon Sep 17 00:00:00 2001
+From: Dan McGregor <dan.mcgregor@vecima.com>
+Date: Wed, 29 Nov 2023 07:10:58 -0600
+Subject: [PATCH] gssd: use printf format specifiers
+
+This function takes a printf format specifier, tell the compiler about
+that. This adds the ability for GCC to warn about misuses, and prevents
+Clang from warning on the implementation.
+
+Upstream-Status: Inappropriate [oe-core specific]
+Signed-off-by: Dan McGregor <dan.mcgregor@usask.ca>
+
+---
+ utils/gssd/err_util.h     |  2 +-
+ utils/gssd/gss_names.c    |  4 ++--
+ utils/gssd/gss_util.c     |  2 +-
+ utils/gssd/gssd.c         |  4 ++--
+ utils/gssd/gssd_proc.c    |  8 ++++----
+ utils/gssd/krb5_util.c    | 10 +++++-----
+ utils/gssd/svcgssd_proc.c |  8 ++++----
+ 7 files changed, 19 insertions(+), 19 deletions(-)
+
+diff --git a/utils/gssd/err_util.h b/utils/gssd/err_util.h
+index 6fa9d3d..61f5a31 100644
+--- a/utils/gssd/err_util.h
++++ b/utils/gssd/err_util.h
+@@ -32,7 +32,7 @@
+ #define _ERR_UTIL_H_
+ 
+ void initerr(char *progname, int verbosity, int fg);
+-void printerr(int priority, char *format, ...);
++void printerr(int priority, char *format, ...) __attribute__ ((format (printf, 2, 3)));
+ int get_verbosity(void);
+ char * sec2time(int);
+ 
+diff --git a/utils/gssd/gss_names.c b/utils/gssd/gss_names.c
+index 982b96f..0548c33 100644
+--- a/utils/gssd/gss_names.c
++++ b/utils/gssd/gss_names.c
+@@ -65,7 +65,7 @@ get_krb5_hostbased_name(gss_buffer_desc *name, char **hostbased_name)
+ 	if (strchr(name->value, '@') && strchr(name->value, '/')) {
+ 		if ((sname = calloc(name->length, 1)) == NULL) {
+ 			printerr(0, "ERROR: get_krb5_hostbased_name failed "
+-				 "to allocate %d bytes\n", name->length);
++				 "to allocate %zd bytes\n", name->length);
+ 			return -1;
+ 		}
+ 		/* read in name and instance and replace '/' with '@' */
+@@ -102,7 +102,7 @@ get_hostbased_client_name(gss_name_t client_name, gss_OID mech,
+ 	}
+ 	if (name.length >= 0xffff) {	    /* don't overflow */
+ 		printerr(0, "ERROR: get_hostbased_client_name: "
+-			 "received gss_name is too long (%d bytes)\n",
++			 "received gss_name is too long (%zd bytes)\n",
+ 			 name.length);
+ 		goto out_rel_buf;
+ 	}
+diff --git a/utils/gssd/gss_util.c b/utils/gssd/gss_util.c
+index a4b2777..7d41a94 100644
+--- a/utils/gssd/gss_util.c
++++ b/utils/gssd/gss_util.c
+@@ -304,7 +304,7 @@ gssd_acquire_cred(char *server_name, const gss_OID oid)
+ 				target_name, &pbuf, NULL);
+ 		if (ignore_maj_stat == GSS_S_COMPLETE) {
+ 			printerr(1, "Unable to obtain credentials for '%.*s'\n",
+-				 pbuf.length, pbuf.value);
++				 (int)pbuf.length, (char *)pbuf.value);
+ 			ignore_maj_stat = gss_release_buffer(&ignore_min_stat,
+ 							     &pbuf);
+ 		}
+diff --git a/utils/gssd/gssd.c b/utils/gssd/gssd.c
+index 833d8e0..380116a 100644
+--- a/utils/gssd/gssd.c
++++ b/utils/gssd/gssd.c
+@@ -518,9 +518,9 @@ scan_active_thread_list(void)
+ 					do_error_downcall(info->fd, info->uid, -ETIMEDOUT);
+ 				} else {
+ 					if (!(info->flags & UPCALL_THREAD_WARNED)) {
+-						printerr(0, "watchdog: thread id 0x%lx running for %ld seconds\n",
++						printerr(0, "watchdog: thread id 0x%lx running for %lld seconds\n",
+ 								info->tid,
+-								now.tv_sec - info->timeout.tv_sec + upcall_timeout);
++								(long long int)(now.tv_sec - info->timeout.tv_sec + upcall_timeout));
+ 						info->flags |= UPCALL_THREAD_WARNED;
+ 					}
+ 				}
+diff --git a/utils/gssd/gssd_proc.c b/utils/gssd/gssd_proc.c
+index ae568f1..574eb4b 100644
+--- a/utils/gssd/gssd_proc.c
++++ b/utils/gssd/gssd_proc.c
+@@ -168,7 +168,7 @@ do_downcall(int k5_fd, uid_t uid, struct authgss_private_data *pd,
+ 
+ 	if (get_verbosity() > 1)
+ 		printerr(2, "do_downcall(0x%lx): lifetime_rec=%s acceptor=%.*s\n",
+-			tid, sec2time(lifetime_rec), acceptor->length, acceptor->value);
++			tid, sec2time(lifetime_rec), (int)acceptor->length, (char *)acceptor->value);
+ 	buf_size = sizeof(uid) + sizeof(timeout) + sizeof(pd->pd_seq_win) +
+ 		sizeof(pd->pd_ctx_hndl.length) + pd->pd_ctx_hndl.length +
+ 		sizeof(context_token->length) + context_token->length +
+@@ -284,14 +284,14 @@ populate_port(struct sockaddr *sa, const socklen_t salen,
+ 
+ 	port = nfs_getport(sa, salen, program, version, protocol);
+ 	if (!port) {
+-		printerr(0, "ERROR: unable to obtain port for prog %ld "
+-			    "vers %ld\n", program, version);
++		printerr(0, "ERROR: unable to obtain port for prog %lu "
++			    "vers %lu\n", (long unsigned int)program, (long unsigned int)version);
+ 		return 0;
+ 	}
+ 
+ set_port:
+ 	printerr(2, "DEBUG: setting port to %hu for prog %lu vers %lu\n", port,
+-		 program, version);
++		 (long unsigned int)program, (long unsigned int)version);
+ 
+ 	switch (sa->sa_family) {
+ 	case AF_INET:
+diff --git a/utils/gssd/krb5_util.c b/utils/gssd/krb5_util.c
+index e3f270e..28f7d84 100644
+--- a/utils/gssd/krb5_util.c
++++ b/utils/gssd/krb5_util.c
+@@ -304,9 +304,9 @@ gssd_find_existing_krb5_ccache(uid_t uid, char *dirname,
+ 				score++;
+ 
+ 			printerr(3, "CC '%s'(%s@%s) passed all checks and"
+-				    " has mtime of %u\n",
++				    " has mtime of %llu\n",
+ 				 buf, princname, realm, 
+-				 tmp_stat.st_mtime);
++				 (long long unsigned)tmp_stat.st_mtime);
+ 			/*
+ 			 * if more than one match is found, return the most
+ 			 * recent (the one with the latest mtime), and
+@@ -341,10 +341,10 @@ gssd_find_existing_krb5_ccache(uid_t uid, char *dirname,
+ 				}
+ 				printerr(3, "CC '%s:%s/%s' is our "
+ 					    "current best match "
+-					    "with mtime of %u\n",
+-					 cctype, dirname,
++					    "with mtime of %llu\n",
++					 *cctype, dirname,
+ 					 best_match_dir->d_name,
+-					 best_match_stat.st_mtime);
++					 (long long unsigned)best_match_stat.st_mtime);
+ 			}
+ 			free(princname);
+ 			free(realm);
+diff --git a/utils/gssd/svcgssd_proc.c b/utils/gssd/svcgssd_proc.c
+index b403143..7fecd1a 100644
+--- a/utils/gssd/svcgssd_proc.c
++++ b/utils/gssd/svcgssd_proc.c
+@@ -102,10 +102,10 @@ do_svc_downcall(gss_buffer_desc *out_handle, struct svc_cred *cred,
+ 	qword_addint(&bp, &blen, cred->cr_uid);
+ 	qword_addint(&bp, &blen, cred->cr_gid);
+ 	qword_addint(&bp, &blen, cred->cr_ngroups);
+-	printerr(2, "mech: %s, hndl len: %d, ctx len %d, timeout: %d (%d from now), "
++	printerr(2, "mech: %s, hndl len: %zd, ctx len %zd, timeout: %lld (%lld from now), "
+ 		 "clnt: %s, uid: %d, gid: %d, num aux grps: %d:\n",
+ 		 fname, out_handle->length, context_token->length,
+-		 endtime, endtime - time(0),
++		 (long long int)endtime, (long long int)(endtime - time(0)),
+ 		 client_name ? client_name : "<null>",
+ 		 cred->cr_uid, cred->cr_gid, cred->cr_ngroups);
+ 	for (i=0; i < cred->cr_ngroups; i++) {
+@@ -232,7 +232,7 @@ get_ids(gss_name_t client_name, gss_OID mech, struct svc_cred *cred)
+ 	}
+ 	if (name.length >= 0xffff || /* be certain name.length+1 doesn't overflow */
+ 	    !(sname = calloc(name.length + 1, 1))) {
+-		printerr(0, "WARNING: get_ids: error allocating %d bytes "
++		printerr(0, "WARNING: get_ids: error allocating %zd bytes "
+ 			"for sname\n", name.length + 1);
+ 		gss_release_buffer(&min_stat, &name);
+ 		goto out;
+@@ -360,7 +360,7 @@ handle_nullreq(char *cp) {
+ 	if (in_handle.length != 0) { /* CONTINUE_INIT case */
+ 		if (in_handle.length != sizeof(ctx)) {
+ 			printerr(0, "WARNING: handle_nullreq: "
+-				    "input handle has unexpected length %d\n",
++				    "input handle has unexpected length %zd\n",
+ 				    in_handle.length);
+ 			goto out_err;
+ 		}

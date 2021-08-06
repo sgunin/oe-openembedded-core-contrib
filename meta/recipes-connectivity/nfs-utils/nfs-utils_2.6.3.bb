@@ -22,16 +22,16 @@ SRC_URI = "${KERNELORG_MIRROR}/linux/utils/nfs-utils/${PV}/nfs-utils-${PV}.tar.x
            file://nfsserver \
            file://nfscommon \
            file://nfs-utils.conf \
-           file://nfs-server.service \
-           file://nfs-mountd.service \
-           file://nfs-statd.service \
            file://nfs-utils-debianize-start-statd.patch \
            file://bugfix-adjust-statd-service-name.patch \
            file://0001-Makefile.am-fix-undefined-function-for-libnsm.a.patch \
            file://clang-warnings.patch \
            file://0001-configure.ac-libevent-and-libsqlite3-checked-when-nf.patch \
-	   file://0001-locktest-Makefile.am-Do-not-use-build-flags.patch \
-	   file://0001-tools-locktest-Use-intmax_t-to-print-off_t.patch \
+           file://0001-locktest-Makefile.am-Do-not-use-build-flags.patch \
+           file://0001-tools-locktest-Use-intmax_t-to-print-off_t.patch \
+           file://0001-gssd-use-printf-format-specifiers.patch \
+           file://0002-Use-nogroup-for-nobody-group.patch \
+           file://0003-find-OE-provided-Kerberos.patch \
            "
 SRC_URI[sha256sum] = "38d89e853a71d3c560ff026af3d969d75e24f782ff68324e76261fe0344459e1"
 
@@ -48,31 +48,34 @@ inherit autotools-brokensep update-rc.d systemd pkgconfig
 
 SYSTEMD_PACKAGES = "${PN} ${PN}-client"
 SYSTEMD_SERVICE:${PN} = "nfs-server.service nfs-mountd.service"
-SYSTEMD_SERVICE:${PN}-client = "nfs-statd.service"
+SYSTEMD_SERVICE:${PN}-client = "nfs-client.target"
 
 # --enable-uuid is need for cross-compiling
 EXTRA_OECONF = "--with-statduser=rpcuser \
                 --enable-mountconfig \
                 --enable-libmount-mount \
                 --enable-uuid \
-                --disable-gss \
-                --disable-nfsdcltrack \
+                --disable-sbin-override \
                 --with-statdpath=/var/lib/nfs/statd \
+                --with-pluginpath=${libdir}/libnfsidmap \
                 --with-rpcgen=${HOSTTOOLS_DIR}/rpcgen \
                "
 
 LDFLAGS:append = " -lsqlite3 -levent"
 
-PACKAGECONFIG ??= "tcp-wrappers \
-    ${@bb.utils.filter('DISTRO_FEATURES', 'ipv6', d)} \
+PACKAGECONFIG ??= "tcp-wrappers nfsv4 nfsv41 \
+    ${@bb.utils.filter('DISTRO_FEATURES', 'ipv6 systemd', d)} \
 "
+
 PACKAGECONFIG:remove:libc-musl = "tcp-wrappers"
+PACKAGECONFIG[gssapi] = "--with-krb5=${STAGING_EXECPREFIXDIR} --enable-gss --enable-svcgss,--disable-gss --disable-svcgss,krb5"
 PACKAGECONFIG[tcp-wrappers] = "--with-tcp-wrappers,--without-tcp-wrappers,tcp-wrappers"
 PACKAGECONFIG[ipv6] = "--enable-ipv6,--disable-ipv6,"
 # libdevmapper is available in meta-oe
 PACKAGECONFIG[nfsv41] = "--enable-nfsv41,--disable-nfsv41,libdevmapper,libdevmapper"
 # keyutils is available in meta-oe
 PACKAGECONFIG[nfsv4] = "--enable-nfsv4,--disable-nfsv4,keyutils,python3-core"
+PACKAGECONFIG[systemd] = "--with-systemd=${systemd_unitdir}/system,--without-systemd"
 
 PACKAGES =+ "${PN}-client ${PN}-mount ${PN}-stats ${PN}-rpcctl"
 
@@ -80,17 +83,31 @@ CONFFILES:${PN}-client += "${localstatedir}/lib/nfs/etab \
 			   ${localstatedir}/lib/nfs/rmtab \
 			   ${localstatedir}/lib/nfs/xtab \
 			   ${localstatedir}/lib/nfs/statd/state \
+			   ${sysconfdir}/nfs.conf \
+			   ${sysconfdir}/idmapd.conf \
 			   ${sysconfdir}/nfsmount.conf"
 
 FILES:${PN}-client = "${sbindir}/*statd \
+		      ${libdir}/libnfsidmap/*.so \
 		      ${libdir}/libnfsidmap.so.* \
+		      ${libexecdir}/nfsrahead \
 		      ${sbindir}/rpc.idmapd ${sbindir}/sm-notify \
 		      ${sbindir}/showmount ${sbindir}/nfsstat \
+		      ${sbindir}/nfsidmap ${sbindir}/nfsconf \
 		      ${localstatedir}/lib/nfs \
-		      ${sysconfdir}/nfs-utils.conf \
+		      ${sysconfdir}/idmapd.conf \
+		      ${sysconfdir}/nfs.conf \
 		      ${sysconfdir}/nfsmount.conf \
 		      ${sysconfdir}/init.d/nfscommon \
-		      ${systemd_system_unitdir}/nfs-statd.service"
+		      ${base_prefix}/lib/udev \
+		      ${systemd_unitdir}/system-generators/rpc-pipefs-generator \
+		      ${systemd_system_unitdir}/var-lib-nfs-rpc_pipefs.mount \
+		      ${systemd_system_unitdir}/rpc_pipefs.target \
+		      ${systemd_system_unitdir}/nfs-statd.service \
+		      ${systemd_system_unitdir}/nfs-idmapd.service \
+		      ${systemd_system_unitdir}/rpc-statd.service \
+		      ${systemd_system_unitdir}/rpc-statd-notify.service \
+		      ${systemd_system_unitdir}/nfs-client.target"
 RDEPENDS:${PN}-client = "${PN}-mount rpcbind"
 
 FILES:${PN}-mount = "${base_sbindir}/*mount.nfs*"
@@ -106,8 +123,9 @@ FILES:${PN}-staticdev += "${libdir}/libnfsidmap/*.a"
 FILES:${PN} += "${systemd_unitdir} ${libdir}/libnfsidmap/ ${nonarch_libdir}/modprobe.d"
 
 do_configure:prepend() {
-	sed -i -e 's,sbindir = /sbin,sbindir = ${base_sbindir},g' \
-		${S}/utils/mount/Makefile.am
+    sed -i -e 's,unit_dir = /usr/lib/systemd/system,unit_dir = ${systemd_unitdir}/system,g' \
+        -e 's,generator_dir = /usr/lib/systemd/system-generators,generator_dir = ${systemd_unitdir}/system-generators,g' \
+        ${S}/systemd/Makefile.am
 }
 
 # Make clean needed because the package comes with
@@ -124,17 +142,28 @@ do_install:append () {
 	install -m 0755 ${WORKDIR}/nfsserver ${D}${sysconfdir}/init.d/nfsserver
 	install -m 0755 ${WORKDIR}/nfscommon ${D}${sysconfdir}/init.d/nfscommon
 
-	install -m 0755 ${WORKDIR}/nfs-utils.conf ${D}${sysconfdir}
-	install -m 0755 ${S}/utils/mount/nfsmount.conf ${D}${sysconfdir}
+	install -m 0644 ${S}/utils/mount/nfsmount.conf ${D}${sysconfdir}
+	install -m 0644 ${S}/support/nfsidmap/idmapd.conf ${D}${sysconfdir}
+	install -m 0644 ${S}/nfs.conf ${D}${sysconfdir}
+
 
 	install -d ${D}${systemd_system_unitdir}
-	install -m 0644 ${WORKDIR}/nfs-server.service ${D}${systemd_system_unitdir}/
-	install -m 0644 ${WORKDIR}/nfs-mountd.service ${D}${systemd_system_unitdir}/
-	install -m 0644 ${WORKDIR}/nfs-statd.service ${D}${systemd_system_unitdir}/
 	sed -i -e 's,@SBINDIR@,${sbindir},g' \
 		-e 's,@SYSCONFDIR@,${sysconfdir},g' \
 		-e 's,@HIGH_RLIMIT_NOFILE@,${HIGH_RLIMIT_NOFILE},g' \
 		${D}${systemd_system_unitdir}/*.service
+
+  # Force the pipefs generator
+	rm -f ${D}${systemd_system_unitdir}/rpc_pipefs.target
+	rm -f ${D}${systemd_system_unitdir}/var-lib-nfs-rpc_pipefs.mount
+
+	ln -s rpc-statd.service ${D}${systemd_system_unitdir}/nfs-statd.service
+	install -d ${D}${systemd_system_unitdir}/nfs-server.service.d
+	printf '[Unit]\nConditionPathExists=${sysconfdir}/exports\n' > \
+		${D}${systemd_system_unitdir}/nfs-server.service.d/10-require-exports.conf
+	install -d ${D}${systemd_system_unitdir}/nfs-mountd.service.d
+	printf '[Unit]\nConditionPathExists=${sysconfdir}/exports\n' > \
+		${D}${systemd_system_unitdir}/nfs-mountd.service.d/10-require-exports.conf
 
 	# kernel code as of 3.8 hard-codes this path as a default
 	install -d ${D}/var/lib/nfs/v4recovery
