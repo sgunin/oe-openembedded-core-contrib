@@ -462,7 +462,7 @@ def check_sanity_validmachine(sanity_data):
 # Patch before 2.7 can't handle all the features in git-style diffs.  Some
 # patches may incorrectly apply, and others won't apply at all.
 def check_patch_version(sanity_data):
-    from distutils.version import LooseVersion
+    from bb.version import LooseVersion
     import re, subprocess
 
     try:
@@ -478,7 +478,7 @@ def check_patch_version(sanity_data):
 # Unpatched versions of make 3.82 are known to be broken.  See GNU Savannah Bug 30612.
 # Use a modified reproducer from http://savannah.gnu.org/bugs/?30612 to validate.
 def check_make_version(sanity_data):
-    from distutils.version import LooseVersion
+    from bb.version import LooseVersion
     import subprocess
 
     try:
@@ -539,7 +539,7 @@ def check_wsl(d):
 # built buildtools-extended-tarball)
 #
 def check_gcc_version(sanity_data):
-    from distutils.version import LooseVersion
+    from bb.version import LooseVersion
     import subprocess
     
     build_cc, version = oe.utils.get_host_compiler_version(sanity_data)
@@ -552,7 +552,7 @@ def check_gcc_version(sanity_data):
 # but earlier versions do not; this needs to work properly for sstate
 # Version 1.28 is needed so opkg-build works correctly when reproducibile builds are enabled
 def check_tar_version(sanity_data):
-    from distutils.version import LooseVersion
+    from bb.version import LooseVersion
     import subprocess
     try:
         result = subprocess.check_output(["tar", "--version"], stderr=subprocess.STDOUT).decode('utf-8')
@@ -567,7 +567,7 @@ def check_tar_version(sanity_data):
 # The kernel tools assume git >= 1.8.3.1 (verified needed > 1.7.9.5) see #6162 
 # The git fetcher also had workarounds for git < 1.7.9.2 which we've dropped
 def check_git_version(sanity_data):
-    from distutils.version import LooseVersion
+    from bb.version import LooseVersion
     import subprocess
     try:
         result = subprocess.check_output(["git", "--version"], stderr=subprocess.DEVNULL).decode('utf-8')
@@ -655,10 +655,10 @@ def check_sanity_version_change(status, d):
 
     # Check the python install is complete. Examples that are often removed in
     # minimal installations: glib-2.0-natives requries # xml.parsers.expat and icu
-    # requires distutils.sysconfig.
+    # requires sysconfig module in Python standard library.
     try:
         import xml.parsers.expat
-        import distutils.sysconfig
+        import sysconfig
     except ImportError as e:
         status.addresult('Your Python 3 is not a full install. Please install the module %s (see the Getting Started guide for further information).\n' % e.name)
 
@@ -796,7 +796,7 @@ def check_sanity_everybuild(status, d):
         status.addresult('The system requires at least Python 3.6 to run. Please update your Python interpreter.\n')
 
     # Check the bitbake version meets minimum requirements
-    from distutils.version import LooseVersion
+    from bb.version import LooseVersion
     minversion = d.getVar('BB_MIN_VERSION')
     if (LooseVersion(bb.__version__) < LooseVersion(minversion)):
         status.addresult('Bitbake version %s is required and version %s was found\n' % (minversion, bb.__version__))
