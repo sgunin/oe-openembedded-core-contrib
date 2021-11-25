@@ -8,7 +8,7 @@
 import ast
 import codecs
 import collections
-import distutils.command.build_py
+import setuptools.command.build_py
 import email
 import imp
 import glob
@@ -459,7 +459,7 @@ class PythonRecipeHandler(RecipeHandler):
         else:
             package_dir = {}
 
-        class PackageDir(distutils.command.build_py.build_py):
+        class PackageDir(setuptools.command.build_py.build_py):
             def __init__(self, package_dir):
                 self.package_dir = package_dir
 
