@@ -43,7 +43,7 @@ BB_HASHBASE_WHITELIST += "WAFLOCK"
 
 python waf_preconfigure() {
     import subprocess
-    from distutils.version import StrictVersion
+    from bb.version import StrictVersion
     subsrcdir = d.getVar('S')
     python = d.getVar('WAF_PYTHON')
     wafbin = os.path.join(subsrcdir, 'waf')
