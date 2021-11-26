@@ -1,0 +1,68 @@
+From 9bc5f12a31f1c90913bfa90f71ec12cea95de040 Mon Sep 17 00:00:00 2001
+From: Tim Orling <timothy.t.orling@intel.com>
+Date: Thu, 25 Nov 2021 17:48:23 -0800
+Subject: [PATCH] python-config.in: implement legacy disutils behavior
+
+The sysconfig behavior does not provide the correct paths for our usage,
+but rather than continue to use the deprecated distutils.sysconfig
+behavior, refactor the code paths we need to use supported standard
+library functionality.
+
+[YOCTO #14610]
+
+Upstream-Status: Inappropriate [oe-specific]
+
+Signed-off-by: Tim Orling <timothy.t.orling@intel.com>
+---
+ Misc/python-config.in | 31 +++++++++++++++++++++++++++----
+ 1 file changed, 27 insertions(+), 4 deletions(-)
+
+diff --git a/Misc/python-config.in b/Misc/python-config.in
+index ebd99daa0c..5959d74453 100644
+--- a/Misc/python-config.in
++++ b/Misc/python-config.in
+@@ -35,14 +35,37 @@ if '--help' in opt_flags:
+ 
+ for opt in opt_flags:
+     if opt == '--prefix':
+-        print(getvar('prefix'))
++	# borrow the legacy behavior of distutils.sysconfig.PREFIX
++        print(os.path.normpath(sys.prefix))
+ 
+     elif opt == '--exec-prefix':
+-        print(getvar('exec_prefix'))
++        # borrow the legacy behavior of distutils.sysconfig.EXEC_PREFIX
++        print(os.path.normpath(sys.exec_prefix))
+ 
+     elif opt in ('--includes', '--cflags'):
+-        flags = ['-I' + sysconfig.get_path('include'),
+-                 '-I' + sysconfig.get_path('platinclude')]
++        # borrowing the logic from legacy/deprecated distutils.sysconfig.get_python_inc
++
++        # Calculate the build qualifier flags if they are defined.  Adding the flags
++        # to the include and lib directories only makes sense for an installation, not
++        # an in-source build.
++        build_flags = ''
++        try:
++            if not sysconfig._PYTHON_BUILD:
++                build_flags = sys.abiflags
++        except AttributeError:
++            # It's not a configure-based build, so the sys module doesn't have
++            # this attribute, which is fine.
++            pass
++
++        incdir = os.path.join(sysconfig.get_config_var('srcdir'), 'Include')
++        if prefix is None and os.environ.get('STAGING_LIBDIR', "");
++            prefix = os.environ['STAGING_LIBDIR'].rstrip(lib_basename)
++        elif prefix is None:
++            prefix = sysconfig._BASE_EXEC_PREFIX or sysconfig._BASE_PREFIX
++        python_dir = 'python' + sysconfig.get_python_version() + build_flags
++        #platincdir = sysconfig._sys_home or sysconfig._PROJECT_BASE
++        flags = ['-I' + os.path.normpath(incdir),
++                 '-I' + os.path.join(prefix, "include", python_dir)]
+         if opt == '--cflags':
+             flags.extend(getvar('CFLAGS').split())
+         print(' '.join(flags))
+-- 
+2.30.2
+
