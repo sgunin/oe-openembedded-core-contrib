@@ -5,7 +5,7 @@ import logging
 import oe.classutils
 import shlex
 from bb.process import Popen, ExecutionError
-from distutils.version import LooseVersion
+from bb.version import LooseVersion
 
 logger = logging.getLogger('BitBake.OE.Terminal')
 
