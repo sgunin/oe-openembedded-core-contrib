@@ -9,7 +9,8 @@ LIC_FILES_CHKSUM = "file://COPYRIGHT;md5=4e5d1baf6f20559e3bec172226a47e4e \
                     file://LICENSE;md5=b234ee4d69f5fce4486a80fdaf4a4263 "
 
 SRC_URI = "git://github.com/asciidoc/asciidoc-py3;protocol=https;branch=main \
-           file://auto-catalogs.patch"
+           file://auto-catalogs.patch \
+           file://detect-python-version.patch"
 SRCREV = "9a407dc9a497364c91421fd961954eddb565baf1"
 
 DEPENDS = "libxml2-native libxslt-native docbook-xml-dtd4-native docbook-xsl-stylesheets-native"
