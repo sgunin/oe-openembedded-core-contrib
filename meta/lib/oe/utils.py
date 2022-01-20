@@ -595,3 +595,18 @@ def directory_size(root, blocksize=4096):
         total += sum(roundup(getsize(os.path.join(root, name))) for name in files)
         total += roundup(getsize(root))
     return total
+
+def is_local_uid(uid=''):
+    """
+    Check whether uid is a local one or not.
+    Can't use pwd module since it gets all UIDs, not local ones only.
+    """
+    if not uid:
+        uid = os.getuid()
+    local_uids = set()
+    with open('/etc/passwd', 'r') as f:
+        for line in f.readlines():
+            if not ':' in line:
+                continue
+            local_uids.add(line.split(':')[2])
+    return uid in local_uids

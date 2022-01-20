@@ -41,6 +41,8 @@ ICECC_ENV_EXEC ?= "${STAGING_BINDIR_NATIVE}/icecc-create-env"
 
 HOSTTOOLS_NONFATAL += "icecc patchelf"
 
+BB_TASK_NETWORK ? = "1"
+
 # This version can be incremented when changes are made to the environment that
 # invalidate the version on the compile nodes. Changing it will cause a new
 # environment to be created.
