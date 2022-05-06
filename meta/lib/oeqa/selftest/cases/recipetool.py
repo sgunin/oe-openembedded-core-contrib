@@ -532,6 +532,94 @@ class RecipetoolTests(RecipetoolBase):
         libpath = os.path.join(get_bb_var('COREBASE'), 'scripts', 'lib', 'recipetool')
         sys.path.insert(0, libpath)
 
+    def test_recipetool_create_go(self):
+        # Basic test to check go recipe generation
+        def urifiy(url, version, path = None, subdir = None):
+            path = ",path='%s'" % path if path else ''
+            subdir = ",subdir='%s'" % subdir if subdir else ''
+            return "${@go_src_uri('%s','%s'%s%s)}" % (url, path, subdir)
+
+        temprecipe = os.path.join(self.tempdir, 'recipe')
+        os.makedirs(temprecipe)
+        recipefile = os.path.join(temprecipe, 'edgex-go_git.bb')
+        srcuri = 'https://github.com/edgexfoundry/edgex-go.git'
+        srcrev = "v2.2.0-dev.54"
+        result = runCmd('recipetool create -o %s %s -S %s' % (temprecipe, srcuri, srcrev))
+        self.assertTrue(os.path.isfile(recipefile))
+        checkvars = {}
+        src_uri = ['git://${GO_IMPORT};nobranch=1;name=${BPN}']
+        checkvars['LIC_FILES_CHKSUM'] = set(['file://src/${GO_IMPORT}/LICENSE;md5=71a6955f3cd81a809549da266346dc59'])
+        checkvars['GO_IMPORT'] = "github.com/edgexfoundry/edgex-go"
+        inherits = ['go-vendor']
+        dependencies = \
+            [
+                ('bitbucket.org/bertimus9/systemstat'),
+                ('github.com/edgexfoundry/go-mod-bootstrap','github.com/edgexfoundry/go-mod-bootstrap/v2'),
+                ('github.com/edgexfoundry/go-mod-core-contracts''github.com/edgexfoundry/go-mod-core-contracts/v2'),
+                ('github.com/edgexfoundry/go-mod-messaging','github.com/edgexfoundry/go-mod-messaging/v2'),
+                ('github.com/edgexfoundry/go-mod-registry','github.com/edgexfoundry/go-mod-registry/v2'),
+                ('github.com/edgexfoundry/go-mod-secrets','github.com/edgexfoundry/go-mod-secrets/v2'),
+                ('github.com/fxamacker/cbor','github.com/fxamacker/cbor/v2'),
+                ('github.com/golang-jwt/jwt','github.com/golang-jwt/jwt/v4'),
+                ('github.com/gomodule/redigo'),
+                ('github.com/google/uuid'),
+                ('github.com/gorilla/mux'),
+                ('github.com/lib/pq'),
+                ('github.com/pelletier/go-toml'),
+                ('github.com/spiffe/go-spiffe','github.com/spiffe/go-spiffe/v2'),
+                ('github.com/stretchr/testify'),
+                ('go.googlesource.com/crypto','golang.org/x/crypto'),
+                ('gopkg.in/eapache/queue.v1'),
+                ('gopkg.in/yaml.v3'),
+                ('github.com/armon/go-metrics'),
+                ('github.com/cenkalti/backoff'),
+                ('github.com/davecgh/go-spew'),
+                ('github.com/eclipse/paho.mqtt.golang'),
+                ('github.com/edgexfoundry/go-mod-configuration','github.com/edgexfoundry/go-mod-configuration/v2'),
+                ('github.com/fatih/color'),
+                ('github.com/go-kit/log'),
+                ('github.com/go-logfmt/logfmt'),
+                ('github.com/go-playground/locales'),
+                ('github.com/go-playground/universal-translator'),
+                ('github.com/go-playground/validator','github.com/go-playground/validator/v10'),
+                ('github.com/go-redis/redis','github.com/go-redis/redis/v7'),
+                ('github.com/golang/protobuf'),
+                ('github.com/gorilla/websocket'),
+                ('github.com/hashicorp/consul','api'),
+                ('github.com/hashicorp/errwrap'),
+                ('github.com/hashicorp/go-cleanhttp'),
+                ('github.com/hashicorp/go-hclog'),
+                ('github.com/hashicorp/go-immutable-radix'),
+                ('github.com/hashicorp/go-multierror'),
+                ('github.com/hashicorp/go-rootcerts'),
+                ('github.com/hashicorp/golang-lru'),
+                ('github.com/hashicorp/serf'),
+                ('github.com/leodido/go-urn'),
+                ('github.com/mattn/go-colorable'),
+                ('github.com/mattn/go-isatty'),
+                ('github.com/mitchellh/consulstructure'),
+                ('github.com/mitchellh/copystructure'),
+                ('github.com/mitchellh/go-homedir'),
+                ('github.com/mitchellh/mapstructure'),
+                ('github.com/mitchellh/reflectwalk'),
+                ('github.com/pebbe/zmq4'),
+                ('github.com/pmezard/go-difflib'),
+                ('github.com/stretchr/objx'),
+                ('github.com/x448/float16'),
+                ('github.com/zeebo/errs'),
+                ('go.googlesource.com/net','golang.org/x/net'),
+                ('go.googlesource.com/sys','golang.org/x/sys'),
+                ('go.googlesource.com/text','golang.org/x/text'),
+                ('github.com/googleapis/go-genproto','google.golang.org/genproto'),
+                ('github.com/grpc/grpc-go','google.golang.org/grpc'),
+                ('go.googlesource.com/protobuf','google.golang.org/protobuf'),
+                ('gopkg.in/square/go-jose.v2'),
+            ]
+        src_uri = {urifiy(*d) for d in dependencies}
+        checkvars['SRC_URI'] = set(src_uri)
+        self.maxDiff = None
+        self._test_recipe_contents(recipefile, checkvars, inherits)
+        
     def _copy_file_with_cleanup(self, srcfile, basedstdir, *paths):
         dstdir = basedstdir
         self.assertTrue(os.path.exists(dstdir))
