@@ -1375,6 +1375,29 @@ def convert_rpm_xml(xmlfile):
                     values[varname] = child[0].text
     return values
 
+def ensure_native_cmd(tinfoil, cmd):
+    """Check if the command is available in the recipes"""
+    if not tinfoil.recipes_parsed:
+        tinfoil.parse_recipes()
+
+    try:
+        d = tinfoil.parse_recipe("%s-native" % cmd)
+    except bb.providers.NoProvider:
+        bb.error("Nothing provides '%s-native' which is required for the build" % cmd)
+        bb.note("You will likely need to add a layer that provides %s" % cmd)
+        sys.exit(14)
+
+    bindir = d.getVar("STAGING_BINDIR_NATIVE")
+    cmdpath = os.path.join(bindir, cmd)
+
+    if not os.path.exists(cmdpath):
+        tinfoil.build_targets("%s-native" % cmd, "addto_recipe_sysroot")
+
+        if not os.path.exists(cmdpath):
+            bb.error("Failed to add '%s' to sysroot" % cmd)
+            sys.exit(14)
+
+    return bindir
 
 def register_commands(subparsers):
     parser_create = subparsers.add_parser('create',
