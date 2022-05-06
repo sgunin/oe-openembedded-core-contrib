@@ -18,6 +18,7 @@ from recipetool.create import RecipeHandler
 from recipetool.create import get_license_md5sums
 from recipetool.create import guess_license
 from recipetool.create import split_pkg_licenses
+from recipetool.create import ensure_native_cmd
 logger = logging.getLogger('recipetool')
 
 TINFOIL = None
@@ -53,31 +54,6 @@ class NpmRecipeHandler(RecipeHandler):
         bb.utils.edit_metadata(lines, ["SRC_URI"], _handle_registry)
 
         return registry
-
-    @staticmethod
-    def _ensure_npm():
-        """Check if the 'npm' command is available in the recipes"""
-        if not TINFOIL.recipes_parsed:
-            TINFOIL.parse_recipes()
-
-        try:
-            d = TINFOIL.parse_recipe("nodejs-native")
-        except bb.providers.NoProvider:
-            bb.error("Nothing provides 'nodejs-native' which is required for the build")
-            bb.note("You will likely need to add a layer that provides nodejs")
-            sys.exit(14)
-
-        bindir = d.getVar("STAGING_BINDIR_NATIVE")
-        npmpath = os.path.join(bindir, "npm")
-
-        if not os.path.exists(npmpath):
-            TINFOIL.build_targets("nodejs-native", "addto_recipe_sysroot")
-
-            if not os.path.exists(npmpath):
-                bb.error("Failed to add 'npm' to sysroot")
-                sys.exit(14)
-
-        return bindir
 
     @staticmethod
     def _npm_global_configs(dev):
@@ -190,7 +166,7 @@ class NpmRecipeHandler(RecipeHandler):
         # npm version is high enough to ensure an efficient dependency tree
         # resolution and avoid issue with the shrinkwrap file format.
         # Moreover the native npm is mandatory for the build.
-        bindir = self._ensure_npm()
+        bindir = ensure_native_cmd(TINFOIL, "npm")
 
         d = bb.data.createCopy(TINFOIL.config_data)
         d.prependVar("PATH", bindir + ":")
