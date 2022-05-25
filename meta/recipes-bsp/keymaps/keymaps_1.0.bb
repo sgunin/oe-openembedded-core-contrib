@@ -2,8 +2,6 @@ SUMMARY = "Keyboard maps"
 DESCRIPTION = "Keymaps and initscript to set the keymap on bootup."
 SECTION = "base"
 
-RDEPENDS:${PN} = "kbd"
-
 LICENSE = "GPLv2"
 LIC_FILES_CHKSUM = "file://COPYING;md5=751419260aa954499f7abaabaa882bbe"
 PACKAGE_ARCH = "${MACHINE_ARCH}"
@@ -17,8 +15,6 @@ python __anonymous() {
     if not bb.utils.contains('DISTRO_FEATURES', 'sysvinit', True, False, d):
         d.setVar("INHIBIT_UPDATERCD_BBCLASS", "1")
 }
-
-inherit update-rc.d
 
 SRC_URI = "file://keymap.sh \
 	   file://GPLv2.patch"
