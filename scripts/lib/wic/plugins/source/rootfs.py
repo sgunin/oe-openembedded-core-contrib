@@ -95,7 +95,7 @@ class RootfsPlugin(SourcePlugin):
 
         part.rootfs_dir = cls.__get_rootfs_dir(rootfs_dir)
         part.has_fstab = os.path.exists(os.path.join(part.rootfs_dir, "etc/fstab"))
-        pseudo_dir = os.path.join(part.rootfs_dir, "../pseudo")
+        pseudo_dir = os.path.join(krootfs_dir['ROOTFS_DIR'], "../pseudo")
         if not os.path.lexists(pseudo_dir):
             pseudo_dir = os.path.join(cls.__get_rootfs_dir(None), '../pseudo')
 
