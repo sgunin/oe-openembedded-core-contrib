@@ -39,7 +39,9 @@ KBRANCH:class-devupstream = "v5.14/base"
 # KMACHINE:qemuarm ?= "qemuarma15"
 
 SRC_URI = "git://git.yoctoproject.org/linux-yocto.git;name=machine;branch=${KBRANCH}; \
-           git://git.yoctoproject.org/yocto-kernel-cache;type=kmeta;name=meta;branch=yocto-5.14;destsuffix=${KMETA}"
+           git://git.yoctoproject.org/yocto-kernel-cache;type=kmeta;name=meta;branch=yocto-5.14;destsuffix=${KMETA} \
+           file://0001-libsubcmd-Fix-use-after-free-for-realloc-.-0.patch \
+"
 
 LIC_FILES_CHKSUM = "file://COPYING;md5=6bc538ed5bd9a7fc9398086aedcd7e46"
 LINUX_VERSION ?= "5.14.21"
