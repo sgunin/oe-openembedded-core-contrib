@@ -1,0 +1,104 @@
+From 65db86f0161c393fd5b082c10837b278adadbff2 Mon Sep 17 00:00:00 2001
+From: Khem Raj <raj.khem@gmail.com>
+Date: Sun, 7 Aug 2022 23:57:20 -0700
+Subject: [PATCH] configure_func.sh: Add _GNU_SOURCE define and function
+ signatures
+
+Modern compilers are getting stricter about include paths and function
+signature being known duting compilation e.g. clang-15 now errors out if
+a function signature is not found
+
+try.c:1:18: error: call to undeclared function 'getspnam'; ISO C99 and later do not support implicit function declarations [-Wimplicit-function-declaration]
+
+This causes the test of function to fail even though the function is
+available in libc. Therefore try to add proper include headers which
+define these functions and also define _GNU_SOURCE in every test
+since some of GNU/Linux funtions e.g. accept4 are guarged by this define
+
+Upstream-Status: Pending
+Signed-off-by: Khem Raj <raj.khem@gmail.com>
+---
+ cnf/configure_func.sh | 41 +++++++++++++++++++++--------------------
+ 1 file changed, 21 insertions(+), 20 deletions(-)
+
+diff --git a/cnf/configure_func.sh b/cnf/configure_func.sh
+index c91af5d..9bf5a5f 100644
+--- a/cnf/configure_func.sh
++++ b/cnf/configure_func.sh
+@@ -5,6 +5,7 @@ checkfunc() {
+ 	mstart "Checking for $2"
+ 	if not hinted $1 'found' 'missing'; then
+ 		try_start
++    try_add '#define _GNU_SOURCE'
+ 		funcincludes "$3" "$4" "$includes"
+ 		try_add "int main(void) { $2($3); return 0; }"
+ 		try_link -O0 -fno-builtin
+@@ -42,36 +43,36 @@ checkfunc d_chroot 'chroot' "NULL" 'unistd.h'
+ checkfunc d_chsize 'chsize' "0,0"
+ checkfunc d_class 'class'
+ checkfunc d_clearenv 'clearenv' "" 'stdlib.h'
+-checkfunc d_closedir 'closedir' "NULL"
+-checkfunc d_crypt 'crypt'
++checkfunc d_closedir 'closedir' "NULL" 'dirent.h sys/types.h'
++checkfunc d_crypt 'crypt' "NULL,NULL" 'crypt.h'
+ checkfunc d_ctermid 'ctermid'
+ checkfunc d_ctime64 'ctime64'
+ checkfunc d_cuserid 'cuserid'
+-checkfunc d_difftime 'difftime' "0,0"
++checkfunc d_difftime 'difftime' "0,0" 'time.h'
+ checkfunc d_difftime64 'difftime64'
+-checkfunc d_dirfd 'dirfd'
++checkfunc d_dirfd 'dirfd' "NULL" 'dirent.h sys/types.h'
+ checkfunc d_dladdr 'dladdr' 'NULL, NULL' 'dlfcn.h'
+-checkfunc d_dlerror 'dlerror'
+-checkfunc d_dlopen 'dlopen'
+-checkfunc d_drand48 'drand48'
++checkfunc d_dlerror 'dlerror' 'dlfcn.h'
++checkfunc d_dlopen 'dlopen' "NULL,0" "dlfcn.h"
++checkfunc d_drand48 'drand48' 'stdlib.h'
+ checkfunc d_dup2 'dup2' "0,0" 'unistd.h'
+ checkfunc d_dup3 'dup3' "0,0,0" 'fcntl.h unistd.h'
+ checkfunc d_duplocale 'duplocale' '0' 'locale.h'
+-checkfunc d_eaccess 'eaccess'
+-checkfunc d_endgrent 'endgrent'
+-checkfunc d_endhent 'endhostent'
+-checkfunc d_endnent 'endnetent'
+-checkfunc d_endpent 'endprotoent'
+-checkfunc d_endpwent 'endpwent'
+-checkfunc d_endservent 'endservent'
++checkfunc d_eaccess 'eaccess' "NULL,0" 'unistd.h'
++checkfunc d_endgrent 'endgrent' 'grp.h sys/types.h'
++checkfunc d_endhent 'endhostent' 'netdb.h'
++checkfunc d_endnent 'endnetent' 'netdb.h'
++checkfunc d_endpent 'endprotoent' 'netdb.h'
++checkfunc d_endpwent 'endpwent' 'grp.h sys/types.h'
++checkfunc d_endservent 'endservent' 'netdb.h'
+ checkfunc d_fchdir 'fchdir' "0" 'unistd.h'
+-checkfunc d_fchmod 'fchmod' "0,0" 'unistd.h'
+-checkfunc d_fchmodat 'fchmodat' "0,NULL,0,0" 'unistd.h'
++checkfunc d_fchmod 'fchmod' "0,0" 'unistd.h sys/stat.h'
++checkfunc d_fchmodat 'fchmodat' "0,NULL,0,0" 'unistd.h sys/stat.h'
+ checkfunc d_fchown 'fchown' "0,0,0" 'unistd.h'
+ checkfunc d_fcntl 'fcntl' "0,0" 'unistd.h fcntl.h'
+ checkfunc d_fdclose 'fdclose'
+-checkfunc d_ffs 'ffs' 'strings.h'
+-checkfunc d_ffsl 'ffsl' 'strings.h'
++checkfunc d_ffs 'ffs' "0" 'strings.h'
++checkfunc d_ffsl 'ffsl' "0" 'strings.h'
+ checkfunc d_fgetpos 'fgetpos' "NULL, 0" 'stdio.h'
+ checkfunc d_flock 'flock' "0,0" 'unistd.h'
+ checkfunc d_fork 'fork' "" 'unistd.h'
+@@ -125,8 +126,8 @@ checkfunc d_getsbyport 'getservbyport'
+ checkfunc d_getsent 'getservent'
+ checkfunc d_setsent 'setservent'
+ checkfunc d_endsent 'endservent'
+-checkfunc d_getspnam 'getspnam'
+-checkfunc d_gettimeod 'gettimeofday' 'NULL,NULL'
++checkfunc d_getspnam 'getspnam' 'shadow.h'
++checkfunc d_gettimeod 'gettimeofday' 'NULL,NULL' 'sys/time.h'
+ checkfunc d_gmtime64 'gmtime64'
+ checkfunc d_hasmntopt 'hasmntopt'
+ checkfunc d_htonl 'htonl' "0" 'stdio.h sys/types.h netinet/in.h arpa/inet.h'
+-- 
+2.37.1
+
