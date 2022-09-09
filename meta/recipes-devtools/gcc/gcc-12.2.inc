@@ -104,11 +104,5 @@ EXTRA_OECONF_INITIAL = "\
     --disable-libssp \
 "
 
-EXTRA_OECONF_PATHS = "\
-    --with-gxx-include-dir=/not/exist{target_includedir}/c++/${BINV} \
-    --with-sysroot=/not/exist \
-    --with-build-sysroot=${STAGING_DIR_TARGET} \
-"
-
 # Is a binutils 2.26 issue, not gcc
 CVE_CHECK_IGNORE += "CVE-2021-37322"
