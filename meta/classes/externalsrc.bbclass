@@ -37,6 +37,12 @@ python () {
     if externalsrcbuild and not externalsrcbuild.startswith("/"):
         bb.error("EXTERNALSRC_BUILD must be an absolute path")
 
+    if d.getVar('BB_WORKERCONTEXT') != '1':
+        if externalsrc and externalsrc[-1] == '/':
+            bb.warn("EXTERNALSRC must not contain a traling slash, Remove it.")
+        if externalsrcbuild and externalsrcbuild[-1] == '/':
+            bb.warn("EXTERNALSRC_BUILD must not contain a traling slash, Remove it.")
+
     # If this is the base recipe and EXTERNALSRC is set for it or any of its
     # derivatives, then enable BB_DONT_CACHE to force the recipe to always be
     # re-parsed so that the file-checksums function for do_compile is run every
