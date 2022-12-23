@@ -97,13 +97,19 @@ class GoRecipeHandler(RecipeHandler):
         vcsChiselapp[vcs.vcs] = "fossil"
         vcsChiselapp[vcs.repo] = "https://\g<root>"
 
+        vcsCloudGoogle = {}
+        vcsCloudGoogle[vcs.pathprefix] = "cloud.google.com/go"
+        vcsCloudGoogle[vcs.regexp] = re.compile(r'^(?P<root>cloud\.google\.com/go/)(?P<suffix>[A-Za-z0-9]+/repository/[A-Za-z0-9_.\-]+)$')
+        vcsCloudGoogle[vcs.vcs] = "git"
+        vcsCloudGoogle[vcs.repo] = "https://github.com/googleapis/google-cloud-go"
+
         # General syntax for any server.
         # Must be last.
         vcsGeneralServer = {}
         vcsGeneralServer[vcs.regexp] = re.compile("(?P<root>(?P<repo>([a-z0-9.\-]+\.)+[a-z0-9.\-]+(:[0-9]+)?(/~?[A-Za-z0-9_.\-]+)+?)\.(?P<vcs>bzr|fossil|git|hg|svn))(/~?(?P<suffix>[A-Za-z0-9_.\-]+))*$")
         vcsGeneralServer[vcs.schemelessRepo] = True
 
-        vcsPaths = [vcsGitHub, vcsBitbucket, vcsIBMDevOps, vcsApacheGit, vcsOpenStackGit, vcsChiselapp, vcsGeneralServer]
+        vcsPaths = [vcsGitHub, vcsBitbucket, vcsIBMDevOps, vcsApacheGit, vcsOpenStackGit, vcsChiselapp, vcsCloudGoogle, vcsGeneralServer]
 
         if modulepath.startswith("example.net") or modulepath == "rsc.io":
             logger.warning("Suspicious module path %s" % modulepath)
