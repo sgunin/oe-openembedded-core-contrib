@@ -193,10 +193,13 @@ class GoRecipeHandler(RecipeHandler):
         """
         repodata = self._resolve_repository_static(modulepath)
         if not repodata.repourl:
+            logger.warn("Trying _resolve_repository_dynamic for '%s'", modulepath)
             repodata = self._resolve_repository_dynamic(modulepath)
 
         if repodata:
             logger.info("Resolved download path for import '%s' => %s", modulepath, repodata.repourl)
+        else:
+            logger.warn("Cannot resolve download path for '%s'", modulepath)
 
         return repodata
 
