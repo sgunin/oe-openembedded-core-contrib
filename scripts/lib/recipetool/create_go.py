@@ -175,10 +175,10 @@ class GoRecipeHandler(RecipeHandler):
         try:
             resp = urllib.request.urlopen(req)
         except URLError as url_err:
-            logger.error("Error while fetching redirect page: %s", str(url_err))
+            logger.error("Error while fetching redirect page '%s': %s", req.full_url, str(url_err))
             return None
         except HTTPError as http_err:
-            logger.error("Error while fetching redirect page: %s", str(http_err))
+            logger.error("Error while fetching redirect page '%s': %s", req.full_url, str(http_err))
             return None
 
         parser = GoImportHTMLParser()
@@ -271,6 +271,9 @@ class GoRecipeHandler(RecipeHandler):
             module_version = require['Version']
 
             repodata = self._resolve_repository(module_path)
+            if not repodata:
+                logger.warning("Cannot resolve repository for %s (module %s, version %s)" % (require, module_path, module_version))
+                continue
             commit_id = self._resolve_pseudo_semver(d, repodata.repourl, module_version)
             url = urllib.parse.urlparse(repodata.repourl)
             repo_url = url.netloc + url.path
@@ -378,10 +381,13 @@ class GoRecipeHandler(RecipeHandler):
                 licenses = origvalue.split()
 
                 for license in licenses:
-                    uri, chksum = license.split(';', 1)
-                    url = urllib.parse.urlparse(uri)
-                    new_uri = os.path.join(url.scheme + "://", "src", "${GO_IMPORT}", url.netloc + url.path) + ";" + chksum
-                    new_licenses.append(new_uri)
+                    if ';' in license:
+                        uri, chksum = license.split(';', 1)
+                        url = urllib.parse.urlparse(uri)
+                        new_uri = os.path.join(url.scheme + "://", "src", "${GO_IMPORT}", url.netloc + url.path) + ";" + chksum
+                        new_licenses.append(new_uri)
+                    else:
+                        logger.warning("Strange license value '%s'", license)
 
                 return new_licenses, None, -1, True
             return origvalue, None, 0, True
