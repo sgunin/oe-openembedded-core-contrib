@@ -103,13 +103,19 @@ class GoRecipeHandler(RecipeHandler):
         vcsCloudGoogle[vcs.vcs] = "git"
         vcsCloudGoogle[vcs.repo] = "https://github.com/googleapis/google-cloud-go"
 
+        vcsCloudFoundry = {}
+        vcsCloudFoundry[vcs.pathprefix] = "code.cloudfoundry.org"
+        vcsCloudFoundry[vcs.regexp] = re.compile(r'^(?P<root>code\.cloudfoundry\.org/)(?P<suffix>[A-Za-z0-9]+/repository/[A-Za-z0-9_.\-]+)$')
+        vcsCloudFoundry[vcs.vcs] = "git"
+        vcsCloudFoundry[vcs.repo] = "https://github.com/cloudfoundry"
+
         # General syntax for any server.
         # Must be last.
         vcsGeneralServer = {}
         vcsGeneralServer[vcs.regexp] = re.compile("(?P<root>(?P<repo>([a-z0-9.\-]+\.)+[a-z0-9.\-]+(:[0-9]+)?(/~?[A-Za-z0-9_.\-]+)+?)\.(?P<vcs>bzr|fossil|git|hg|svn))(/~?(?P<suffix>[A-Za-z0-9_.\-]+))*$")
         vcsGeneralServer[vcs.schemelessRepo] = True
 
-        vcsPaths = [vcsGitHub, vcsBitbucket, vcsIBMDevOps, vcsApacheGit, vcsOpenStackGit, vcsChiselapp, vcsCloudGoogle, vcsGeneralServer]
+        vcsPaths = [vcsGitHub, vcsBitbucket, vcsIBMDevOps, vcsApacheGit, vcsOpenStackGit, vcsChiselapp, vcsCloudGoogle, vcsCloudFoundry, vcsGeneralServer]
 
         if modulepath.startswith("example.net") or modulepath == "rsc.io":
             logger.warning("Suspicious module path %s" % modulepath)
