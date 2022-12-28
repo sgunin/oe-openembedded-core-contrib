@@ -124,16 +124,19 @@ class GoRecipeHandler(RecipeHandler):
             logger.warning("Import path should not start with %s %s" % ("http", "https"))
             return None
 
+        logger.warning("modulepath '%s'", modulepath)
         for srv in vcsPaths:
             m = srv[vcs.regexp].match(modulepath)
-            if vcs.pathprefix in srv:
+            if m and vcs.pathprefix in srv:
                 if host == srv[vcs.pathprefix]:
+                    logger.warning("host '%s' matching in vcs.pathprefix '%s'", host, srv[vcs.pathprefix])
                     _rootpath = m.group('root')
                     _vcs = srv[vcs.vcs]
                     _repourl = m.expand(srv[vcs.repo])
                     _suffix = m.group('suffix')
                     break
             elif m and srv[vcs.schemelessRepo]:
+                logger.warning("regex match '%s' m '%s'", srv[vcs.regexp], m)
                 _rootpath = m.group('root')
                 _vcs = m[vcs.vcs]
                 _repourl = m[vcs.repo]
