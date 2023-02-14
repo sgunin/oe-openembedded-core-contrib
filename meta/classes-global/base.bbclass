@@ -226,7 +226,12 @@ BUILDCFG_FUNCS[type] = "list"
 def buildcfg_vars(d):
     statusvars = oe.data.typed_value('BUILDCFG_VARS', d)
     for var in statusvars:
-        value = d.getVar(var)
+        # NATIVELSBSTRING var may have been overridden with "universal", so
+        # get actual host distribution id and version
+        if var == 'NATIVELSBSTRING':
+            value = lsb_distro_identifier(d)
+        else:
+            value = d.getVar(var)
         if value is not None:
             yield '%-20s = "%s"' % (var, value)
 
