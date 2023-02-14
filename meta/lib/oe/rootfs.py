@@ -89,12 +89,36 @@ class Rootfs(object, metaclass=ABCMeta):
     def _log_check_error(self):
         self._log_check_common('error', self.log_check_regex)
 
+    def _get_feed_archs(self):
+        feed_archs = self.d.getVar('PACKAGE_FEED_ARCHS') or ''
+        if not feed_archs:
+            bb.note("  Figuring PACKAGE_FEED_ARCHS from ALL_MULTILIB_PACKAGE_ARCHS")
+            manager = self.d.getVar('ROOTFS_PKGMANAGE')
+            deploy_dir = ''
+            if 'rpm' in manager:
+                deploy_dir = self.d.getVar('DEPLOY_DIR_RPM')
+            elif 'opkg' in manager:
+                deploy_dir = self.d.getVar('DEPLOY_DIR_IPK')
+            elif 'dpkg' in manager:
+                deploy_dir = self.d.getVar('DEPLOY_DIR_DEB')
+            else:
+                bb.warn('Failed to figure out deploy_dir')
+                return ''
+
+            for arch in self.d.getVar('ALL_MULTILIB_PACKAGE_ARCHS').split():
+                if 'rpm' in manager:
+                    arch = arch.replace("-", "_")
+                arch_path = os.path.join(deploy_dir, arch)
+                if os.path.exists(arch_path):
+                    feed_archs += " %s" % arch
+        return feed_archs.strip()
+
     def _insert_feed_uris(self):
         if bb.utils.contains("IMAGE_FEATURES", "package-management",
                          True, False, self.d):
             self.pm.insert_feeds_uris(self.d.getVar('PACKAGE_FEED_URIS') or "",
                 self.d.getVar('PACKAGE_FEED_BASE_PATHS') or "",
-                self.d.getVar('PACKAGE_FEED_ARCHS'))
+                self._get_feed_archs())
 
 
     """
