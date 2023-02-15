@@ -42,7 +42,9 @@ def blame_patch(patch):
                                     "--", patch)).decode("utf-8").splitlines()
 
 def patchreview(path, patches):
-    import re, os.path
+    import re, os.path, sys
+    sys.path.append(os.path.join(sys.path[0], '../../meta/lib'))
+    import oe.qa
 
     # General pattern: start of line, optional whitespace, tag with optional
     # hyphen or spaces, maybe a colon, some whitespace, then the value, all case
@@ -72,12 +74,11 @@ def patchreview(path, patches):
         else:
             result.missing_sob = True
 
-
         # Find the Upstream-Status tag
         match = status_re.search(content)
         if match:
-            value = match.group(1)
-            if value != "Upstream-Status:":
+            value = oe.qa.check_upstream_status(fullpath)
+            if value:
                 result.malformed_upstream_status = value
 
             value = match.group(2).lower()
