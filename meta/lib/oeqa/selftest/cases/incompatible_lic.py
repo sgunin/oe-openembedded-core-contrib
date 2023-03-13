@@ -160,5 +160,6 @@ CORE_IMAGE_EXTRA_INSTALL:pn-core-image-weston += "rpm"
 CORE_IMAGE_BASE_INSTALL:remove:pn-core-image-weston = "matchbox-terminal"
 """)
         bitbake('core-image-full-cmdline core-image-weston')
-        bitbake('-c testimage core-image-full-cmdline core-image-weston')
+        bitbake('-c testimage core-image-full-cmdline')
+        bitbake('-c testimage core-image-weston')
 
