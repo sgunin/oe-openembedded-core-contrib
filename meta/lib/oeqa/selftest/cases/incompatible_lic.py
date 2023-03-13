@@ -148,5 +148,6 @@ INCOMPATIBLE_LICENSE:pn-core-image-weston = "GPL-3.0* LGPL-3.0*"
 require conf/distro/include/no-gplv3.inc
 """)
         bitbake('core-image-full-cmdline core-image-weston')
-        bitbake('-c testimage core-image-full-cmdline core-image-weston')
+        bitbake('-c testimage core-image-full-cmdline')
+        bitbake('-c testimage core-image-weston')
 
