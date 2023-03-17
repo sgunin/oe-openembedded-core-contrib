@@ -1,0 +1,25 @@
+From 7be7faee71a476c16c6a1456ea4f80ccfdeaad56 Mon Sep 17 00:00:00 2001
+From: Martin Jansa <Martin.Jansa@gmail.com>
+Date: Fri, 17 Mar 2023 13:28:30 +0100
+Subject: [PATCH] meson.build: accept webrtc-audio-processing-1
+
+Upstream-Status: Pending
+
+Signed-off-by: Martin Jansa <Martin.Jansa@gmail.com>
+---
+ ext/webrtcdsp/meson.build | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/ext/webrtcdsp/meson.build b/ext/webrtcdsp/meson.build
+index 5aeae69..7bf2fc0 100644
+--- a/ext/webrtcdsp/meson.build
++++ b/ext/webrtcdsp/meson.build
+@@ -4,7 +4,7 @@ webrtc_sources = [
+   'gstwebrtcdspplugin.cpp'
+ ]
+ 
+-webrtc_dep = dependency('webrtc-audio-processing', version : ['>= 0.2', '< 0.4'],
++webrtc_dep = dependency('webrtc-audio-processing-1',
+                         required : get_option('webrtcdsp'))
+ 
+ if not gnustl_dep.found() and get_option('webrtcdsp').enabled()
