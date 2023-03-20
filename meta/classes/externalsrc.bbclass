@@ -64,12 +64,11 @@ python () {
             d.setVar('B', '${WORKDIR}/${BPN}-${PV}')
 
         local_srcuri = []
-        fetch = bb.fetch2.Fetch((d.getVar('SRC_URI') or '').split(), d)
-        for url in fetch.urls:
-            url_data = fetch.ud[url]
-            parm = url_data.parm
-            if url_data.type in ['file', 'npmsw', 'crate'] or parm.get('type') in ['kmeta', 'git-dependency']:
-                local_srcuri.append(url)
+        for url_string in (d.getVar('SRC_URI') or '').split():
+            uri = bb.fetch.URI(url_string)
+            if (uri.scheme in ['file', 'npmsw', 'crate'] or
+                uri.params.get('type') in ['kmeta', 'git-dependency']):
+                local_srcuri.append(url_string)
 
         d.setVar('SRC_URI', ' '.join(local_srcuri))
 
