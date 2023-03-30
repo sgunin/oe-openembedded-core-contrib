@@ -38,25 +38,12 @@ def get_crates(f):
     if not crates_candidates:
         raise ValueError("Unable to find any candidate crates that use crates.io")
 
-    # Build a list of crates name that have multiple version
-    crates_multiple_vers = []
-    tmp = []
-    for c in crates_candidates:
-        if c['name'] in tmp:
-            crates_multiple_vers.append(c['name'])
-        else:
-            tmp.append(c['name'])
-
     # Update crates uri and their checksum, to avoid name clashing on the checksum
     # we need to rename crates of the same name but different version
     cksum_list = ''
     for c in crates_candidates:
-        if c['name'] in crates_multiple_vers:
-            rename = "%s-%s" % (c['name'], c['version'])
-            c_list += '\n    crate://crates.io/%s/%s;name=%s \\\' % (c['name'], c['version'], rename)
-        else:
-            rename = c['name']
-            c_list += '\n    crate://crates.io/%s/%s \\\' % (c['name'], c['version'])
+        rename = "%s-%s" % (c['name'], c['version'])
+        c_list += '\n    crate://crates.io/%s/%s;name=%s \\\' % (c['name'], c['version'], rename)
         if 'checksum' in c:
             cksum_list += '\nSRC_URI[%s.sha256sum] = "%s"' % (rename, c['checksum'])
 
