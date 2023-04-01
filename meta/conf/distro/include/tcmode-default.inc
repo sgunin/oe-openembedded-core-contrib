@@ -24,8 +24,13 @@ GLIBCVERSION ?= "2.38%"
 LINUXLIBCVERSION ?= "6.6%"
 QEMUVERSION ?= "8.2%"
 GOVERSION ?= "1.20%"
-LLVMVERSION ?= "17.%"
 RUSTVERSION ?= "1.74%"
+
+# Allow to independently set P_V for llvm* recipes and actual llvm version used in other places
+# This is needed for meta-clang which provides different llvm version from clang recipes, see:
+# https://github.com/kraj/meta-clang/pull/766
+LLVM_PREFERRED_VERSION ?= "17.%"
+LLVMVERSION ?= "${LLVM_PREFERRED_VERSION}"
 
 PREFERRED_VERSION_gcc ?= "${GCCVERSION}"
 PREFERRED_VERSION_gcc-cross-${TARGET_ARCH} ?= "${GCCVERSION}"
@@ -77,9 +82,9 @@ PREFERRED_VERSION_go-runtime ?= "${GOVERSION}"
 PREFERRED_VERSION_nativesdk-go ?= "${GOVERSION}"
 PREFERRED_VERSION_nativesdk-go-runtime ?= "${GOVERSION}"
 
-PREFERRED_VERSION_llvm = "${LLVMVERSION}"
-PREFERRED_VERSION_llvm-native = "${LLVMVERSION}"
-PREFERRED_VERSION_nativesdk-llvm = "${LLVMVERSION}"
+PREFERRED_VERSION_llvm = "${LLVM_PREFERRED_VERSION}"
+PREFERRED_VERSION_llvm-native = "${LLVM_PREFERRED_VERSION}"
+PREFERRED_VERSION_nativesdk-llvm = "${LLVM_PREFERRED_VERSION}"
 
 # Rust toolchain preferred versions:
 
