@@ -342,8 +342,15 @@ def write_local_conf(d, baseoutpath, derivative, core_meta_subdir, uninative_che
             f.write('DL_DIR = "${TOPDIR}/downloads"\n')
 
             if bb.data.inherits_class('uninative', d):
-               f.write('INHERIT += "%s"\n' % 'uninative')
-               f.write('UNINATIVE_CHECKSUM[%s] = "%s"\n\n' % (d.getVar('BUILD_ARCH'), uninative_checksum))
+                f.write('INHERIT += "%s"\n' % 'uninative')
+                f.write('UNINATIVE_CHECKSUM[%s] = "%s"\n\n' % (d.getVar('BUILD_ARCH'), uninative_checksum))
+            else:
+                nativelsbstring = d.getVar('NATIVELSBSTRING')
+                # Add my own LSB when not using uninative, because create_locked_sstate_cache bellow uses:
+                # fixedlsbstring = "universal%s" % oe.utils.host_gcc_version(d)
+                # but then inside eSDK, we're using regular NATIVELSBSTRING
+                f.write('SSTATE_MIRRORS += " file://%s/(.*) file://universal/\\1"\n\n' % nativelsbstring)
+
             f.write('CONF_VERSION = "%s"\n\n' % d.getVar('CONF_VERSION', False))
 
             # Some classes are not suitable for SDK, remove them from INHERIT
