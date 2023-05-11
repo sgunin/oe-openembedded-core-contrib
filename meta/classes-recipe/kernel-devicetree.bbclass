@@ -127,22 +127,24 @@ kernel_do_deploy:append() {
 	done
 }
 kernel_do_deploy_links:append() {
-	for dtbf in ${KERNEL_DEVICETREE}; do
-		dtb=`normalize_dtb "$dtbf"`
-		dtb_ext=${dtb##*.}
-		dtb_base_name=`basename $dtb .$dtb_ext`
-		if [ -n "${KERNEL_DTB_LINK_NAME}" ] ; then
+	if [ -z "${KERNEL_DTB_LINK_NAME}" -o "${KERNEL_DTB_LINK_NAME}" = "${KERNEL_DTB_NAME}" ] ; then
+		bbnote "Not creating versioned hardlinks, because KERNEL_DTB_LINK_NAME is empty or identical to KERNEL_DTB_NAME"
+	else
+		for dtbf in ${KERNEL_DEVICETREE}; do
+			dtb=`normalize_dtb "$dtbf"`
+			dtb_ext=${dtb##*.}
+			dtb_base_name=`basename $dtb .$dtb_ext`
 			ln -vf $deployDir/$dtb_base_name.$dtb_ext $deployDir/$dtb_base_name-${KERNEL_DTB_LINK_NAME}.$dtb_ext
-		fi
-		for type in ${KERNEL_IMAGETYPE_FOR_MAKE}; do
-			if [ "$type" = "zImage" ] && [ "${KERNEL_DEVICETREE_BUNDLE}" = "1" ] && [ -n "${KERNEL_DTB_LINK_NAME}" ]; then
-				ln -vf $deployDir/$type-$dtb_base_name.$dtb_ext${KERNEL_DTB_BIN_EXT} \
-					$deployDir/$type-$dtb_base_name-${KERNEL_DTB_LINK_NAME}.$dtb_ext${KERNEL_DTB_BIN_EXT}
-				if [ -e "${KERNEL_OUTPUT_DIR}/${type}.initramfs" ]; then
-					ln -vf $deployDir/${type}-${INITRAMFS_NAME}-$dtb_base_name.$dtb_ext${KERNEL_DTB_BIN_EXT} \
-						$deployDir/${type}-${INITRAMFS_NAME}-$dtb_base_name-${KERNEL_DTB_LINK_NAME}.$dtb_ext${KERNEL_DTB_BIN_EXT}
+			for type in ${KERNEL_IMAGETYPE_FOR_MAKE}; do
+				if [ "$type" = "zImage" ] && [ "${KERNEL_DEVICETREE_BUNDLE}" = "1" ] ; then
+					ln -vf $deployDir/$type-$dtb_base_name.$dtb_ext${KERNEL_DTB_BIN_EXT} \
+						$deployDir/$type-$dtb_base_name-${KERNEL_DTB_LINK_NAME}.$dtb_ext${KERNEL_DTB_BIN_EXT}
+					if [ -e "${KERNEL_OUTPUT_DIR}/${type}.initramfs" ]; then
+						ln -vf $deployDir/${type}-${INITRAMFS_NAME}-$dtb_base_name.$dtb_ext${KERNEL_DTB_BIN_EXT} \
+							$deployDir/${type}-${INITRAMFS_NAME}-$dtb_base_name-${KERNEL_DTB_LINK_NAME}.$dtb_ext${KERNEL_DTB_BIN_EXT}
+					fi
 				fi
-			fi
+			done
 		done
-	done
+	fi
 }
