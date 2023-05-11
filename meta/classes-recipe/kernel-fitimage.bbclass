@@ -860,22 +860,17 @@ kernel_do_deploy:append() {
 }
 kernel_do_deploy_links:append() {
 	if echo ${KERNEL_IMAGETYPES} | grep -wq "fitImage"; then
-		if [ "${INITRAMFS_IMAGE_BUNDLE}" != "1" ]; then
-			if [ -n "${KERNEL_FIT_LINK_NAME}" ] ; then
+		if [ -z "${KERNEL_FIT_LINK_NAME}" -o "${KERNEL_FIT_LINK_NAME}" = "${KERNEL_FIT_NAME}" ] ; then
+			bbnote "Not creating versioned hardlinks, because KERNEL_FIT_LINK_NAME is empty or identical to KERNEL_FIT_NAME"
+		else
+			if [ "${INITRAMFS_IMAGE_BUNDLE}" != "1" ]; then
 				ln -vf $deployDir/fitImage-its-${KERNEL_FIT_NAME}.its "$deployDir/fitImage-its-${KERNEL_FIT_LINK_NAME}"
-			fi
-			if [ -n "${KERNEL_FIT_LINK_NAME}" ] ; then
 				ln -vf $deployDir/fitImage-linux.bin-${KERNEL_FIT_NAME}${KERNEL_FIT_BIN_EXT} "$deployDir/fitImage-linux.bin-${KERNEL_FIT_LINK_NAME}"
 			fi
-		fi
 
-		if [ -n "${INITRAMFS_IMAGE}" ]; then
-			if [ -n "${KERNEL_FIT_LINK_NAME}" ] ; then
+			if [ -n "${INITRAMFS_IMAGE}" ]; then
 				ln -vf $deployDir/fitImage-its-${INITRAMFS_IMAGE_NAME}-${KERNEL_FIT_NAME}.its "$deployDir/fitImage-its-${INITRAMFS_IMAGE_NAME}-${KERNEL_FIT_LINK_NAME}"
-			fi
-
-			if [ "${INITRAMFS_IMAGE_BUNDLE}" != "1" ]; then
-				if [ -n "${KERNEL_FIT_LINK_NAME}" ] ; then
+				if [ "${INITRAMFS_IMAGE_BUNDLE}" != "1" ]; then
 					ln -vf $deployDir/fitImage-${INITRAMFS_IMAGE_NAME}-${KERNEL_FIT_NAME}${KERNEL_FIT_BIN_EXT} "$deployDir/fitImage-${INITRAMFS_IMAGE_NAME}-${KERNEL_FIT_LINK_NAME}"
 				fi
 			fi

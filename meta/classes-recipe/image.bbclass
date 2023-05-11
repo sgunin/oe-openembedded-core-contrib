@@ -596,7 +596,8 @@ python create_symlinks() {
     taskname = d.getVar("BB_CURRENTTASK")
     subimages = (d.getVarFlag("do_" + taskname, 'subimages', False) or "").split()
 
-    if not link_name:
+    if not link_name or link_name == img_name:
+        bb.note("Not creating versioned hardlinks, because IMAGE_LINK_NAME is empty or identical to IMAGE_NAME")
         return
     for type in subimages:
         dst = os.path.join(deploy_dir, link_name + "." + type)

@@ -855,21 +855,33 @@ kernel_do_deploy_links() {
 		mkdir "$deployDir"
 	fi
 
-	for imageType in ${KERNEL_IMAGETYPES} ; do
-		ln -vf $deployDir/$imageType-${KERNEL_IMAGE_NAME}.bin $deployDir/$imageType-${KERNEL_IMAGE_LINK_NAME}${KERNEL_IMAGE_BIN_EXT}
-	done
-
-	if [ ${MODULE_TARBALL_DEPLOY} = "1" -a -f $deployDir/modules-${MODULE_TARBALL_NAME}.tgz ] ; then
-		ln -vf $deployDir/modules-${MODULE_TARBALL_NAME}.tgz $deployDir/modules-${MODULE_TARBALL_LINK_NAME}.tgz
+	if [ -z "${KERNEL_IMAGE_LINK_NAME}" -o "${KERNEL_IMAGE_LINK_NAME}" = "${KERNEL_IMAGE_NAME}" ] ; then
+		bbnote "Not creating versioned hardlinks for kernel images, because KERNEL_IMAGE_LINK_NAME is empty or identical to KERNEL_IMAGE_NAME"
+	else
+		for imageType in ${KERNEL_IMAGETYPES} ; do
+			ln -vf $deployDir/$imageType-${KERNEL_IMAGE_NAME}.bin $deployDir/$imageType-${KERNEL_IMAGE_LINK_NAME}${KERNEL_IMAGE_BIN_EXT}
+		done
 	fi
 
-	if [ ! -z "${INITRAMFS_IMAGE}" -a "${INITRAMFS_IMAGE_BUNDLE}" = "1" ]; then
-		for imageType in ${KERNEL_IMAGETYPES} ; do
-			if [ "$imageType" = "fitImage" ] ; then
-				continue
-			fi
-			ln -vf $deployDir/$imageType-${INITRAMFS_NAME}.bin $deployDir/$imageType-${INITRAMFS_LINK_NAME}${KERNEL_IMAGE_BIN_EXT}
-		done
+	if [ -z "${MODULE_TARBALL_LINK_NAME}" -o "${MODULE_TARBALL_LINK_NAME}" = "${MODULE_TARBALL_NAME}" ] ; then
+		bbnote "Not creating versioned hardlinks for module tarball, because MODULE_TARBALL_LINK_NAME is empty or identical to MODULE_TARBALL_NAME"
+	else
+		if [ ${MODULE_TARBALL_DEPLOY} = "1" -a -f $deployDir/modules-${MODULE_TARBALL_NAME}.tgz ] ; then
+			ln -vf $deployDir/modules-${MODULE_TARBALL_NAME}.tgz $deployDir/modules-${MODULE_TARBALL_LINK_NAME}.tgz
+		fi
+	fi
+
+	if [ -z "${INITRAMFS_LINK_NAME}" -o "${INITRAMFS_LINK_NAME}" = "${INITRAMFS_NAME}" ] ; then
+		bbnote "Not creating versioned hardlinks for initramfs image, because INITRAMFS_LINK_NAME is empty"
+	else
+		if [ ! -z "${INITRAMFS_IMAGE}" -a "${INITRAMFS_IMAGE_BUNDLE}" = "1" ]; then
+			for imageType in ${KERNEL_IMAGETYPES} ; do
+				if [ "$imageType" = "fitImage" ] ; then
+					continue
+				fi
+				ln -vf $deployDir/$imageType-${INITRAMFS_NAME}.bin $deployDir/$imageType-${INITRAMFS_LINK_NAME}${KERNEL_IMAGE_BIN_EXT}
+			done
+		fi
 	fi
 }
 do_deploy_links[prefuncs] += "read_subpackage_metadata"
