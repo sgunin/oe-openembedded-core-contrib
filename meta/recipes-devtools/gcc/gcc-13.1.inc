@@ -2,11 +2,11 @@ require gcc-common.inc
 
 # Third digit in PV should be incremented after a minor release
 
-PV = "13.1.0"
+PV = "13.1.1"
 
 # BINV should be incremented to a revision after a minor gcc release
 
-BINV = "13.1.0"
+BINV = "13.1.1"
 
 FILESEXTRAPATHS =. "${FILE_DIRNAME}/gcc:${FILE_DIRNAME}/gcc/backport:"
 
@@ -23,9 +23,9 @@ LIC_FILES_CHKSUM = "\
     file://COPYING.RUNTIME;md5=fe60d87048567d4fe8c8a0ed2448bcc8 \
 "
 # snapshot from git
-#RELEASE ?= "9b6bf076c11cba0f9ccdace63e8b4044b1a858ea"
-#BASEURI ?= "https://git.linaro.org/toolchain/gcc.git/snapshot/gcc-${RELEASE}.tar.gz"
-#SOURCEDIR = "gcc-${RELEASE}"
+RELEASE ?= "845135fd7b3e023e6a264141e8befaeafcccdcbc"
+BASEURI ?= "https://git.linaro.org/toolchain/gcc.git/snapshot/gcc-${RELEASE}.tar.gz"
+SOURCEDIR = "gcc-${RELEASE}"
 #BASEURI ?= "https://repo.or.cz/official-gcc.git/snapshot/${RELEASE}.tar.gz;downloadfilename=gcc-${PV}-${RELEASE}.tar.gz"
 #SOURCEDIR ?= "official-gcc-${@'${RELEASE}'[0:7]}"
 
@@ -35,9 +35,9 @@ LIC_FILES_CHKSUM = "\
 #BASEURI ?= "https://gcc.gnu.org/pub/gcc/snapshots/${RELEASE}/gcc-${RELEASE}.tar.xz"
 
 # official release
-RELEASE ?= "${PV}"
-BASEURI ?= "${GNU_MIRROR}/gcc/gcc-${PV}/gcc-${PV}.tar.xz"
-SOURCEDIR ?= "gcc-${PV}"
+#RELEASE ?= "${PV}"
+#BASEURI ?= "${GNU_MIRROR}/gcc/gcc-${PV}/gcc-${PV}.tar.xz"
+#SOURCEDIR ?= "gcc-${PV}"
 
 SRC_URI = "${BASEURI} \
            file://0001-gcc-4.3.1-ARCH_FLAGS_FOR_TARGET.patch \
@@ -65,7 +65,7 @@ SRC_URI = "${BASEURI} \
            file://0023-Fix-install-path-of-linux64.h.patch \
            file://0024-Avoid-hardcoded-build-paths-into-ppc-libgcc.patch \
 "
-SRC_URI[sha256sum] = "61d684f0aa5e76ac6585ad8898a2427aade8979ed5e7f85492286c4dfc13ee86"
+SRC_URI[sha256sum] = "d4b5e1f416b53ad75bf22ab6435f7bce42cb94522659bfc0cd4051bd9320a064"
 
 S = "${TMPDIR}/work-shared/gcc-${PV}-${PR}/${SOURCEDIR}"
 B = "${WORKDIR}/gcc-${PV}/build.${HOST_SYS}.${TARGET_SYS}"

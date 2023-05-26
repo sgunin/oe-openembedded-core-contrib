@@ -1,4 +1,4 @@
-From ba2e308f7993099708ef3d8cbf2db5f134f08941 Mon Sep 17 00:00:00 2001
+From 607d3d8dd7ce69010c5143fafb3604de05767177 Mon Sep 17 00:00:00 2001
 From: Khem Raj <raj.khem@gmail.com>
 Date: Fri, 29 Mar 2013 09:24:50 +0400
 Subject: [PATCH] Define GLIBC_DYNAMIC_LINKER and UCLIBC_DYNAMIC_LINKER
@@ -262,7 +262,7 @@ index 2ce097ebbce..1d45d7b4962 100644
  #undef LINK_SPEC
  #define LINK_SPEC LINK_SPEC_ENDIAN \
 diff --git a/gcc/config/riscv/linux.h b/gcc/config/riscv/linux.h
-index b9557a75dc7..e10ca1f97e7 100644
+index 2fdfd930cf2..213a2fec9db 100644
 --- a/gcc/config/riscv/linux.h
 +++ b/gcc/config/riscv/linux.h
 @@ -22,7 +22,7 @@ along with GCC; see the file COPYING3.  If not see
@@ -281,8 +281,8 @@ index b9557a75dc7..e10ca1f97e7 100644
 -#define MUSL_DYNAMIC_LINKER "/lib/ld-musl-riscv" XLEN_SPEC MUSL_ABI_SUFFIX ".so.1"
 +#define MUSL_DYNAMIC_LINKER SYSTEMLIBS_DIR "ld-musl-riscv" XLEN_SPEC MUSL_ABI_SUFFIX ".so.1"
  
- /* Because RISC-V only has word-sized atomics, it requries libatomic where
-    others do not.  So link libatomic by default, as needed.  */
+ #define ICACHE_FLUSH_FUNC "__riscv_flush_icache"
+ 
 diff --git a/gcc/config/rs6000/linux64.h b/gcc/config/rs6000/linux64.h
 index 9e457033d11..2ddab7c99c1 100644
 --- a/gcc/config/rs6000/linux64.h
