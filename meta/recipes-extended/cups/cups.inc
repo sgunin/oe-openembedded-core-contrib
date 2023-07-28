@@ -37,12 +37,14 @@ GROUPADD_PARAM:${PN} = "--system lpadmin"
 SYSTEMD_SERVICE:${PN} = "cups.socket cups.path cups.service cups-lpd.socket"
 
 PACKAGECONFIG ??= "${@bb.utils.contains('DISTRO_FEATURES', 'zeroconf', 'avahi', '', d)} \
+                   ${@bb.utils.contains('DISTRO_FEATURES', 'krb5', 'gssapi', '', d)} \
                    ${@bb.utils.filter('DISTRO_FEATURES', 'pam systemd', d)} \
                    openssl \
 "
 PACKAGECONFIG[avahi] = "--with-dnssd=avahi,--with-dnssd=no,avahi"
 PACKAGECONFIG[acl] = "--enable-acl,--disable-acl,acl"
 PACKAGECONFIG[gnutls] = "--with-tls=gnutls,,gnutls,,,openssl"
+PACKAGECONFIG[gssapi] = "--enable-gssapi,--disable-gssapi,krb5"
 PACKAGECONFIG[openssl] = "--with-tls=openssl,,openssl,,,gnutls"
 PACKAGECONFIG[pam] = "--enable-pam --with-pam-module=unix, --disable-pam, libpam"
 PACKAGECONFIG[systemd] = "--with-systemd=${systemd_system_unitdir},--without-systemd,systemd"
@@ -53,7 +55,6 @@ EXTRA_OECONF = " \
                --enable-dbus \
                --with-dbusdir=${sysconfdir}/dbus-1 \
                --enable-browsing \
-               --disable-gssapi \
                --enable-debug \
                --disable-relro \
                --enable-libusb \

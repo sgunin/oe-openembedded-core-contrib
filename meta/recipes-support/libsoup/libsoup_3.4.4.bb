@@ -24,7 +24,7 @@ inherit meson gettext pkgconfig upstream-version-is-even gobject-introspection g
 GIR_MESON_ENABLE_FLAG = 'enabled'
 GIR_MESON_DISABLE_FLAG = 'disabled'
 
-PACKAGECONFIG ??= ""
+PACKAGECONFIG ??= "${@bb.utils.contains('DISTRO_FEATURES', 'krb5', 'gssapi', '', d)}"
 PACKAGECONFIG[brotli] = "-Dbrotli=enabled,-Dbrotli=disabled,brotli"
 PACKAGECONFIG[gssapi] = "-Dgssapi=enabled,-Dgssapi=disabled,krb5"
 PACKAGECONFIG[ntlm] = "-Dntlm=enabled,-Dntlm=disabled"

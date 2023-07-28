@@ -26,7 +26,7 @@ UPSTREAM_CHECK_REGEX = "libsoup-(?P<pver>2(\.(?!99)\d+)+)\.tar"
 GIR_MESON_ENABLE_FLAG = 'enabled'
 GIR_MESON_DISABLE_FLAG = 'disabled'
 
-PACKAGECONFIG ??= ""
+PACKAGECONFIG ??= "${@bb.utils.contains('DISTRO_FEATURES', 'krb5', 'gssapi', '', d)}"
 PACKAGECONFIG[brotli] = "-Dbrotli=enabled,-Dbrotli=disabled,brotli"
 # libsoup-gnome is entirely deprecated and just stubs in 2.42 onwards
 PACKAGECONFIG[gnome] = "-Dgnome=true,-Dgnome=false"

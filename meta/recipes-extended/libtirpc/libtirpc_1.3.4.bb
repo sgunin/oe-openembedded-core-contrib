@@ -20,12 +20,11 @@ CVE_STATUS[CVE-2021-46828] = "fixed-version: fixed in 1.3.3rc1 so not present in
 
 inherit autotools pkgconfig
 
-PACKAGECONFIG ??= ""
-PACKAGECONFIG[gssapi] = "--enable-gssapi,--disable-gssapi,krb5"
-
 PACKAGECONFIG ??= "\
 	${@bb.utils.filter('DISTRO_FEATURES', 'ipv6', d)} \
+	${@bb.utils.contains('DISTRO_FEATURES', 'krb5', 'gssapi', '', d)} \
 "
+PACKAGECONFIG[gssapi] = "--enable-gssapi,--disable-gssapi,krb5"
 PACKAGECONFIG[ipv6] = "--enable-ipv6,--disable-ipv6"
 
 do_install:append() {

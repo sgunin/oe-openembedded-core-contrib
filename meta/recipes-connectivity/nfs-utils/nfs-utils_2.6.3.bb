@@ -65,6 +65,7 @@ LDFLAGS:append = " -lsqlite3 -levent"
 
 PACKAGECONFIG ??= "tcp-wrappers nfsv4 nfsv41 \
     ${@bb.utils.filter('DISTRO_FEATURES', 'ipv6 systemd', d)} \
+    ${@bb.utils.contains('DISTRO_FEATURES', 'krb5', 'gssapi', '', d)} \
 "
 
 PACKAGECONFIG:remove:libc-musl = "tcp-wrappers"

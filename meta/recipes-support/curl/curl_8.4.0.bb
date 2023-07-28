@@ -24,7 +24,10 @@ inherit autotools pkgconfig binconfig multilib_header ptest
 # Entropy source for random PACKAGECONFIG option
 RANDOM ?= "/dev/urandom"
 
-PACKAGECONFIG ??= "${@bb.utils.filter('DISTRO_FEATURES', 'ipv6', d)} aws basic-auth bearer-auth digest-auth negotiate-auth libidn openssl proxy random threaded-resolver verbose zlib"
+PACKAGECONFIG ??= "${@bb.utils.filter('DISTRO_FEATURES', 'ipv6 krb5', d)} \
+    ${@bb.utils.contains('DISTRO_FEATURES', 'krb5', 'kerberos-auth', '', d)} \
+    aws basic-auth bearer-auth digest-auth negotiate-auth libidn openssl \
+    proxy random threaded-resolver verbose zlib"
 PACKAGECONFIG:class-native = "ipv6 openssl proxy random threaded-resolver verbose zlib"
 PACKAGECONFIG:class-nativesdk = "ipv6 openssl proxy random threaded-resolver verbose zlib"
 

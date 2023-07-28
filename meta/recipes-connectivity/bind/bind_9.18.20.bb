@@ -33,14 +33,15 @@ CVE_STATUS[CVE-2019-6470] = "not-applicable-config: Issue only affects dhcpd wit
 inherit autotools update-rc.d systemd useradd pkgconfig multilib_header update-alternatives
 
 # PACKAGECONFIGs readline and libedit should NOT be set at same time
-PACKAGECONFIG ?= "readline"
+PACKAGECONFIG ?= "${@bb.utils.contains('DISTRO_FEATURES', 'krb5', 'gssapi', '', d)} readline"
+PACKAGECONFIG[gssapi] = "--with-gssapi=yes,--with-gssapi=no,krb5"
 PACKAGECONFIG[httpstats] = "--with-libxml2=${STAGING_DIR_HOST}${prefix},--without-libxml2,libxml2"
 PACKAGECONFIG[readline] = "--with-readline=readline,,readline"
 PACKAGECONFIG[libedit] = "--with-readline=libedit,,libedit"
 PACKAGECONFIG[dns-over-http] = "--enable-doh,--disable-doh,nghttp2"
 
 EXTRA_OECONF = " --disable-auto-validation \
-                 --with-gssapi=no --with-lmdb=no --with-zlib \
+                 --with-lmdb=no --with-zlib \
                  --sysconfdir=${sysconfdir}/bind \
                  --with-openssl=${STAGING_DIR_HOST}${prefix} \
                "
