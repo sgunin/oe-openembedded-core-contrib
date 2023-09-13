@@ -1,0 +1,64 @@
+From 4470ecabb8e5bd6ff45dfece48483dab7bb4079a Mon Sep 17 00:00:00 2001
+From: Trevor Gamblin <tgamblin@baylibre.com>
+Date: Mon, 11 Sep 2023 16:57:34 -0400
+Subject: [PATCH] selftest: remove configurable target
+
+The ability to pass the target (i.e. oe-core) as an argument was a
+testing mechanism and isn't needed when the tests are part of the repo,
+so remove it and use os.path.dirname to get it instead.
+
+Signed-off-by: Trevor Gamblin <tgamblin@baylibre.com>
+---
+ meta/lib/patchtest/selftest/selftest | 14 ++++++--------
+ 1 file changed, 6 insertions(+), 8 deletions(-)
+
+diff --git a/meta/lib/patchtest/selftest/selftest b/meta/lib/patchtest/selftest/selftest
+index eb65c530aa..d1407649a2 100755
+--- a/meta/lib/patchtest/selftest/selftest
++++ b/meta/lib/patchtest/selftest/selftest
+@@ -15,6 +15,9 @@ patchesdir = os.path.join(currentdir, 'files')
+ topdir     = os.path.dirname(currentdir)
+ parentdir  = os.path.dirname(topdir)
+ 
++# path to the repo root
++repodir = os.path.dirname(os.path.dirname(parentdir))
++
+ def print_results(passcount, skipcount, failcount, xpasscount, xfailcount, errorcount):
+     total = passcount + skipcount + failcount + xpasscount + xfailcount + errorcount
+     print("============================================================================")
+@@ -30,21 +33,16 @@ def print_results(passcount, skipcount, failcount, xpasscount, xfailcount, error
+     print("============================================================================")
+ 
+ # Once the tests are in oe-core, we can remove the testdir param and use os.path.dirname to get relative paths
+-def test(root, patch, testdir):
++def test(root, patch):
+     res = True
+     patchpath = os.path.abspath(os.path.join(root, patch))
+-
+     
+-    cmd     = 'patchtest %s %s %s/tests' % (patchpath, testdir, topdir)
++    cmd     = 'patchtest %s %s %s/tests' % (patchpath, repodir, topdir)
+     results = subprocess.check_output(cmd, stderr=subprocess.STDOUT, universal_newlines=True, shell=True)
+ 
+     return results
+ 
+ if __name__ == '__main__':
+-    # sys.argv[1] should be the repo to target for selftest, i.e. oe-core
+-    if len(sys.argv) == 1:
+-        sys.exit("Error: Must provide the path to openembedded-core, e.g. \"selftest /workspace/yocto/openembedded-core\"")
+-
+     passcount = 0
+     failcount = 0
+     skipcount = 0
+@@ -56,7 +54,7 @@ if __name__ == '__main__':
+         
+     for root, dirs, patches in os.walk(patchesdir):
+         for patch in patches:
+-            results = test(root, patch, sys.argv[1])
++            results = test(root, patch)
+ 
+             a = patch.split('.')
+             klass, testname = a[0], a[1]
+-- 
+2.41.0
+
