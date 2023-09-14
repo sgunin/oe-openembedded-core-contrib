@@ -1,4 +1,4 @@
-From 6fbf920ccde6efc2d0caafde996d9e5738a1ba37 Mon Sep 17 00:00:00 2001
+From cff7dbc71c401f4ca4f605f1b6852bdb38d0c4fc Mon Sep 17 00:00:00 2001
 From: Richard Purdie <richard.purdie@linuxfoundation.org>
 Date: Thu, 28 Oct 2021 11:33:40 +0100
 Subject: [PATCH] Pass CXXFLAGS_FOR_BUILD in a couple of places to avoid these
@@ -23,7 +23,7 @@ Signed-off-by: Khem Raj <raj.khem@gmail.com>
  2 files changed, 4 insertions(+)
 
 diff --git a/Makefile.in b/Makefile.in
-index 06a9398e172..4b0069b257c 100644
+index 2f136839c35..7a273bbb10a 100644
 --- a/Makefile.in
 +++ b/Makefile.in
 @@ -178,6 +178,7 @@ BUILD_EXPORTS = \
@@ -43,7 +43,7 @@ index 06a9398e172..4b0069b257c 100644
  	DSYMUTIL="$(DSYMUTIL)"; export DSYMUTIL; \
  	LD="$(LD)"; export LD; \
 diff --git a/Makefile.tpl b/Makefile.tpl
-index dfbd74b68f8..419b332953b 100644
+index 5872dd03f2c..7372e6d61d0 100644
 --- a/Makefile.tpl
 +++ b/Makefile.tpl
 @@ -181,6 +181,7 @@ BUILD_EXPORTS = \

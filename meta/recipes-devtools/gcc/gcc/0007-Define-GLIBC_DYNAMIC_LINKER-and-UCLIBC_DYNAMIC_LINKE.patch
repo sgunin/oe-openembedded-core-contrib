@@ -1,4 +1,4 @@
-From aacfd6e14dd583b1fdc65691def61c5e1bc89708 Mon Sep 17 00:00:00 2001
+From c196ff78822ad924fafeb7c015462cfc8b53670f Mon Sep 17 00:00:00 2001
 From: Khem Raj <raj.khem@gmail.com>
 Date: Fri, 29 Mar 2013 09:24:50 +0400
 Subject: [PATCH] Define GLIBC_DYNAMIC_LINKER and UCLIBC_DYNAMIC_LINKER
@@ -143,7 +143,7 @@ index 2bd9f48e271..dbbe7ca5440 100644
 -#define MUSL_DYNAMIC_LINKERX32 "/lib/ld-musl-x32.so.1"
 +#define MUSL_DYNAMIC_LINKERX32 SYSTEMLIBS_DIR "ld-musl-x32.so.1"
 diff --git a/gcc/config/linux.h b/gcc/config/linux.h
-index e3aca79cccc..6491c6b84f5 100644
+index ac56816bfca..83ea939419a 100644
 --- a/gcc/config/linux.h
 +++ b/gcc/config/linux.h
 @@ -86,10 +86,10 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
@@ -162,20 +162,24 @@ index e3aca79cccc..6491c6b84f5 100644
  #define BIONIC_DYNAMIC_LINKER32 "/system/bin/linker"
  #define BIONIC_DYNAMIC_LINKER64 "/system/bin/linker64"
 diff --git a/gcc/config/loongarch/gnu-user.h b/gcc/config/loongarch/gnu-user.h
-index aecaa02a199..62f88f7f9a2 100644
+index fa1a5211419..39b118af471 100644
 --- a/gcc/config/loongarch/gnu-user.h
 +++ b/gcc/config/loongarch/gnu-user.h
-@@ -31,11 +31,11 @@ along with GCC; see the file COPYING3.  If not see
+@@ -31,7 +31,7 @@ along with GCC; see the file COPYING3.  If not see
  
  #undef GLIBC_DYNAMIC_LINKER
  #define GLIBC_DYNAMIC_LINKER \
 -  "/lib" ABI_GRLEN_SPEC "/ld-linux-loongarch-" ABI_SPEC ".so.1"
 +  SYSTEMLIBS_DIR "ld-linux-loongarch-" ABI_SPEC ".so.1"
  
+ #define MUSL_ABI_SPEC \
+   "%{mabi=lp64d:-lp64d}" \
+@@ -40,7 +40,7 @@ along with GCC; see the file COPYING3.  If not see
+ 
  #undef MUSL_DYNAMIC_LINKER
  #define MUSL_DYNAMIC_LINKER \
--  "/lib" ABI_GRLEN_SPEC "/ld-musl-loongarch-" ABI_SPEC ".so.1"
-+  SYSTEMLIBS_DIR "ld-musl-loongarch-" ABI_SPEC ".so.1"
+-  "/lib/ld-musl-loongarch" ABI_GRLEN_SPEC MUSL_ABI_SPEC ".so.1"
++  SYSTEMLIBS_DIR ld-musl-loongarch" ABI_GRLEN_SPEC MUSL_ABI_SPEC ".so.1"
  
  #undef GNU_USER_TARGET_LINK_SPEC
  #define GNU_USER_TARGET_LINK_SPEC \
@@ -262,7 +266,7 @@ index 2ce097ebbce..1d45d7b4962 100644
  #undef LINK_SPEC
  #define LINK_SPEC LINK_SPEC_ENDIAN \
 diff --git a/gcc/config/riscv/linux.h b/gcc/config/riscv/linux.h
-index 3e625e0f867..dc3afc97e27 100644
+index 7323ff30f70..1610f7051ba 100644
 --- a/gcc/config/riscv/linux.h
 +++ b/gcc/config/riscv/linux.h
 @@ -22,7 +22,7 @@ along with GCC; see the file COPYING3.  If not see
@@ -284,10 +288,10 @@ index 3e625e0f867..dc3afc97e27 100644
  #define ICACHE_FLUSH_FUNC "__riscv_flush_icache"
  
 diff --git a/gcc/config/rs6000/linux64.h b/gcc/config/rs6000/linux64.h
-index 9e457033d11..2ddab7c99c1 100644
+index 98b7255c95f..905b9f069ca 100644
 --- a/gcc/config/rs6000/linux64.h
 +++ b/gcc/config/rs6000/linux64.h
-@@ -339,24 +339,19 @@ extern int dot_symbols;
+@@ -340,24 +340,19 @@ extern int dot_symbols;
  #undef	LINK_OS_DEFAULT_SPEC
  #define LINK_OS_DEFAULT_SPEC "%(link_os_linux)"
  

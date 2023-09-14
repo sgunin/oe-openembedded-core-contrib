@@ -1,4 +1,4 @@
-From bbc75b93bff66891fa7ffb3af5c6ad53df1fff68 Mon Sep 17 00:00:00 2001
+From b1cd704745e3626b5c5684ab344f7b4cb19b5eeb Mon Sep 17 00:00:00 2001
 From: Khem Raj <raj.khem@gmail.com>
 Date: Mon, 7 Dec 2015 23:39:54 +0000
 Subject: [PATCH] handle sysroot support for nativesdk-gcc
@@ -46,10 +46,10 @@ Signed-off-by: Mark Hatle <mark.hatle@kernel.crashing.org>
  8 files changed, 95 insertions(+), 73 deletions(-)
 
 diff --git a/gcc/c-family/c-opts.cc b/gcc/c-family/c-opts.cc
-index c68a2a27469..77e9b5eceaa 100644
+index d9f55f45e03..3513969e62c 100644
 --- a/gcc/c-family/c-opts.cc
 +++ b/gcc/c-family/c-opts.cc
-@@ -1458,8 +1458,8 @@ add_prefixed_path (const char *suffix, incpath_kind chain)
+@@ -1467,8 +1467,8 @@ add_prefixed_path (const char *suffix, incpath_kind chain)
    size_t prefix_len, suffix_len;
  
    suffix_len = strlen (suffix);
@@ -61,7 +61,7 @@ index c68a2a27469..77e9b5eceaa 100644
    path = (char *) xmalloc (prefix_len + suffix_len + 1);
    memcpy (path, prefix, prefix_len);
 diff --git a/gcc/config/linux.h b/gcc/config/linux.h
-index 57496ff1f2f..c921cf6ef63 100644
+index 82a6dd030a2..44952bbf70d 100644
 --- a/gcc/config/linux.h
 +++ b/gcc/config/linux.h
 @@ -121,53 +121,53 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
@@ -382,10 +382,10 @@ index e26b424e99c..c9abb090dcd 100644
     subdirectory of the actual installation.  */
  extern const char *gcc_exec_prefix;
 diff --git a/gcc/gcc.cc b/gcc/gcc.cc
-index 8af0c814c33..605fe3b8c0d 100644
+index abb2dcb1319..8c0f9de4275 100644
 --- a/gcc/gcc.cc
 +++ b/gcc/gcc.cc
-@@ -255,6 +255,8 @@ FILE *report_times_to_file = NULL;
+@@ -259,6 +259,8 @@ FILE *report_times_to_file = NULL;
  #endif
  static const char *target_system_root = DEFAULT_TARGET_SYSTEM_ROOT;
  
@@ -394,7 +394,7 @@ index 8af0c814c33..605fe3b8c0d 100644
  /* Nonzero means pass the updated target_system_root to the compiler.  */
  
  static int target_system_root_changed;
-@@ -578,6 +580,7 @@ or with constant text in a single argument.
+@@ -582,6 +584,7 @@ or with constant text in a single argument.
   %G     process LIBGCC_SPEC as a spec.
   %R     Output the concatenation of target_system_root and
          target_sysroot_suffix.
@@ -402,7 +402,7 @@ index 8af0c814c33..605fe3b8c0d 100644
   %S     process STARTFILE_SPEC as a spec.  A capital S is actually used here.
   %E     process ENDFILE_SPEC as a spec.  A capital E is actually used here.
   %C     process CPP_SPEC as a spec.
-@@ -1619,10 +1622,10 @@ static const char *gcc_libexec_prefix;
+@@ -1623,10 +1626,10 @@ static const char *gcc_libexec_prefix;
     gcc_exec_prefix is set because, in that case, we know where the
     compiler has been installed, and use paths relative to that
     location instead.  */
@@ -417,7 +417,7 @@ index 8af0c814c33..605fe3b8c0d 100644
  
  /* For native compilers, these are well-known paths containing
     components that may be provided by the system.  For cross
-@@ -1630,9 +1633,9 @@ static const char *const standard_startfile_prefix = STANDARD_STARTFILE_PREFIX;
+@@ -1634,9 +1637,9 @@ static const char *const standard_startfile_prefix = STANDARD_STARTFILE_PREFIX;
  static const char *md_exec_prefix = MD_EXEC_PREFIX;
  static const char *md_startfile_prefix = MD_STARTFILE_PREFIX;
  static const char *md_startfile_prefix_1 = MD_STARTFILE_PREFIX_1;
@@ -429,7 +429,7 @@ index 8af0c814c33..605fe3b8c0d 100644
    = STANDARD_STARTFILE_PREFIX_2;
  
  /* A relative path to be used in finding the location of tools
-@@ -6652,6 +6655,11 @@ do_spec_1 (const char *spec, int inswitch, const char *soft_matched_part)
+@@ -6718,6 +6721,11 @@ do_spec_1 (const char *spec, int inswitch, const char *soft_matched_part)
  	      }
  	    break;
  

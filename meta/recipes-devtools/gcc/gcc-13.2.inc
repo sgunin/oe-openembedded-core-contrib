@@ -2,11 +2,11 @@ require gcc-common.inc
 
 # Third digit in PV should be incremented after a minor release
 
-PV = "13.2.1"
+PV = "14.0.0"
 
 # BINV should be incremented to a revision after a minor gcc release
 
-BINV = "13.2.1"
+BINV = "14.0.0"
 
 FILESEXTRAPATHS =. "${FILE_DIRNAME}/gcc:${FILE_DIRNAME}/gcc/backport:"
 
@@ -23,7 +23,7 @@ LIC_FILES_CHKSUM = "\
     file://COPYING.RUNTIME;md5=fe60d87048567d4fe8c8a0ed2448bcc8 \
 "
 # snapshot from git
-RELEASE ?= "9cddebd822aeff9b7c0e9951909d5ec96c959e4f"
+RELEASE ?= "8517317ce8e9fbea0b4c7a8f87a86d07d95dc8c7"
 BASEURI ?= "https://git.linaro.org/toolchain/gcc.git/snapshot/gcc-${RELEASE}.tar.gz"
 SOURCEDIR = "gcc-${RELEASE}"
 #BASEURI ?= "https://repo.or.cz/official-gcc.git/snapshot/${RELEASE}.tar.gz;downloadfilename=gcc-${PV}-${RELEASE}.tar.gz"
@@ -64,9 +64,9 @@ SRC_URI = "${BASEURI} \
            file://0022-libatomic-Do-not-enforce-march-on-aarch64.patch \
            file://0023-Fix-install-path-of-linux64.h.patch \
            file://0024-Avoid-hardcoded-build-paths-into-ppc-libgcc.patch \
-           file://0025-gcc-testsuite-mips.patch \
+           file://0025-gcc-testsuite-tweaks-for-mips-OE.patch \
 "
-SRC_URI[sha256sum] = "79303b807fa7ecf3bb37c0d12b0458c279ba30de197e699bc081790959e7f60b"
+SRC_URI[sha256sum] = "b8a44ddafae547edf68b46449840a0c01e6e171d591375856ea92886c97240d9"
 
 S = "${TMPDIR}/work-shared/gcc-${PV}-${PR}/${SOURCEDIR}"
 B = "${WORKDIR}/gcc-${PV}/build.${HOST_SYS}.${TARGET_SYS}"
