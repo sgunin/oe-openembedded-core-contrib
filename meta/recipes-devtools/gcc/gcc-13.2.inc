@@ -2,11 +2,11 @@ require gcc-common.inc
 
 # Third digit in PV should be incremented after a minor release
 
-PV = "13.2.0"
+PV = "13.2.1"
 
 # BINV should be incremented to a revision after a minor gcc release
 
-BINV = "13.2.0"
+BINV = "13.2.1"
 
 FILESEXTRAPATHS =. "${FILE_DIRNAME}/gcc:${FILE_DIRNAME}/gcc/backport:"
 
@@ -23,9 +23,9 @@ LIC_FILES_CHKSUM = "\
     file://COPYING.RUNTIME;md5=fe60d87048567d4fe8c8a0ed2448bcc8 \
 "
 # snapshot from git
-#RELEASE ?= "9b6bf076c11cba0f9ccdace63e8b4044b1a858ea"
-#BASEURI ?= "https://git.linaro.org/toolchain/gcc.git/snapshot/gcc-${RELEASE}.tar.gz"
-#SOURCEDIR = "gcc-${RELEASE}"
+RELEASE ?= "9cddebd822aeff9b7c0e9951909d5ec96c959e4f"
+BASEURI ?= "https://git.linaro.org/toolchain/gcc.git/snapshot/gcc-${RELEASE}.tar.gz"
+SOURCEDIR = "gcc-${RELEASE}"
 #BASEURI ?= "https://repo.or.cz/official-gcc.git/snapshot/${RELEASE}.tar.gz;downloadfilename=gcc-${PV}-${RELEASE}.tar.gz"
 #SOURCEDIR ?= "official-gcc-${@'${RELEASE}'[0:7]}"
 
@@ -65,9 +65,8 @@ SRC_URI = "${BASEURI} \
            file://0023-Fix-install-path-of-linux64.h.patch \
            file://0024-Avoid-hardcoded-build-paths-into-ppc-libgcc.patch \
            file://0025-gcc-testsuite-mips.patch \
-           file://CVE-2023-4039.patch \
 "
-SRC_URI[sha256sum] = "e275e76442a6067341a27f04c5c6b83d8613144004c0413528863dc6b5c743da"
+SRC_URI[sha256sum] = "79303b807fa7ecf3bb37c0d12b0458c279ba30de197e699bc081790959e7f60b"
 
 S = "${TMPDIR}/work-shared/gcc-${PV}-${PR}/${SOURCEDIR}"
 B = "${WORKDIR}/gcc-${PV}/build.${HOST_SYS}.${TARGET_SYS}"
