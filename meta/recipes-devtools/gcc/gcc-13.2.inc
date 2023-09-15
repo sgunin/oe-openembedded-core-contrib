@@ -23,7 +23,7 @@ LIC_FILES_CHKSUM = "\
     file://COPYING.RUNTIME;md5=fe60d87048567d4fe8c8a0ed2448bcc8 \
 "
 # snapshot from git
-RELEASE ?= "8517317ce8e9fbea0b4c7a8f87a86d07d95dc8c7"
+RELEASE ?= "2d38f45bcca62ca0c7afef4b579f82c5c2a01610"
 BASEURI ?= "https://git.linaro.org/toolchain/gcc.git/snapshot/gcc-${RELEASE}.tar.gz"
 SOURCEDIR = "gcc-${RELEASE}"
 #BASEURI ?= "https://repo.or.cz/official-gcc.git/snapshot/${RELEASE}.tar.gz;downloadfilename=gcc-${PV}-${RELEASE}.tar.gz"
@@ -66,7 +66,7 @@ SRC_URI = "${BASEURI} \
            file://0024-Avoid-hardcoded-build-paths-into-ppc-libgcc.patch \
            file://0025-gcc-testsuite-tweaks-for-mips-OE.patch \
 "
-SRC_URI[sha256sum] = "b8a44ddafae547edf68b46449840a0c01e6e171d591375856ea92886c97240d9"
+SRC_URI[sha256sum] = "253b5ba9cfa05173753253dd39fa4b5341d50e84b0f25c6def89af1d70dd2aec"
 
 S = "${TMPDIR}/work-shared/gcc-${PV}-${PR}/${SOURCEDIR}"
 B = "${WORKDIR}/gcc-${PV}/build.${HOST_SYS}.${TARGET_SYS}"

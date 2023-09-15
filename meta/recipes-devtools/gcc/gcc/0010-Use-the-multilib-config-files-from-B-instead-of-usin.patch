@@ -1,4 +1,4 @@
-From 8f105c8481e671ede3d0e4bd512f76cbe095cc84 Mon Sep 17 00:00:00 2001
+From 9dbc83380d3106c486f2548f5b88d46c90027267 Mon Sep 17 00:00:00 2001
 From: Khem Raj <raj.khem@gmail.com>
 Date: Fri, 29 Mar 2013 09:33:04 +0400
 Subject: [PATCH] Use the multilib config files from ${B} instead of using the

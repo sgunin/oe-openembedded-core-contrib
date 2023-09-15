@@ -1,4 +1,4 @@
-From 00dd813f65ca137b56ef5118245db92c9100016f Mon Sep 17 00:00:00 2001
+From 49417b89914efbe8a4b3235ae5fc24262c34ce83 Mon Sep 17 00:00:00 2001
 From: Szabolcs Nagy <nsz@port70.net>
 Date: Sat, 24 Oct 2015 20:09:53 +0000
 Subject: [PATCH] libgcc_s: Use alias for __cpu_indicator_init instead of

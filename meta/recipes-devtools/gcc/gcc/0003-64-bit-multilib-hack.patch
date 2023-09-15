@@ -1,4 +1,4 @@
-From 4480bfcbbd4ded2933df09c4ecd7e0e1a3db719e Mon Sep 17 00:00:00 2001
+From 32feecea911fe07db69347a7cb19c21de36f0500 Mon Sep 17 00:00:00 2001
 From: Khem Raj <raj.khem@gmail.com>
 Date: Fri, 29 Mar 2013 09:10:06 +0400
 Subject: [PATCH] 64-bit multilib hack
@@ -30,14 +30,14 @@ Signed-off-by: Elvis Dowson <elvis.dowson@gmail.com>
 Signed-off-by: Mark Hatle <mark.hatle@windriver.com>
 Signed-off-by: Zang Ruochen <zangruochen@loongson.cn>
 ---
- gcc/config/aarch64/t-aarch64-linux |  8 +++----
+ gcc/config/aarch64/t-aarch64-linux |  8 ++++----
  gcc/config/arc/t-multilib-linux    |  4 ++--
  gcc/config/i386/t-linux64          |  6 ++----
- gcc/config/loongarch/t-linux       | 34 ++++++++++++++++--------------
- gcc/config/mips/t-linux64          | 28 ++----------------------
+ gcc/config/loongarch/t-linux       | 23 +++++++++++++----------
+ gcc/config/mips/t-linux64          | 28 ++--------------------------
  gcc/config/riscv/t-linux           |  4 ++--
  gcc/config/rs6000/t-linux64        |  5 ++---
- 7 files changed, 32 insertions(+), 57 deletions(-)
+ 7 files changed, 27 insertions(+), 51 deletions(-)
 
 diff --git a/gcc/config/aarch64/t-aarch64-linux b/gcc/config/aarch64/t-aarch64-linux
 index 57bf4100fcd..aaef5da8059 100644
@@ -87,54 +87,39 @@ index 138956b0962..d6e0cdc4342 100644
 +MULTILIB_DIRNAMES = . .
 +MULTILIB_OSDIRNAMES = ../$(shell basename $(base_libdir)) ../$(shell basename $(base_libdir))
 diff --git a/gcc/config/loongarch/t-linux b/gcc/config/loongarch/t-linux
-index 9997596d722..708cb52506d 100644
+index 5e849c36435..6e1aa8d8abe 100644
 --- a/gcc/config/loongarch/t-linux
 +++ b/gcc/config/loongarch/t-linux
-@@ -18,7 +18,9 @@
+@@ -16,16 +16,19 @@
+ # along with GCC; see the file COPYING3.  If not see
+ # <http://www.gnu.org/licenses/>.
  
- # Multilib
- MULTILIB_OPTIONS = mabi=lp64d/mabi=lp64f/mabi=lp64s
--MULTILIB_DIRNAMES = base/lp64d base/lp64f base/lp64s
-+#MULTILIB_DIRNAMES = base/lp64d base/lp64f base/lp64s
-+MULTILIB_DIRNAMES = . . .
-+MULTILIB_OSDIRNAMES = ../$(shell basename $(base_libdir)) ../$(shell basename $(base_libdir)) ../$(shell basename $(base_libdir))
- 
- # The GCC driver always gets all abi-related options on the command line.
- # (see loongarch-driver.c:driver_get_normalized_m_opts)
-@@ -66,18 +68,18 @@ else
- endif
+-MULTIOSDIR_lp64d := ../lib64$(call if_multiarch,:loongarch64-linux-gnu)
+-MULTIOSDIR_lp64f := ../lib64/f32$(call if_multiarch,:loongarch64-linux-gnuf32)
+-MULTIOSDIR_lp64s := ../lib64/sf$(call if_multiarch,:loongarch64-linux-gnusf)
++#MULTIOSDIR_lp64d := ../lib64$(call if_multiarch,:loongarch64-linux-gnu)
++#MULTIOSDIR_lp64f := ../lib64/f32$(call if_multiarch,:loongarch64-linux-gnuf32)
++#MULTIOSDIR_lp64s := ../lib64/sf$(call if_multiarch,:loongarch64-linux-gnusf)
  
  # Don't define MULTILIB_OSDIRNAMES if multilib is disabled.
 -ifeq ($(filter LA_DISABLE_MULTILIB,$(tm_defines)),)
 -
--    MULTILIB_OSDIRNAMES = \
--      mabi.lp64d=../lib64$\
--      $(call if_multiarch,:loongarch64-linux-gnu)
--
--    MULTILIB_OSDIRNAMES += \
--      mabi.lp64f=../lib64/f32$\
--      $(call if_multiarch,:loongarch64-linux-gnuf32)
--
--    MULTILIB_OSDIRNAMES += \
--      mabi.lp64s=../lib64/sf$\
--      $(call if_multiarch,:loongarch64-linux-gnusf)
--
--endif
+-    MULTILIB_OSDIRNAMES = .=$(MULTIOSDIR_$(mlib_default))
+-    MULTILIB_OSDIRNAMES += mabi.lp64d=$(MULTIOSDIR_lp64d)
+-    MULTILIB_OSDIRNAMES += mabi.lp64f=$(MULTIOSDIR_lp64f)
+-    MULTILIB_OSDIRNAMES += mabi.lp64s=$(MULTIOSDIR_lp64s)
 +#ifeq ($(filter LA_DISABLE_MULTILIB,$(tm_defines)),)
 +#
-+#    MULTILIB_OSDIRNAMES = \
-+#      mabi.lp64d=../lib64$\
-+#      $(call if_multiarch,:loongarch64-linux-gnu)
-+#
-+#    MULTILIB_OSDIRNAMES += \
-+#      mabi.lp64f=../lib64/f32$\
-+#      $(call if_multiarch,:loongarch64-linux-gnuf32)
-+#
-+#    MULTILIB_OSDIRNAMES += \
-+#      mabi.lp64s=../lib64/sf$\
-+#      $(call if_multiarch,:loongarch64-linux-gnusf)
++#    MULTILIB_OSDIRNAMES = .=$(MULTIOSDIR_$(mlib_default))
++#    MULTILIB_OSDIRNAMES += mabi.lp64d=$(MULTIOSDIR_lp64d)
++#    MULTILIB_OSDIRNAMES += mabi.lp64f=$(MULTIOSDIR_lp64f)
++#    MULTILIB_OSDIRNAMES += mabi.lp64s=$(MULTIOSDIR_lp64s)
 +#
 +#endif
+ 
+-endif
++MULTILIB_DIRNAMES = . . .
++MULTILIB_OSDIRNAMES = ../$(shell basename $(base_libdir)) ../$(shell basename $(base_libdir)) ../$(shell basename $(base_libdir))
 diff --git a/gcc/config/mips/t-linux64 b/gcc/config/mips/t-linux64
 index 176091cabb6..8258ef40559 100644
 --- a/gcc/config/mips/t-linux64

@@ -1,4 +1,4 @@
-From b1cd704745e3626b5c5684ab344f7b4cb19b5eeb Mon Sep 17 00:00:00 2001
+From cc0722bdaf197a59777f7bd060ff2b96a7e114c2 Mon Sep 17 00:00:00 2001
 From: Khem Raj <raj.khem@gmail.com>
 Date: Mon, 7 Dec 2015 23:39:54 +0000
 Subject: [PATCH] handle sysroot support for nativesdk-gcc

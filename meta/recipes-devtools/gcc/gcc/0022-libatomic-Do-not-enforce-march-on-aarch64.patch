@@ -1,4 +1,4 @@
-From c2ea510a7377101c7568f2bde196846aa245d007 Mon Sep 17 00:00:00 2001
+From 50139ccf892e563febd588fff1eb138a012f31b0 Mon Sep 17 00:00:00 2001
 From: Khem Raj <raj.khem@gmail.com>
 Date: Wed, 13 May 2020 15:10:38 -0700
 Subject: [PATCH] libatomic: Do not enforce march on aarch64

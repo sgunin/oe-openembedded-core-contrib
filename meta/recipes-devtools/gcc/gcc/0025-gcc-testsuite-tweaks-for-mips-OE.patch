@@ -1,4 +1,4 @@
-From 9dcc7965c75e15ab115c06c15c95f4c3ea2cbe75 Mon Sep 17 00:00:00 2001
+From 8e06ac9a62dbff0ef7c30c5b5146e1421af80d56 Mon Sep 17 00:00:00 2001
 From: Richard Purdie <richard.purdie@linuxfoundation.org>
 Date: Sun, 13 Aug 2023 10:24:05 +0100
 Subject: [PATCH] gcc testsuite tweaks for mips/OE

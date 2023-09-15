@@ -1,4 +1,4 @@
-From 512fdbab7953bd34912d0184c79c716d7f2f2d92 Mon Sep 17 00:00:00 2001
+From 4a1a7073361d14ebd0f8f60c1400c0e481de0745 Mon Sep 17 00:00:00 2001
 From: Andrei Gherzan <andrei.gherzan@huawei.com>
 Date: Wed, 22 Dec 2021 12:49:25 +0100
 Subject: [PATCH] Fix install path of linux64.h
