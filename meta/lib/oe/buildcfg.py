@@ -50,6 +50,22 @@ def get_metadata_git_remote_url(path, remote):
         uri = ''
     return uri.strip()
 
+def get_metadata_git_default_remote(path):
+    remotes = get_metadata_git_remotes(path)
+    if len(remotes) == 1:
+        default_remote = remotes[0]
+    else:
+        try:
+            default_remote, _ = bb.process.run('git config --local checkout.defaultRemote', cwd=path)
+        except bb.process.ExecutionError:
+            default_remote = ""
+        if not default_remote:
+            try:
+                default_remote, _ = bb.process.run('git config checkout.defaultRemote', cwd=path)
+            except bb.process.ExecutionError:
+                default_remote = ""
+    return default_remote.strip()
+
 def get_metadata_git_describe(path):
     try:
         describe, _ = bb.process.run('git describe --tags', cwd=path)
