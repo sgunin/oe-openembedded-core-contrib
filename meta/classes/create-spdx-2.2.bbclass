@@ -967,7 +967,7 @@ python image_combine_spdx() {
         if image_link_name:
             link = imgdeploydir / (image_link_name + suffix)
             if link != target_path:
-                link.symlink_to(os.path.relpath(target_path, link.parent))
+                os.link(target_path, link)
 
     spdx_tar_path = imgdeploydir / (image_name + ".spdx.tar.zst")
     make_image_link(spdx_tar_path, ".spdx.tar.zst")
