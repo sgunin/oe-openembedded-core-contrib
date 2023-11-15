@@ -9,8 +9,9 @@
 ##################################################################
 
 IMAGE_BASENAME ?= "${PN}"
-IMAGE_VERSION_SUFFIX ?= "-${PKGE}-${PKGV}-${PKGR}-${DATETIME}"
-IMAGE_VERSION_SUFFIX[vardepsexclude] += "DATETIME SOURCE_DATE_EPOCH"
+IMAGE_VERSION_SUFFIX_DATETIME = "${@get_source_date_epoch_value_datetime(d)}"
+IMAGE_VERSION_SUFFIX_DATETIME[vardepvalue] = ""
+IMAGE_VERSION_SUFFIX ?= "-${PKGE}-${PKGV}-${PKGR}-${IMAGE_VERSION_SUFFIX_DATETIME}"
 IMAGE_NAME ?= "${IMAGE_BASENAME}${IMAGE_MACHINE_SUFFIX}${IMAGE_NAME_SUFFIX}"
 IMAGE_LINK_NAME ?= "${IMAGE_NAME}${IMAGE_VERSION_SUFFIX}"
 
@@ -32,10 +33,3 @@ IMAGE_MACHINE_SUFFIX ??= "-${MACHINE}"
 # by default) followed by additional suffices which describe the format (.ext4,
 # .ext4.xz, etc.).
 IMAGE_NAME_SUFFIX ??= ".rootfs"
-
-python () {
-    if bb.data.inherits_class('deploy', d) and d.getVar("IMAGE_VERSION_SUFFIX") == "-${DATETIME}":
-        import datetime
-        d.setVar("IMAGE_VERSION_SUFFIX", "-" + datetime.datetime.fromtimestamp(int(d.getVar("SOURCE_DATE_EPOCH")), datetime.timezone.utc).strftime('%Y%m%d%H%M%S'))
-        d.setVarFlag("IMAGE_VERSION_SUFFIX", "vardepvalue", "")
-}
