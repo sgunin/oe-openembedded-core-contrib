@@ -207,6 +207,9 @@ do_unpack[postfuncs] += "create_source_date_epoch_stamp"
 
 def get_source_date_epoch_value(d):
     return oe.reproducible.epochfile_read(d.getVar('SDE_FILE'), d)
+def get_source_date_epoch_value_datetime(d):
+    import datetime
+    return datetime.datetime.fromtimestamp(int(get_source_date_epoch_value(d)), datetime.timezone.utc).strftime('%Y%m%d%H%M%S')
 
 def get_layers_branch_rev(d):
     revisions = oe.buildcfg.get_layer_revisions(d)
