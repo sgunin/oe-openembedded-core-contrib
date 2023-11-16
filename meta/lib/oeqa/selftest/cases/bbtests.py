@@ -136,7 +136,7 @@ class BitbakeTests(OESelftestTestCase):
         deploydir = bb_vars["DEPLOY_DIR_IMAGE"]
         imagename = bb_vars["IMAGE_LINK_NAME"]
         manifest = os.path.join(deploydir, imagename + ".manifest")
-        self.assertTrue(os.path.islink(manifest), msg="No manifest file created for image. It should have been created in %s" % manifest)
+        self.assertTrue(os.path.isfile(manifest), msg="No manifest file created for image. It should have been created in %s" % manifest)
 
     def test_invalid_recipe_src_uri(self):
         data = 'SRC_URI = "file://invalid"'
