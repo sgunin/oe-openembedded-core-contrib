@@ -60,7 +60,12 @@ do_deploy() {
 	:
 }
 
+do_deploy_links() {
+	:
+}
+
 addtask bundle_initramfs after do_install before do_deploy
 addtask deploy after do_install
+addtask deploy_links after do_deploy
 addtask shared_workdir after do_compile before do_install
 addtask compile_kernelmodules
