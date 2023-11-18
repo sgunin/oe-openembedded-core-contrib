@@ -19,6 +19,12 @@ def removesuffix(s, suffix):
         return s[:-len(suffix)]
     return s
 
+inherit kernel-artifact-names
+
+UBOOT_VERSION_SUFFIX ?= "${IMAGE_VERSION_SUFFIX}"
+UBOOT_ARTIFACT_NAME ?= "${IMAGE_MACHINE_SUFFIX}"
+UBOOT_ARTIFACT_LINK_NAME ?= "${UBOOT_ARTIFACT_NAME}${UBOOT_VERSION_SUFFIX}"
+
 UBOOT_ENTRYPOINT ?= "20008000"
 UBOOT_LOADADDRESS ?= "${UBOOT_ENTRYPOINT}"
 
@@ -27,8 +33,8 @@ UBOOT_LOADADDRESS ?= "${UBOOT_ENTRYPOINT}"
 UBOOT_SUFFIX ??= "bin"
 UBOOT_BINARY ?= "u-boot.${UBOOT_SUFFIX}"
 UBOOT_BINARYNAME ?= "${@os.path.splitext(d.getVar("UBOOT_BINARY"))[0]}"
-UBOOT_IMAGE ?= "${UBOOT_BINARYNAME}-${MACHINE}-${PV}-${PR}.${UBOOT_SUFFIX}"
-UBOOT_SYMLINK ?= "${UBOOT_BINARYNAME}-${MACHINE}.${UBOOT_SUFFIX}"
+UBOOT_IMAGE ?= "${UBOOT_BINARYNAME}${UBOOT_ARTIFACT_NAME}.${UBOOT_SUFFIX}"
+UBOOT_LINK ?= "${UBOOT_BINARYNAME}${UBOOT_ARTIFACT_LINK_NAME}.${UBOOT_SUFFIX}"
 UBOOT_MAKE_TARGET ?= "all"
 
 # Output the ELF generated. Some platforms can use the ELF file and directly
@@ -38,7 +44,7 @@ UBOOT_ELF ?= ""
 UBOOT_ELF_SUFFIX ?= "elf"
 UBOOT_ELF_IMAGE ?= "u-boot-${MACHINE}-${PV}-${PR}.${UBOOT_ELF_SUFFIX}"
 UBOOT_ELF_BINARY ?= "u-boot.${UBOOT_ELF_SUFFIX}"
-UBOOT_ELF_SYMLINK ?= "u-boot-${MACHINE}.${UBOOT_ELF_SUFFIX}"
+UBOOT_ELF_LINK ?= "u-boot${UBOOT_ARTIFACT_LINK_NAME}.${UBOOT_ELF_SUFFIX}"
 
 # Some versions of u-boot build an SPL (Second Program Loader) image that
 # should be packaged along with the u-boot binary as well as placed in the
@@ -49,8 +55,8 @@ SPL_BINARY ?= ""
 SPL_DELIMITER  ?= "${@'.' if d.getVar("SPL_SUFFIX") else ''}"
 SPL_BINARYFILE ?= "${@os.path.basename(d.getVar("SPL_BINARY"))}"
 SPL_BINARYNAME ?= "${@removesuffix(d.getVar("SPL_BINARYFILE"), "." + d.getVar("SPL_SUFFIX"))}"
-SPL_IMAGE ?= "${SPL_BINARYNAME}-${MACHINE}-${PV}-${PR}${SPL_DELIMITER}${SPL_SUFFIX}"
-SPL_SYMLINK ?= "${SPL_BINARYNAME}-${MACHINE}${SPL_DELIMITER}${SPL_SUFFIX}"
+SPL_IMAGE ?= "${SPL_BINARYNAME}${UBOOT_ARTIFACT_NAME}${SPL_DELIMITER}${SPL_SUFFIX}"
+SPL_LINK ?= "${SPL_BINARYNAME}${UBOOT_ARTIFACT_LINK_NAME}${SPL_DELIMITER}${SPL_SUFFIX}"
 
 # Additional environment variables or a script can be installed alongside
 # u-boot to be used automatically on boot.  This file, typically 'uEnv.txt'
@@ -62,8 +68,8 @@ UBOOT_ENV ?= ""
 UBOOT_ENV_SRC_SUFFIX ?= "cmd"
 UBOOT_ENV_SRC ?= "${UBOOT_ENV}.${UBOOT_ENV_SRC_SUFFIX}"
 UBOOT_ENV_BINARY ?= "${UBOOT_ENV}.${UBOOT_ENV_SUFFIX}"
-UBOOT_ENV_IMAGE ?= "${UBOOT_ENV}-${MACHINE}-${PV}-${PR}.${UBOOT_ENV_SUFFIX}"
-UBOOT_ENV_SYMLINK ?= "${UBOOT_ENV}-${MACHINE}.${UBOOT_ENV_SUFFIX}"
+UBOOT_ENV_IMAGE ?= "${UBOOT_ENV}${UBOOT_ARTIFACT_NAME}.${UBOOT_ENV_SUFFIX}"
+UBOOT_ENV_LINK ?= "${UBOOT_ENV}${UBOOT_ARTIFACT_LINK_NAME}.${UBOOT_ENV_SUFFIX}"
 
 # Default name of u-boot initial env, but enable individual recipes to change
 # this value.
@@ -73,7 +79,7 @@ UBOOT_INITIAL_ENV ?= "${PN}-initial-env"
 # to find EXTLINUX conf file.
 UBOOT_EXTLINUX_INSTALL_DIR ?= "/boot/extlinux"
 UBOOT_EXTLINUX_CONF_NAME ?= "extlinux.conf"
-UBOOT_EXTLINUX_SYMLINK ?= "${UBOOT_EXTLINUX_CONF_NAME}-${MACHINE}-${PR}"
+UBOOT_EXTLINUX_CONF_LINK ?= "${UBOOT_EXTLINUX_CONF_NAME}${UBOOT_ARTIFACT_LINK_NAME}"
 
 # Options for the device tree compiler passed to mkimage '-D' feature:
 UBOOT_MKIMAGE_DTCOPTS ??= ""

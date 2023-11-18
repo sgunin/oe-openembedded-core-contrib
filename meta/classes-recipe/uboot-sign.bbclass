@@ -34,27 +34,27 @@ UBOOT_FITIMAGE_ENABLE ?= "0"
 SPL_SIGN_ENABLE ?= "0"
 
 # Default value for deployment filenames.
-UBOOT_DTB_IMAGE ?= "u-boot-${MACHINE}-${PV}-${PR}.dtb"
+UBOOT_DTB_IMAGE ?= "u-boot${UBOOT_ARTIFACT_NAME}.dtb"
 UBOOT_DTB_BINARY ?= "u-boot.dtb"
 UBOOT_DTB_SIGNED ?= "${UBOOT_DTB_BINARY}-signed"
-UBOOT_DTB_SYMLINK ?= "u-boot-${MACHINE}.dtb"
-UBOOT_NODTB_IMAGE ?= "u-boot-nodtb-${MACHINE}-${PV}-${PR}.bin"
+UBOOT_DTB_LINK ?= "u-boot${UBOOT_ARTIFACT_LINK_NAME}.dtb"
+UBOOT_NODTB_IMAGE ?= "u-boot-nodtb${UBOOT_ARTIFACT_NAME}.bin"
 UBOOT_NODTB_BINARY ?= "u-boot-nodtb.bin"
-UBOOT_NODTB_SYMLINK ?= "u-boot-nodtb-${MACHINE}.bin"
-UBOOT_ITS_IMAGE ?= "u-boot-its-${MACHINE}-${PV}-${PR}"
+UBOOT_NODTB_LINK ?= "u-boot-nodtb${UBOOT_ARTIFACT_LINK_NAME}.bin"
+UBOOT_ITS_IMAGE ?= "u-boot-its${UBOOT_ARTIFACT_NAME}"
 UBOOT_ITS ?= "u-boot.its"
-UBOOT_ITS_SYMLINK ?= "u-boot-its-${MACHINE}"
-UBOOT_FITIMAGE_IMAGE ?= "u-boot-fitImage-${MACHINE}-${PV}-${PR}"
+UBOOT_ITS_LINK ?= "u-boot-its${UBOOT_ARTIFACT_LINK_NAME}"
+UBOOT_FITIMAGE_IMAGE ?= "u-boot-fitImage${UBOOT_ARTIFACT_NAME}"
 UBOOT_FITIMAGE_BINARY ?= "u-boot-fitImage"
-UBOOT_FITIMAGE_SYMLINK ?= "u-boot-fitImage-${MACHINE}"
+UBOOT_FITIMAGE_LINK ?= "u-boot-fitImage${UBOOT_ARTIFACT_LINK_NAME}"
 SPL_DIR ?= "spl"
-SPL_DTB_IMAGE ?= "u-boot-spl-${MACHINE}-${PV}-${PR}.dtb"
+SPL_DTB_IMAGE ?= "u-boot-spl${UBOOT_ARTIFACT_NAME}.dtb"
 SPL_DTB_BINARY ?= "u-boot-spl.dtb"
 SPL_DTB_SIGNED ?= "${SPL_DTB_BINARY}-signed"
-SPL_DTB_SYMLINK ?= "u-boot-spl-${MACHINE}.dtb"
-SPL_NODTB_IMAGE ?= "u-boot-spl-nodtb-${MACHINE}-${PV}-${PR}.bin"
+SPL_DTB_LINK ?= "u-boot-spl${UBOOT_ARTIFACT_LINK_NAME}.dtb"
+SPL_NODTB_IMAGE ?= "u-boot-spl-nodtb${UBOOT_ARTIFACT_NAME}.bin"
 SPL_NODTB_BINARY ?= "u-boot-spl-nodtb.bin"
-SPL_NODTB_SYMLINK ?= "u-boot-spl-nodtb-${MACHINE}.bin"
+SPL_NODTB_LINK ?= "u-boot-spl-nodtb${UBOOT_ARTIFACT_LINK_NAME}.bin"
 
 # U-Boot fitImage description
 UBOOT_FIT_DESC ?= "U-Boot fitImage for ${DISTRO_NAME}/${PV}/${MACHINE}"
@@ -148,14 +148,14 @@ deploy_dtb() {
 	if [ -e "${UBOOT_DTB_SIGNED}" ]; then
 		install -Dm644 ${UBOOT_DTB_SIGNED} ${DEPLOYDIR}/${uboot_dtb_binary}
 		if [ -n "${type}" ]; then
-			ln -sf ${uboot_dtb_binary} ${DEPLOYDIR}/${UBOOT_DTB_IMAGE}
+			ln -vf ${DEPLOYDIR}/${uboot_dtb_binary} ${DEPLOYDIR}/${UBOOT_DTB_IMAGE}
 		fi
 	fi
 
 	if [ -f "${UBOOT_NODTB_BINARY}" ]; then
 		install -Dm644 ${UBOOT_NODTB_BINARY} ${DEPLOYDIR}/${uboot_nodtb_binary}
 		if [ -n "${type}" ]; then
-			ln -sf ${uboot_nodtb_binary} ${DEPLOYDIR}/${UBOOT_NODTB_IMAGE}
+			ln -vf ${DEPLOYDIR}/${uboot_nodtb_binary} ${DEPLOYDIR}/${UBOOT_NODTB_IMAGE}
 		fi
 	fi
 }
@@ -182,14 +182,14 @@ deploy_spl_dtb() {
 	if [ -e "${SPL_DIR}/${SPL_DTB_SIGNED}" ] ; then
 		install -Dm644 ${SPL_DIR}/${SPL_DTB_SIGNED} ${DEPLOYDIR}/${spl_dtb_binary}
 		if [ -n "${type}" ]; then
-			ln -sf ${spl_dtb_binary} ${DEPLOYDIR}/${SPL_DTB_IMAGE}
+			ln -vf ${DEPLOYDIR}/${spl_dtb_binary} ${DEPLOYDIR}/${SPL_DTB_IMAGE}
 		fi
 	fi
 
 	if [ -f "${SPL_DIR}/${SPL_NODTB_BINARY}" ] ; then
 		install -Dm644 ${SPL_DIR}/${SPL_NODTB_BINARY} ${DEPLOYDIR}/${spl_nodtb_binary}
 		if [ -n "${type}" ]; then
-			ln -sf ${spl_nodtb_binary} ${DEPLOYDIR}/${SPL_NODTB_IMAGE}
+			ln -vf ${DEPLOYDIR}/${spl_nodtb_binary} ${DEPLOYDIR}/${SPL_NODTB_IMAGE}
 		fi
 	fi
 
@@ -378,8 +378,8 @@ deploy_helper() {
 
 	if [ "${UBOOT_FITIMAGE_ENABLE}" = "1" -a -n "${SPL_DTB_BINARY}" ]; then
 		if [ -n "${type}" ]; then
-			uboot_its_image="u-boot-its-${type}-${PV}-${PR}"
-			uboot_fitimage_image="u-boot-fitImage-${type}-${PV}-${PR}"
+			uboot_its_image="u-boot-its-${type}${UBOOT_ARTIFACT_NAME}"
+			uboot_fitimage_image="u-boot-fitImage-${type}${UBOOT_ARTIFACT_NAME}"
 		else
 			uboot_its_image="${UBOOT_ITS_IMAGE}"
 			uboot_fitimage_image="${UBOOT_FITIMAGE_IMAGE}"
@@ -389,8 +389,8 @@ deploy_helper() {
 		install -Dm644 ${UBOOT_ITS} ${DEPLOYDIR}/$uboot_its_image
 
 		if [ -n "${type}" ]; then
-			ln -sf $uboot_its_image ${DEPLOYDIR}/${UBOOT_ITS_IMAGE}
-			ln -sf $uboot_fitimage_image ${DEPLOYDIR}/${UBOOT_FITIMAGE_IMAGE}
+			ln -vf ${DEPLOYDIR}/$uboot_its_image ${DEPLOYDIR}/${UBOOT_ITS_IMAGE}
+			ln -vf ${DEPLOYDIR}/$uboot_fitimage_image ${DEPLOYDIR}/${UBOOT_FITIMAGE_IMAGE}
 		fi
 	fi
 
@@ -420,24 +420,24 @@ do_deploy:prepend() {
 	fi
 
 	if [ "${UBOOT_SIGN_ENABLE}" = "1" -a -n "${UBOOT_DTB_BINARY}" ] ; then
-		ln -sf ${UBOOT_DTB_IMAGE} ${DEPLOYDIR}/${UBOOT_DTB_BINARY}
-		ln -sf ${UBOOT_DTB_IMAGE} ${DEPLOYDIR}/${UBOOT_DTB_SYMLINK}
-		ln -sf ${UBOOT_NODTB_IMAGE} ${DEPLOYDIR}/${UBOOT_NODTB_SYMLINK}
-		ln -sf ${UBOOT_NODTB_IMAGE} ${DEPLOYDIR}/${UBOOT_NODTB_BINARY}
+		ln -vf ${DEPLOYDIR}/${UBOOT_DTB_IMAGE} ${DEPLOYDIR}/${UBOOT_DTB_BINARY}
+		ln -vf ${DEPLOYDIR}/${UBOOT_DTB_IMAGE} ${DEPLOYDIR}/${UBOOT_DTB_LINK}
+		ln -vf ${DEPLOYDIR}/${UBOOT_NODTB_IMAGE} ${DEPLOYDIR}/${UBOOT_NODTB_LINK}
+		ln -vf ${DEPLOYDIR}/${UBOOT_NODTB_IMAGE} ${DEPLOYDIR}/${UBOOT_NODTB_BINARY}
 	fi
 
 	if [ "${UBOOT_FITIMAGE_ENABLE}" = "1" ] ; then
-		ln -sf ${UBOOT_ITS_IMAGE} ${DEPLOYDIR}/${UBOOT_ITS}
-		ln -sf ${UBOOT_ITS_IMAGE} ${DEPLOYDIR}/${UBOOT_ITS_SYMLINK}
-		ln -sf ${UBOOT_FITIMAGE_IMAGE} ${DEPLOYDIR}/${UBOOT_FITIMAGE_BINARY}
-		ln -sf ${UBOOT_FITIMAGE_IMAGE} ${DEPLOYDIR}/${UBOOT_FITIMAGE_SYMLINK}
+		ln -vf ${DEPLOYDIR}/${UBOOT_ITS_IMAGE} ${DEPLOYDIR}/${UBOOT_ITS}
+		ln -vf ${DEPLOYDIR}/${UBOOT_ITS_IMAGE} ${DEPLOYDIR}/${UBOOT_ITS_LINK}
+		ln -vf ${DEPLOYDIR}/${UBOOT_FITIMAGE_IMAGE} ${DEPLOYDIR}/${UBOOT_FITIMAGE_BINARY}
+		ln -vf ${DEPLOYDIR}/${UBOOT_FITIMAGE_IMAGE} ${DEPLOYDIR}/${UBOOT_FITIMAGE_LINK}
 	fi
 
 	if [ "${SPL_SIGN_ENABLE}" = "1" -a -n "${SPL_DTB_BINARY}" ] ; then
-		ln -sf ${SPL_DTB_IMAGE} ${DEPLOYDIR}/${SPL_DTB_SYMLINK}
-		ln -sf ${SPL_DTB_IMAGE} ${DEPLOYDIR}/${SPL_DTB_BINARY}
-		ln -sf ${SPL_NODTB_IMAGE} ${DEPLOYDIR}/${SPL_NODTB_SYMLINK}
-		ln -sf ${SPL_NODTB_IMAGE} ${DEPLOYDIR}/${SPL_NODTB_BINARY}
+		ln -vf ${DEPLOYDIR}/${SPL_DTB_IMAGE} ${DEPLOYDIR}/${SPL_DTB_LINK}
+		ln -vf ${DEPLOYDIR}/${SPL_DTB_IMAGE} ${DEPLOYDIR}/${SPL_DTB_BINARY}
+		ln -vf ${DEPLOYDIR}/${SPL_NODTB_IMAGE} ${DEPLOYDIR}/${SPL_NODTB_LINK}
+		ln -vf ${DEPLOYDIR}/${SPL_NODTB_IMAGE} ${DEPLOYDIR}/${SPL_NODTB_BINARY}
 	fi
 }
 
@@ -445,7 +445,7 @@ do_deploy:append() {
 	# If we're creating a u-boot fitImage, point u-boot.bin
 	# symlink since it might get used by image recipes
 	if [ "${UBOOT_FITIMAGE_ENABLE}" = "1" ] ; then
-		ln -sf ${UBOOT_FITIMAGE_IMAGE} ${DEPLOYDIR}/${UBOOT_BINARY}
-		ln -sf ${UBOOT_FITIMAGE_IMAGE} ${DEPLOYDIR}/${UBOOT_SYMLINK}
+		ln -vf ${DEPLOYDIR}/${UBOOT_FITIMAGE_IMAGE} ${DEPLOYDIR}/${UBOOT_BINARY}
+		ln -vf ${DEPLOYDIR}/${UBOOT_FITIMAGE_IMAGE} ${DEPLOYDIR}/${UBOOT_LINK}
 	fi
 }
