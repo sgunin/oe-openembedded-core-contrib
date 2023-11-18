@@ -5,7 +5,7 @@
 #
 
 from oeqa.selftest.case import OESelftestTestCase
-from oeqa.utils.commands import runCmd, bitbake, get_bb_var, get_bb_vars
+from oeqa.utils.commands import runCmd, bitbake, get_bb_vars
 import os
 import re
 
@@ -46,12 +46,12 @@ FIT_DESC = "A model description"
         # fitImage is created as part of linux recipe
         image = "virtual/kernel"
         bitbake(image)
-        bb_vars = get_bb_vars(['DEPLOY_DIR_IMAGE', 'INITRAMFS_IMAGE_NAME', 'KERNEL_FIT_LINK_NAME'], image)
+        bb_vars = get_bb_vars(['DEPLOY_DIR_IMAGE', 'INITRAMFS_IMAGE_NAME', 'KERNEL_FIT_NAME', 'KERNEL_FIT_ITS_EXT', 'KERNEL_FIT_BIN_EXT'], image)
 
         fitimage_its_path = os.path.join(bb_vars['DEPLOY_DIR_IMAGE'],
-            "fitImage-its-%s-%s" % (bb_vars['INITRAMFS_IMAGE_NAME'], bb_vars['KERNEL_FIT_LINK_NAME']))
+            "fitImage-its-%s%s%s" % (bb_vars['INITRAMFS_IMAGE_NAME'], bb_vars['KERNEL_FIT_NAME'], bb_vars['KERNEL_FIT_ITS_EXT']))
         fitimage_path = os.path.join(bb_vars['DEPLOY_DIR_IMAGE'],
-            "fitImage-%s-%s" % (bb_vars['INITRAMFS_IMAGE_NAME'], bb_vars['KERNEL_FIT_LINK_NAME']))
+            "fitImage-%s%s%s" % (bb_vars['INITRAMFS_IMAGE_NAME'], bb_vars['KERNEL_FIT_NAME'], bb_vars['KERNEL_FIT_BIN_EXT']))
 
         self.assertTrue(os.path.exists(fitimage_its_path),
             "%s image tree source doesn't exist" % (fitimage_its_path))
@@ -126,12 +126,12 @@ UBOOT_MKIMAGE_SIGN_ARGS = "-c 'a smart comment'"
         # fitImage is created as part of linux recipe
         image = "virtual/kernel"
         bitbake(image)
-        bb_vars = get_bb_vars(['DEPLOY_DIR_IMAGE', 'KERNEL_FIT_LINK_NAME'], image)
+        bb_vars = get_bb_vars(['DEPLOY_DIR_IMAGE', 'KERNEL_FIT_NAME', 'KERNEL_FIT_ITS_EXT', 'KERNEL_FIT_BIN_EXT'], image)
 
         fitimage_its_path = os.path.join(bb_vars['DEPLOY_DIR_IMAGE'],
-            "fitImage-its-%s" % (bb_vars['KERNEL_FIT_LINK_NAME']))
+            "fitImage-its%s%s" % (bb_vars['KERNEL_FIT_NAME'], bb_vars['KERNEL_FIT_ITS_EXT']))
         fitimage_path = os.path.join(bb_vars['DEPLOY_DIR_IMAGE'],
-            "fitImage-%s.bin" % (bb_vars['KERNEL_FIT_LINK_NAME']))
+            "fitImage%s%s" % (bb_vars['KERNEL_FIT_NAME'], bb_vars['KERNEL_FIT_BIN_EXT']))
 
         self.assertTrue(os.path.exists(fitimage_its_path),
             "%s image tree source doesn't exist" % (fitimage_its_path))
@@ -278,14 +278,14 @@ FIT_SIGN_INDIVIDUAL = "1"
         self.write_config(config)
 
         # The U-Boot fitImage is created as part of the U-Boot recipe
-        bitbake("virtual/bootloader")
+        image = "virtual/bootloader"
+        bitbake(image)
+        bb_vars = get_bb_vars(['DEPLOY_DIR_IMAGE', 'KERNEL_FIT_NAME'], image)
 
-        deploy_dir_image = get_bb_var('DEPLOY_DIR_IMAGE')
-        machine = get_bb_var('MACHINE')
-        fitimage_its_path = os.path.join(deploy_dir_image,
-            "u-boot-its-%s" % (machine,))
-        fitimage_path = os.path.join(deploy_dir_image,
-            "u-boot-fitImage-%s" % (machine,))
+        fitimage_its_path = os.path.join(bb_vars['DEPLOY_DIR_IMAGE'],
+            "u-boot-its%s" % (bb_vars['KERNEL_FIT_NAME']))
+        fitimage_path = os.path.join(bb_vars['DEPLOY_DIR_IMAGE'],
+            "u-boot-fitImage%s" % (bb_vars['KERNEL_FIT_NAME']))
 
         self.assertTrue(os.path.exists(fitimage_its_path),
             "%s image tree source doesn't exist" % (fitimage_its_path))
@@ -363,14 +363,14 @@ UBOOT_MKIMAGE_SIGN_ARGS = "-c 'a smart U-Boot comment'"
         self.write_config(config)
 
         # The U-Boot fitImage is created as part of the U-Boot recipe
-        bitbake("virtual/bootloader")
+        image = "virtual/bootloader"
+        bitbake(image)
+        bb_vars = get_bb_vars(['DEPLOY_DIR_IMAGE', 'KERNEL_FIT_NAME'], image)
 
-        deploy_dir_image = get_bb_var('DEPLOY_DIR_IMAGE')
-        machine = get_bb_var('MACHINE')
-        fitimage_its_path = os.path.join(deploy_dir_image,
-            "u-boot-its-%s" % (machine,))
-        fitimage_path = os.path.join(deploy_dir_image,
-            "u-boot-fitImage-%s" % (machine,))
+        fitimage_its_path = os.path.join(bb_vars['DEPLOY_DIR_IMAGE'],
+            "u-boot-its%s" % (bb_vars['KERNEL_FIT_NAME']))
+        fitimage_path = os.path.join(bb_vars['DEPLOY_DIR_IMAGE'],
+            "u-boot-fitImage%s" % (bb_vars['KERNEL_FIT_NAME']))
 
         self.assertTrue(os.path.exists(fitimage_its_path),
             "%s image tree source doesn't exist" % (fitimage_its_path))
@@ -454,15 +454,14 @@ UBOOT_FIT_HASH_ALG = "sha256"
         self.write_config(config)
 
         # The U-Boot fitImage is created as part of the U-Boot recipe
-        bitbake("virtual/bootloader")
+        image = "virtual/bootloader"
+        bitbake(image)
+        bb_vars = get_bb_vars(['DEPLOY_DIR_IMAGE', 'KERNEL_FIT_NAME'], image)
 
-        image_type = "core-image-minimal"
-        deploy_dir_image = get_bb_var('DEPLOY_DIR_IMAGE')
-        machine = get_bb_var('MACHINE')
-        fitimage_its_path = os.path.join(deploy_dir_image,
-            "u-boot-its-%s" % (machine,))
-        fitimage_path = os.path.join(deploy_dir_image,
-            "u-boot-fitImage-%s" % (machine,))
+        fitimage_its_path = os.path.join(bb_vars['DEPLOY_DIR_IMAGE'],
+            "u-boot-its%s" % (bb_vars['KERNEL_FIT_NAME']))
+        fitimage_path = os.path.join(bb_vars['DEPLOY_DIR_IMAGE'],
+            "u-boot-fitImage%s" % (bb_vars['KERNEL_FIT_NAME']))
 
         self.assertTrue(os.path.exists(fitimage_its_path),
             "%s image tree source doesn't exist" % (fitimage_its_path))
@@ -609,15 +608,14 @@ FIT_SIGN_INDIVIDUAL = "1"
         self.write_config(config)
 
         # The U-Boot fitImage is created as part of the U-Boot recipe
-        bitbake("virtual/bootloader")
+        image = "virtual/bootloader"
+        bitbake(image)
+        bb_vars = get_bb_vars(['DEPLOY_DIR_IMAGE', 'KERNEL_FIT_NAME'], image)
 
-        image_type = "core-image-minimal"
-        deploy_dir_image = get_bb_var('DEPLOY_DIR_IMAGE')
-        machine = get_bb_var('MACHINE')
-        fitimage_its_path = os.path.join(deploy_dir_image,
-            "u-boot-its-%s" % (machine,))
-        fitimage_path = os.path.join(deploy_dir_image,
-            "u-boot-fitImage-%s" % (machine,))
+        fitimage_its_path = os.path.join(bb_vars['DEPLOY_DIR_IMAGE'],
+            "u-boot-its%s" % (bb_vars['KERNEL_FIT_NAME']))
+        fitimage_path = os.path.join(bb_vars['DEPLOY_DIR_IMAGE'],
+            "u-boot-fitImage%s" % (bb_vars['KERNEL_FIT_NAME']))
 
         self.assertTrue(os.path.exists(fitimage_its_path),
             "%s image tree source doesn't exist" % (fitimage_its_path))
@@ -753,26 +751,26 @@ FIT_HASH_ALG = "sha256"
         self.write_config(config)
 
         # fitImage is created as part of linux recipe
-        bitbake("virtual/kernel")
+        image = "virtual/kernel"
+        bitbake(image)
+        bb_vars = get_bb_vars(['DEPLOY_DIR_IMAGE', 'INITRAMFS_IMAGE_NAME', 'KERNEL_FIT_NAME', 'KERNEL_FIT_ITS_EXT', 'KERNEL_FIT_BIN_EXT'], image)
 
-        image_type = get_bb_var('INITRAMFS_IMAGE')
-        deploy_dir_image = get_bb_var('DEPLOY_DIR_IMAGE')
-        machine = get_bb_var('MACHINE')
-        fitimage_its_path = os.path.join(deploy_dir_image,
-                    "fitImage-its-%s-%s-%s" % (image_type, machine, machine))
-        fitimage_path = os.path.join(deploy_dir_image,"fitImage")
+        fitimage_its_path = os.path.join(bb_vars['DEPLOY_DIR_IMAGE'],
+            "fitImage-its-%s%s%s" % (bb_vars['INITRAMFS_IMAGE_NAME'], bb_vars['KERNEL_FIT_NAME'], bb_vars['KERNEL_FIT_ITS_EXT']))
+        fitimage_path = os.path.join(bb_vars['DEPLOY_DIR_IMAGE'], "fitImage")
 
         self.assertTrue(os.path.exists(fitimage_its_path),
             "%s image tree source doesn't exist" % (fitimage_its_path))
         self.assertTrue(os.path.exists(fitimage_path),
             "%s FIT image doesn't exist" % (fitimage_path))
 
-        kernel_load = str(get_bb_var('UBOOT_LOADADDRESS'))
-        kernel_entry = str(get_bb_var('UBOOT_ENTRYPOINT'))
-        kernel_type = str(get_bb_var('UBOOT_MKIMAGE_KERNEL_TYPE'))
-        kernel_compression = str(get_bb_var('FIT_KERNEL_COMP_ALG'))
-        uboot_arch = str(get_bb_var('UBOOT_ARCH'))
-        fit_hash_alg = str(get_bb_var('FIT_HASH_ALG'))
+        bb_vars = get_bb_vars(['UBOOT_LOADADDRESS', 'UBOOT_ENTRYPOINT', 'UBOOT_MKIMAGE_KERNEL_TYPE', 'FIT_KERNEL_COMP_ALG', 'UBOOT_ARCH', 'FIT_HASH_ALG'], image)
+        kernel_load = str(bb_vars['UBOOT_LOADADDRESS'])
+        kernel_entry = str(bb_vars['UBOOT_ENTRYPOINT'])
+        kernel_type = str(bb_vars['UBOOT_MKIMAGE_KERNEL_TYPE'])
+        kernel_compression = str(bb_vars['FIT_KERNEL_COMP_ALG'])
+        uboot_arch = str(bb_vars['UBOOT_ARCH'])
+        fit_hash_alg = str(bb_vars['FIT_HASH_ALG'])
 
         its_file = open(fitimage_its_path)
 
