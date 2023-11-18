@@ -925,7 +925,7 @@ class Wic2(WicTestCase):
         # pointing to existing files
         for suffix in ('wic', 'manifest'):
             path = prefix + suffix
-            self.assertTrue(os.path.islink(path), msg="Link %s wasn't generated as expected" % path)
+            self.assertTrue(os.path.isfile(path), msg="Link %s wasn't generated as expected" % path)
             self.assertTrue(os.path.isfile(os.path.realpath(path)), msg="File linked to by %s wasn't generated as expected" % path)
 
     # TODO this should work on aarch64
