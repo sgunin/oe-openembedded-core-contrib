@@ -257,7 +257,7 @@ python do_bootimg() {
         bb.build.exec_func('build_efi_cfg', d)
     bb.build.exec_func('build_hddimg', d)
     bb.build.exec_func('build_iso', d)
-    bb.build.exec_func('create_symlinks', d)
+    bb.build.exec_func('create_hardlinks', d)
 }
 do_bootimg[subimages] = "hddimg iso"
 

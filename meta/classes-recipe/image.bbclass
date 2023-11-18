@@ -509,7 +509,7 @@ python () {
         d.setVarFlag(task, 'fakeroot', '1')
 
         d.appendVarFlag(task, 'prefuncs', ' ' + debug + ' set_image_size')
-        d.prependVarFlag(task, 'postfuncs', 'create_symlinks ')
+        d.prependVarFlag(task, 'postfuncs', 'create_hardlinks ')
         d.appendVarFlag(task, 'subimages', ' ' + ' '.join(subimages))
         d.appendVarFlag(task, 'vardeps', ' ' + ' '.join(vardeps))
         d.appendVarFlag(task, 'vardepsexclude', ' DATETIME DATE ' + ' '.join(vardepsexclude))
@@ -585,9 +585,9 @@ python set_image_size () {
 }
 
 #
-# Create symlinks to the newly created image
+# Create hardlinks to the newly created image
 #
-python create_symlinks() {
+python create_hardlinks() {
 
     deploy_dir = d.getVar('IMGDEPLOYDIR')
     img_name = d.getVar('IMAGE_NAME')
