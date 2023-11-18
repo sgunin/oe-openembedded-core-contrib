@@ -813,7 +813,7 @@ kernel_do_deploy() {
 	fi
 
 	for imageType in ${KERNEL_IMAGETYPES} ; do
-		baseName=$imageType-${KERNEL_IMAGE_NAME}
+		baseName=$imageType${KERNEL_IMAGE_NAME}
 
 		if [ -s ${KERNEL_OUTPUT_DIR}/$imageType.stripped ] ; then
 			install -m 0644 ${KERNEL_OUTPUT_DIR}/$imageType.stripped $deployDir/$baseName${KERNEL_IMAGE_BIN_EXT}
@@ -833,7 +833,7 @@ kernel_do_deploy() {
 			TAR_ARGS=""
 		fi
 		TAR_ARGS="$TAR_ARGS --owner=0 --group=0"
-		tar $TAR_ARGS -cv -C ${D}${root_prefix} lib | gzip -9n > $deployDir/modules-${MODULE_TARBALL_NAME}.tgz
+		tar $TAR_ARGS -cv -C ${D}${root_prefix} lib | gzip -9n > $deployDir/modules${MODULE_TARBALL_NAME}.tgz
 	fi
 
 	if [ ! -z "${INITRAMFS_IMAGE}" -a x"${INITRAMFS_IMAGE_BUNDLE}" = x1 ]; then
@@ -859,15 +859,15 @@ kernel_do_deploy_links() {
 		bbnote "Not creating versioned hardlinks for kernel images, because KERNEL_IMAGE_LINK_NAME is empty or identical to KERNEL_IMAGE_NAME"
 	else
 		for imageType in ${KERNEL_IMAGETYPES} ; do
-			ln -vf $deployDir/$imageType-${KERNEL_IMAGE_NAME}.bin $deployDir/$imageType-${KERNEL_IMAGE_LINK_NAME}${KERNEL_IMAGE_BIN_EXT}
+			ln -vf $deployDir/$imageType${KERNEL_IMAGE_NAME}.bin $deployDir/$imageType${KERNEL_IMAGE_LINK_NAME}${KERNEL_IMAGE_BIN_EXT}
 		done
 	fi
 
 	if [ -z "${MODULE_TARBALL_LINK_NAME}" -o "${MODULE_TARBALL_LINK_NAME}" = "${MODULE_TARBALL_NAME}" ] ; then
 		bbnote "Not creating versioned hardlinks for module tarball, because MODULE_TARBALL_LINK_NAME is empty or identical to MODULE_TARBALL_NAME"
 	else
-		if [ ${MODULE_TARBALL_DEPLOY} = "1" -a -f $deployDir/modules-${MODULE_TARBALL_NAME}.tgz ] ; then
-			ln -vf $deployDir/modules-${MODULE_TARBALL_NAME}.tgz $deployDir/modules-${MODULE_TARBALL_LINK_NAME}.tgz
+		if [ ${MODULE_TARBALL_DEPLOY} = "1" -a -f $deployDir/modules${MODULE_TARBALL_NAME}.tgz ] ; then
+			ln -vf $deployDir/modules${MODULE_TARBALL_NAME}.tgz $deployDir/modules${MODULE_TARBALL_LINK_NAME}.tgz
 		fi
 	fi
 
