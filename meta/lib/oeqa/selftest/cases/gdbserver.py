@@ -34,12 +34,12 @@ CORE_IMAGE_EXTRA_INSTALL = "gdbserver"
         self.assertEqual(r.status, 0)
         self.assertIn("GNU gdb", r.output)
         image = 'core-image-minimal'
-        bb_vars = get_bb_vars(['DEPLOY_DIR_IMAGE', 'IMAGE_LINK_NAME'], image)
+        bb_vars = get_bb_vars(['DEPLOY_DIR_IMAGE', 'IMAGE_NAME'], image)
 
         with tempfile.TemporaryDirectory(prefix="debugfs-") as debugfs:
-            filename = os.path.join(bb_vars['DEPLOY_DIR_IMAGE'], "%s-dbg.tar.bz2" % bb_vars['IMAGE_LINK_NAME'])
+            filename = os.path.join(bb_vars['DEPLOY_DIR_IMAGE'], "%s-dbg.tar.bz2" % bb_vars['IMAGE_NAME'])
             shutil.unpack_archive(filename, debugfs)
-            filename = os.path.join(bb_vars['DEPLOY_DIR_IMAGE'], "%s.tar.bz2" % bb_vars['IMAGE_LINK_NAME'])
+            filename = os.path.join(bb_vars['DEPLOY_DIR_IMAGE'], "%s.tar.bz2" % bb_vars['IMAGE_NAME'])
             shutil.unpack_archive(filename, debugfs)
 
             with runqemu("core-image-minimal", runqemuparams="nographic") as qemu:
