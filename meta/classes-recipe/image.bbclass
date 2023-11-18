@@ -602,7 +602,7 @@ python create_hardlinks() {
         src = os.path.join(deploy_dir, img_name + "." + type)
         if os.path.exists(src):
             bb.note("Creating hardlink: %s -> %s" % (dst, src))
-            if os.path.islink(dst):
+            if os.path.isfile(dst):
                 os.remove(dst)
             os.link(src, dst)
         else:
