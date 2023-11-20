@@ -845,7 +845,7 @@ kernel_do_deploy:append() {
 			bbnote "Copying fit-image.its source file..."
 			install -m 0644 ${B}/fit-image.its "$deployDir/fitImage-its${KERNEL_FIT_NAME}.its"
 			bbnote "Copying linux.bin file..."
-			install -m 0644 ${B}/linux.bin $deployDir/fitImage-linux.bin${KERNEL_FIT_NAME}${KERNEL_FIT_BIN_EXT}
+			install -m 0644 ${B}/linux.bin $deployDir/fitImage-linux${KERNEL_FIT_NAME}${KERNEL_FIT_BIN_EXT}
 		fi
 
 		if [ -n "${INITRAMFS_IMAGE}" ]; then
@@ -865,13 +865,13 @@ kernel_do_deploy_links:append() {
 		else
 			if [ "${INITRAMFS_IMAGE_BUNDLE}" != "1" ]; then
 				ln -vf $deployDir/fitImage-its${KERNEL_FIT_NAME}.its "$deployDir/fitImage-its${KERNEL_FIT_LINK_NAME}"
-				ln -vf $deployDir/fitImage-linux.bin${KERNEL_FIT_NAME}${KERNEL_FIT_BIN_EXT} "$deployDir/fitImage-linux.bin${KERNEL_FIT_LINK_NAME}"
+				ln -vf $deployDir/fitImage-linux${KERNEL_FIT_NAME}${KERNEL_FIT_BIN_EXT} "$deployDir/fitImage-linux${KERNEL_FIT_LINK_NAME}${KERNEL_FIT_BIN_EXT}"
 			fi
 
 			if [ -n "${INITRAMFS_IMAGE}" ]; then
 				ln -vf $deployDir/fitImage-its-${INITRAMFS_IMAGE_NAME}${KERNEL_FIT_NAME}.its "$deployDir/fitImage-its-${INITRAMFS_IMAGE_NAME}${KERNEL_FIT_LINK_NAME}"
 				if [ "${INITRAMFS_IMAGE_BUNDLE}" != "1" ]; then
-					ln -vf $deployDir/fitImage-${INITRAMFS_IMAGE_NAME}${KERNEL_FIT_NAME}${KERNEL_FIT_BIN_EXT} "$deployDir/fitImage-${INITRAMFS_IMAGE_NAME}${KERNEL_FIT_LINK_NAME}"
+					ln -vf $deployDir/fitImage-${INITRAMFS_IMAGE_NAME}${KERNEL_FIT_NAME}${KERNEL_FIT_BIN_EXT} "$deployDir/fitImage-${INITRAMFS_IMAGE_NAME}${KERNEL_FIT_LINK_NAME}${KERNEL_FIT_BIN_EXT}"
 				fi
 			fi
 		fi
