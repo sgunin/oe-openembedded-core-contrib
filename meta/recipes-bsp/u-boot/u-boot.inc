@@ -113,7 +113,9 @@ do_install () {
         unset i
     else
         install -D -m 644 ${B}/${UBOOT_BINARY} ${D}/boot/${UBOOT_IMAGE}
-        ln -sf ${UBOOT_IMAGE} ${D}/boot/${UBOOT_BINARY}
+        if [ "${UBOOT_IMAGE}" != "${UBOOT_BINARY}" ]; then
+            ln -sf ${UBOOT_IMAGE} ${D}/boot/${UBOOT_BINARY}
+        fi
 
         # Install the uboot-initial-env
         if [ -n "${UBOOT_INITIAL_ENV}" ]; then
@@ -140,7 +142,9 @@ do_install () {
             unset i
         else
             install -m 644 ${B}/${UBOOT_ELF} ${D}/boot/${UBOOT_ELF_IMAGE}
-            ln -sf ${UBOOT_ELF_IMAGE} ${D}/boot/${UBOOT_ELF_BINARY}
+            if [ "${UBOOT_ELF_IMAGE}" != "${UBOOT_ELF_BINARY}" ]; then
+                ln -sf ${UBOOT_ELF_IMAGE} ${D}/boot/${UBOOT_ELF_BINARY}
+            fi
         fi
     fi
 
@@ -158,6 +162,7 @@ do_install () {
                     if [ $j -eq $i ]; then
                          install -m 644 ${B}/${config}/${SPL_BINARY} ${D}/boot/${SPL_BINARYNAME}-${type}-${PV}-${PR}${SPL_DELIMITER}${SPL_SUFFIX}
                          ln -sf ${SPL_BINARYNAME}-${type}-${PV}-${PR}${SPL_DELIMITER}${SPL_SUFFIX} ${D}/boot/${SPL_BINARYFILE}-${type}
+sd
                          ln -sf ${SPL_BINARYNAME}-${type}-${PV}-${PR}${SPL_DELIMITER}${SPL_SUFFIX} ${D}/boot/${SPL_BINARYFILE}
                     fi
                 done
@@ -166,13 +171,17 @@ do_install () {
             unset i
         else
             install -m 644 ${B}/${SPL_BINARY} ${D}/boot/${SPL_IMAGE}
-            ln -sf ${SPL_IMAGE} ${D}/boot/${SPL_BINARYFILE}
+            if [ "${SPL_IMAGE}" != "${SPL_BINARYFILE}" ]; then
+                ln -sf ${SPL_IMAGE} ${D}/boot/${SPL_BINARYFILE}
+            fi
         fi
     fi
 
     if [ -n "${UBOOT_ENV}" ]; then
         install -m 644 ${WORKDIR}/${UBOOT_ENV_BINARY} ${D}/boot/${UBOOT_ENV_IMAGE}
-        ln -sf ${UBOOT_ENV_IMAGE} ${D}/boot/${UBOOT_ENV_BINARY}
+        if [ "${UBOOT_ENV_IMAGE}" != "${UBOOT_ENV_BINARY}" ]; then
+            ln -sf ${UBOOT_ENV_IMAGE} ${D}/boot/${UBOOT_ENV_BINARY}
+        fi
     fi
 
     if [ "${UBOOT_EXTLINUX}" = "1" ]; then
@@ -225,7 +234,9 @@ do_deploy () {
         unset i
     else
         install -D -m 644 ${B}/${UBOOT_BINARY} ${DEPLOYDIR}/${UBOOT_IMAGE}
-        ln -vf ${DEPLOYDIR}/${UBOOT_IMAGE} ${DEPLOYDIR}/${UBOOT_BINARY}
+        if [ "${UBOOT_IMAGE}" != "${UBOOT_BINARY}" ]; then
+            ln -vf ${DEPLOYDIR}/${UBOOT_IMAGE} ${DEPLOYDIR}/${UBOOT_BINARY}
+        fi
 
         if [ -n "${UBOOT_LINK}" -a "${UBOOT_ARTIFACT_NAME}" != "${UBOOT_ARTIFACT_LINK_NAME}" ]; then
             ln -vf ${DEPLOYDIR}/${UBOOT_IMAGE} ${DEPLOYDIR}/${UBOOT_LINK}
@@ -296,7 +307,9 @@ do_deploy () {
             unset i
         else
             install -m 644 ${B}/${SPL_BINARY} ${DEPLOYDIR}/${SPL_IMAGE}
-            ln -vf ${DEPLOYDIR}/${SPL_IMAGE} ${DEPLOYDIR}/${SPL_BINARYNAME}
+            if [ "${SPL_IMAGE}" != "${SPL_BINARYNAME}" ]; then
+                ln -vf ${DEPLOYDIR}/${SPL_IMAGE} ${DEPLOYDIR}/${SPL_BINARYNAME}
+            fi
             if [ -n "${SPL_LINK}" -a "${UBOOT_ARTIFACT_NAME}" != "${UBOOT_ARTIFACT_LINK_NAME}" ]; then
                 ln -vf ${DEPLOYDIR}/${SPL_IMAGE} ${DEPLOYDIR}/${SPL_LINK}
             fi
@@ -305,7 +318,9 @@ do_deploy () {
 
     if [ -n "${UBOOT_ENV}" ]; then
         install -m 644 ${WORKDIR}/${UBOOT_ENV_BINARY} ${DEPLOYDIR}/${UBOOT_ENV_IMAGE}
-        ln -vf ${DEPLOYDIR}${UBOOT_ENV_IMAGE} ${DEPLOYDIR}/${UBOOT_ENV_BINARY}
+        if [ "${UBOOT_ENV_IMAGE}" != "${UBOOT_ENV_BINARY}" ]; then
+            ln -vf ${DEPLOYDIR}${UBOOT_ENV_IMAGE} ${DEPLOYDIR}/${UBOOT_ENV_BINARY}
+        fi
         if [ -n "${UBOOT_ENV_LINK}" -a "${UBOOT_ARTIFACT_NAME}" != "${UBOOT_ARTIFACT_LINK_NAME}" ]; then
             ln -vf ${DEPLOYDIR}${UBOOT_ENV_IMAGE} ${DEPLOYDIR}/${UBOOT_ENV_LINK}
         fi
