@@ -1,0 +1,25 @@
+From 42f76558232659956aded7ae1c02f4be0a4d2f7f Mon Sep 17 00:00:00 2001
+From: Khem Raj <raj.khem@gmail.com>
+Date: Sun, 30 Jul 2023 13:27:11 -0700
+Subject: [PATCH] features.h: Bump __GLIBC_MINOR__ to 39 on master
+
+Upstream-Status: Inappropriate [Development only]
+
+Signed-off-by: Khem Raj <raj.khem@gmail.com>
+---
+ include/features.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/include/features.h b/include/features.h
+index 1c38393fed..fc164d332a 100644
+--- a/include/features.h
++++ b/include/features.h
+@@ -492,7 +492,7 @@
+ /* Major and minor version number of the GNU C library package.  Use
+    these macros to test for features in specific releases.  */
+ #define	__GLIBC__	2
+-#define	__GLIBC_MINOR__	38
++#define	__GLIBC_MINOR__	39
+ 
+ #define __GLIBC_PREREQ(maj, min) \
+ 	((__GLIBC__ << 16) + __GLIBC_MINOR__ >= ((maj) << 16) + (min))
