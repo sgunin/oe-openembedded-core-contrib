@@ -128,4 +128,6 @@ PACKAGE_BEFORE_PN += "${PN}-loadable"
 RDEPENDS:${PN}-loadable += "${PN}"
 FILES:${PN}-loadable += "${libdir}/bash/*"
 
-RPROVIDES:${PN} += "${@bb.utils.contains('DISTRO_FEATURES', 'usrmerge', '/bin/sh /bin/bash', '', d)}"
+# Limit the RPROVIDES here to class target so that if usrmerge is added to the host, it does not also include bash and sh;
+# this is needed because the package 'nativesdk-sdk-provides-dummy' already provides /bin/sh and /bin/bash and we do not want any conflicting RPROVIDES
+RPROVIDES:${PN}:append:class-target = " ${@bb.utils.contains('DISTRO_FEATURES', 'usrmerge', '/bin/sh /bin/bash', '', d)}"
