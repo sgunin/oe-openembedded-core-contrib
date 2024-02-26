@@ -36,6 +36,13 @@ do_install:prepend:class-target() {
          ${B}/gmp.h
 }
 
+do_install:prepend:class-nativesdk() {
+        sed -i \
+        -e "s|--sysroot=${STAGING_DIR_HOST}||g" \
+        -e "s|${DEBUG_PREFIX_MAP}||g" \
+         ${B}/gmp.h
+}
+
 SSTATE_SCAN_FILES += "gmp.h"
 
 # Doesn't compile in MIPS16e mode due to use of hand-written
