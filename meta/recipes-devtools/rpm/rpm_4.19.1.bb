@@ -52,7 +52,7 @@ DEPENDS = "lua libgcrypt file popt xz bzip2 elfutils python3 sqlite3 zstd"
 DEPENDS:append:class-native = " file-replacement-native bzip2-replacement-native"
 
 EXTRA_OECMAKE:append = " -D__CURL:FILEPATH=curl"
-EXTRA_OECMAKE:append:libc-musl = " -DENABLE_NLS=OFF -DENABLE_OPENMP=OFF"
+EXTRA_OECMAKE:append:libc-musl = " -DENABLE_NLS=OFF"
 
 # --sysconfdir prevents rpm from attempting to access machine-specific configuration in sysroot/etc; we need to have it in rootfs
 # --localstatedir prevents rpm from writing its database to native sysroot when building images
@@ -64,10 +64,14 @@ OECMAKE_GENERATOR = "Unix Makefiles"
 
 BBCLASSEXTEND = "native nativesdk"
 
-PACKAGECONFIG ??= "internal-openpgp"
+PACKAGECONFIG_OPENMP = "openmp"
+PACKAGECONFIG_OPENMP:libc-musl = ""
+
+PACKAGECONFIG ??= "internal-openpgp ${PACKAGECONFIG_OPENMP}"
 
 PACKAGECONFIG[plugins] = "-DENABLE_PLUGINS=ON,-DENABLE_PLUGINS=OFF"
 PACKAGECONFIG[testsuite] = "-DENABLE_TESTSUITE=ON,-DENABLE_TESTSUITE=OFF"
+PACKAGECONFIG[openmp] = "-DENABLE_OPENMP=ON,-DENABLE_OPENMP=OFF"
 
 # Deprecated! https://fedoraproject.org/wiki/Changes/RpmSequoia
 PACKAGECONFIG[internal-openpgp] = "-DWITH_INTERNAL_OPENPGP=ON,-DWITH_INTERNAL_OPENPGP=OFF"
